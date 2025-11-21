@@ -1,0 +1,285 @@
+:root {
+  --color-1: aqua;
+  --color-2: magenta;
+  --color-3: mediumpurple;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body,
+html {
+  height: 100%;
+  font-family: "Poppins", sans-serif;
+  color: ;
+}
+
+a {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #666666;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: var(--color-3);
+}
+
+.Page_Background {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(45deg, var(--color-1), var(--color-2));
+}
+
+.Login_Card {
+  width: 400px;
+  background: white;
+  border-radius: 10px;
+  padding: 65px;
+}
+
+.Login_Form_Container {
+  width: 100%;
+}
+
+.Theme_Wrapper {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+}
+
+.Theme_Trigger {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: white;
+  font-size: 20px;
+}
+
+.Theme_Trigger:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.Theme_Matrix_Menu {
+  position: absolute;
+  right: 0;
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+
+  visibility: hidden;
+  transform: translateY(-10px);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 140px;
+}
+
+/* Show menu on hover of the Wrapper */
+.Theme_Wrapper:hover .Theme_Matrix_Menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* The Color Circles */
+.theme-circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+
+.theme-circle:hover {
+  transform: scale(1.2);
+  z-index: 2;
+}
+
+.t-1 {
+  background: linear-gradient(45deg, aqua, magenta);
+}
+.t-2 {
+  background: linear-gradient(45deg, yellow, orange);
+}
+.t-3 {
+  background: linear-gradient(45deg, pink, red);
+}
+.t-4 {
+  background: linear-gradient(45deg, cyan, blue);
+}
+.t-5 {
+  background: linear-gradient(45deg, burlywood, brown);
+}
+.t-6 {
+  background: linear-gradient(45deg, mediumseagreen, darkgreen);
+}
+.t-7 {
+  background: linear-gradient(45deg, chartreuse, Green);
+}
+.t-8 {
+  background: linear-gradient(45deg, pink, purple);
+}
+.t-9 {
+  background: linear-gradient(45deg, black, black);
+}
+
+.Form_Title {
+  display: block;
+  font-weight: 700;
+  font-size: 39px;
+  color: #333333;
+  line-height: 1.2;
+  text-align: center;
+  margin-bottom: 40px;
+  color: var(--color-2);
+}
+
+.Input_Group {
+  width: 100%;
+  position: relative;
+  border-bottom: 2px solid #d9d9d9;
+  margin-bottom: 23px;
+}
+
+.Input_Label {
+  font-size: 14px;
+  color: #666666;
+  line-height: 1.5;
+  padding-left: 7px;
+}
+
+.Input_Field {
+  font-size: 16px;
+  color: #333333;
+  line-height: 1.2;
+  display: block;
+  width: 100%;
+  height: 45px;
+  background: transparent;
+  padding: 0 7px 0 43px;
+  border: none;
+  outline: none;
+}
+
+.Input_Focus_Overlay {
+  position: absolute;
+  display: block;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.Input_Focus_Overlay::before {
+  content: "";
+  display: block;
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  transition: all 0.4s;
+  background: linear-gradient(45deg, var(--color-1), var(--color-2));
+}
+
+.Input_Focus_Overlay::after {
+  font-family: FontAwesome;
+  content: attr(data-symbol);
+  color: grey;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  height: 100%;
+  padding-left: 13px;
+  padding-top: 3px;
+  transition: all 0.4s;
+}
+
+.Input_Field:focus + .Input_Focus_Overlay::after {
+  color: var(--color-3);
+}
+
+.Input_Field:focus + .Input_Focus_Overlay::before {
+  width: 100%;
+}
+
+.Forgot_Password_Link {
+  text-align: right;
+}
+
+.Button_Container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding-top: 30px;
+}
+
+.Button_Wrapper {
+  width: 100%;
+  display: block;
+  position: relative;
+  z-index: 1;
+  border-radius: 25px;
+  overflow: hidden;
+}
+
+.Button_Hover_Gradient {
+  position: absolute;
+  z-index: -1;
+  width: 300%;
+  height: 100%;
+  background: linear-gradient(
+    270deg,
+    var(--color-1),
+    var(--color-2),
+    var(--color-1),
+    var(--color-2)
+  );
+  left: -100%;
+  transition: all 0.4s;
+}
+
+.Login_Button {
+  font-size: 16px;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 50px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.Button_Wrapper:hover .Button_Hover_Gradient {
+  left: 0;
+}
+
+.Sign_Up_Container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 30px;
+}

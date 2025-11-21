@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>E7gezly Event</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+
+    <link
+      href="https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link href="Style.CSS" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="Page_Background">
+      <div class="Theme_Wrapper">
+        <div class="Theme_Trigger">
+          <i class="fa fa-chevron-down"></i>
+        </div>
+
+        <div class="Theme_Matrix_Menu">
+          <div
+            class="theme-circle t-1"
+            onclick="changeTheme('aqua', 'magenta', 'mediumpurple')"
+          ></div>
+          <div
+            class="theme-circle t-2"
+            onclick="changeTheme('yellow', 'orange')"
+          ></div>
+          <div
+            class="theme-circle t-3"
+            onclick="changeTheme('pink', 'red')"
+          ></div>
+          <div
+            class="theme-circle t-4"
+            onclick="changeTheme('cyan', 'blue','rgb(39, 106, 215)')"
+          ></div>
+          <div
+            class="theme-circle t-5"
+            onclick="changeTheme('burlywood', 'brown')"
+          ></div>
+          <div
+            class="theme-circle t-6"
+            onclick="changeTheme('mediumseagreen', 'darkgreen','rgb(58, 203, 0)')"
+          ></div>
+          <div
+            class="theme-circle t-7"
+            onclick="changeTheme('chartreuse', 'Green','rgb(58, 203, 0)')"
+          ></div>
+          <div
+            class="theme-circle t-8"
+            onclick="changeTheme('pink', 'purple')"
+          ></div>
+          <div
+            class="theme-circle t-9"
+            onclick="changeTheme('black', 'black')"
+          ></div>
+        </div>
+      </div>
+
+      <div class="Login_Card">
+        <form class="Login_Form_Container">
+          <span class="Form_Title"> E7gezly Event Login </span>
+
+          <div class="Input_Group">
+            <span class="Input_Label">Username</span>
+            <input
+              class="Input_Field"
+              type="text"
+              name="username"
+              placeholder="Type your username"
+            />
+            <span class="Input_Focus_Overlay" data-symbol="&#xf007;"></span>
+          </div>
+
+          <div class="Input_Group">
+            <span class="Input_Label">Password</span>
+            <input
+              class="Input_Field"
+              type="password"
+              name="password"
+              placeholder="Type your password"
+              id="password"
+            />
+            <span class="Input_Focus_Overlay" data-symbol="&#xf023;"></span>
+          </div>
+          <div
+            class="Forgot_Password_Link"
+            style="text-align: right; margin-bottom: 10px"
+          >
+            <input
+              type="checkbox"
+              onclick="togglePassword()"
+              style="vertical-align: middle"
+            />
+            <label style="font-size: 13px">Show Password</label>
+          </div>
+          <div class="Forgot_Password_Link">
+            <a href="#"> Forgot password? </a>
+          </div>
+
+          <div class="Button_Container">
+            <div class="Button_Wrapper">
+              <div class="Button_Hover_Gradient"></div>
+              <button class="Login_Button">LOGIN</button>
+            </div>
+          </div>
+
+          <div class="Sign_Up_Container">
+            <a href="#"> Sign Up </a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="Script.Js"></script>
+  </body>
+</html>
