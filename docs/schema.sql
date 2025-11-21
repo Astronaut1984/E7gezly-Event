@@ -72,6 +72,7 @@ CREATE TABLE Wishlist (
 CREATE TABLE Report (
     Repoort_Id         INTEGER,
     Report_Content    TEXT NOT NULL,
+    Status                  TEXT,
     Adminstrator_Username   TEXT,
     Attendee_Username   TEXT,
     Owner_Username      TEXT,  
