@@ -4,8 +4,6 @@ import SelectType from "../../components/selectType";
 import { useState } from "react";
 import SignUp1, { SignUp2, SignUp3 } from "./SignUp1";
 
-const optionsAcc = ["Attendee", "Organizer"];
-
 export default function SignUp() {
   const bgColor = "bg-gradient-to-tr from-blue-200 via-blue-400 to-blue-600";
   const [pageNumber, setPageNumber] = useState(1);
@@ -13,29 +11,51 @@ export default function SignUp() {
   function nextPageHandeler() {
     setPageNumber((currPageNumber) => currPageNumber + 1);
   }
+
+  function previousPageHandler() {
+    setPageNumber((currPageNumber) => currPageNumber - 1);
+  }
   return (
     <main
-      className={`${bgColor} flex justify-center items-center w-full min-h-screen`}
+      className={`${bgColor} flex justify-center items-center w-full min-h-screen relative`}
     >
-      <div className="w-[500px] bg-white rounded-[10px] p-[65px]">
+      <div className="w-[500px] bg-white rounded-[10px] p-[65px] h-160 relative">
         <form className="w-full">
-          <span className="block font-bold text-[39px] text-[#333333] leading-[1.2] text-center mb-10 text-blue-500">
+          <span className="block font-bold text-[39px] text-[#333333] leading-[1.2] text-center mb-4 text-blue-500">
             E7gezly Event Create Account
           </span>
+          {pageNumber > 1 && (
+            <i
+              onClick={previousPageHandler}
+              class="z-2 cursor-pointer fa-solid fa-arrow-left-long absolute -translate-y-37 -translate-x-7 text-2xl"
+            ></i>
+          )}
+
           {pageNumber === 1 && <SignUp1 />}
           {pageNumber === 2 && <SignUp2 />}
           {pageNumber === 3 && <SignUp3 />}
           <div className="flex flex-wrap justify-center pt-7.5">
             <div className="w-full block relative z-1 rounded-[25px] overflow-hidden">
-              <button
-                type="button"
-                onClick={nextPageHandeler}
-                className={
-                  "bg-blue-400 transition-colors duration-300 text-[16px] text-white flex justify-center items-center w-full h-[50px] border-0 cursor-pointer font-semibold hover:bg-blue-600"
-                }
-              >
-                Next
-              </button>
+              {pageNumber === 3 ? (
+                <button
+                  type="button"
+                  className={
+                    "bg-blue-400 transition-colors duration-300 text-[16px] text-white flex justify-center items-center w-full h-[50px] border-0 cursor-pointer font-semibold hover:bg-blue-600"
+                  }
+                >
+                  Create Account
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={nextPageHandeler}
+                  className={
+                    "bg-blue-400 transition-colors duration-300 text-[16px] text-white flex justify-center items-center w-full h-[50px] border-0 cursor-pointer font-semibold hover:bg-blue-600"
+                  }
+                >
+                  Next
+                </button>
+              )}
             </div>
           </div>
 
