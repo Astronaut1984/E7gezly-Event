@@ -7,7 +7,7 @@ import Event from "../../components/Event";
 export default function Home() {
   let bgColor = "bg-gradient-to-tr from-blue-300 via-blue-400 to-blue-600";
   return (
-    <main id="homeBackground" className={`bg-blue-400 w-full min-h-screen`}>
+    <main id="homeBackground" className={`${bgColor} w-full min-h-screen`}>
       <NavBar />
       <section
         id="Home"
@@ -39,9 +39,32 @@ export default function Home() {
             <h1 className="flex justify-center items-center m-10 text-4xl font-bold text-white">Top Events</h1>
         </div>
         {/* Events*/ }
-        <div className="w-full">
-            <Event/>
+        <div className="w-full p-10 flex flexbox gap-10 justify-center items-center flex-wrap">
+            <Event img={HomePic} title="Tamer Hosny & AL Shami" time={
+                {
+                    startDate: "May 31", 
+                    endDate: undefined,
+                    time:"8:00 pm"
+                } 
+            } venue="COCA-COLA ARENA, DUBAI" priceRange={{
+              currency: "AED",
+              minPrice: 300,
+              maxPrice: 1000
+            }}/>
+            <Event img={HomePic} title="Tamer Hosny & AL Shami" time={
+                {
+                    startDate: "May 31", 
+                    endDate: undefined,
+                    time:"8:00 pm"
+                } 
+            } venue="COCA-COLA ARENA, DUBAI" priceRange={{
+              currency: "AED",
+              minPrice: 300,
+              maxPrice: 1000
+            }}/>
         </div>
+      </section>
+      <section className={`w-full h-screen`}>
 
       </section>
     </main>
