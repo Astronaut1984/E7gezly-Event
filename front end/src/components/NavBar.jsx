@@ -15,7 +15,7 @@ export default function NavBar(){
             </nav>
             <nav className="mx-5 max-w-5xl flex items-center gap-6 py-4">
                 <NavLink to="/login" className={({isActive}) => isActive ? "bg-blue-500 px-4 pb-px rounded-md text-white" : HOVER_COLOR}>Login</NavLink>
-                <NavLink to="/login" className={HOVER_COLOR}>Sign up</NavLink>
+                <NavLink to="/signup" className={({isActive}) => isActive ? "bg-blue-500 px-4 pb-px rounded-md text-white" : HOVER_COLOR}>Sign up</NavLink>
             </nav>
         </div>
     )
