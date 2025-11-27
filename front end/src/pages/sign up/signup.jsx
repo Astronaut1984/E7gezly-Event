@@ -1,13 +1,18 @@
 import "./signup.css";
 import Input from "../../components/Input";
 import SelectType from "../../components/selectType";
-import NavBar from "../../components/NavBar";
+import { useState } from "react";
+import SignUp1, { SignUp2, SignUp3 } from "./SignUp1";
 
 const optionsAcc = ["Attendee", "Organizer"];
 
 export default function SignUp() {
-  let bgColor = "bg-gradient-to-tr from-blue-200 via-blue-400 to-blue-600";
+  const bgColor = "bg-gradient-to-tr from-blue-200 via-blue-400 to-blue-600";
+  const [pageNumber, setPageNumber] = useState(1);
 
+  function nextPageHandeler() {
+    setPageNumber((currPageNumber) => currPageNumber + 1);
+  }
   return (
     <>
       <NavBar />
