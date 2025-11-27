@@ -2,6 +2,7 @@ import "./Home.css";
 import HomePic from "../../assets/home-page-init.jpg";
 import { Routes, Link } from "react-router-dom";
 import NavBar from "../../components/NavBar";
+import Event from "../../components/Event";
 
 export default function Home() {
   let bgColor = "bg-gradient-to-tr from-blue-300 via-blue-400 to-blue-600";
@@ -32,14 +33,14 @@ export default function Home() {
 
       <section
         id="Events"
-        className={`flex justify-center items-center w-full  bg-red-50 bg-cover bg-center bg-no-repeat ${bgColor}`}
+        className={`flex flex-col justify-center items-center w-full  bg-red-50 bg-cover bg-center bg-no-repeat ${bgColor}`}
       >
-        <div>
-            <h1 className="m-10 text-4xl font-bold text-white">Top Events</h1>
+        <div className="w-full">
+            <h1 className="flex justify-center items-center m-10 text-4xl font-bold text-white">Top Events</h1>
         </div>
         {/* Events*/ }
-        <div>
-            
+        <div className="w-full">
+            <Event/>
         </div>
 
       </section>
