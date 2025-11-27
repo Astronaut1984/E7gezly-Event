@@ -6,18 +6,20 @@ export default function Input({title,type,...props}){
     function toggleShowPassword(){
         togglePassword(state => !state);
     }
-    return <div className="w-full relative mb-[23px]">
-            <span className="text-[14px] text-[#666666] leading-[1.5] pl-[7px]">
-                {title}
-            </span>
-            <input 
-                className="peer text-[16px] text-[#333333] leading-[1.2] block w-full h-[45px] bg-transparent px-[7px]  border-0 outline-none"
-                type={showPassword ? "text" : type}
-                {...props}
-            />   
-            <span className="absolute block w-full h-full top-0 left-0 pointer-events-none border-b-2 border-[#d9d9d9] peer-focus:border-blue-600 transition-colors duration-300"></span>
-            {type == "password" && 
-            <i onClick={toggleShowPassword} className={`hover:text-blue-600 transition-colors duration-300 fa-solid fa-eye${showPassword ? "-slash" : ""} absolute right-0 top-[41px] cursor-pointer`}></i>
-            }  
-    </div>
+    return (
+        <div className="w-full relative mb-[23px]">
+                <span className="text-[14px] text-[#666666] leading-normal pl-[7px]">
+                    {title}
+                </span>
+                <input 
+                    className="peer text-[16px] text-[#333333] leading-[1.2] block w-full h-[45px] bg-transparent px-[7px]  border-0 outline-none"
+                    type={showPassword ? "text" : type}
+                    {...props}
+                />   
+                <span className="absolute block w-full h-full top-0 left-0 pointer-events-none border-b-2 border-[#d9d9d9] peer-focus:border-blue-600 transition-colors duration-300"></span>
+                {type == "password" && 
+                <i onClick={toggleShowPassword} className={`hover:text-blue-600 transition-colors duration-300 fa-solid fa-eye${showPassword ? "-slash" : ""} absolute right-0 top-[41px] cursor-pointer`}></i>
+                }  
+        </div>
+    )
 }
