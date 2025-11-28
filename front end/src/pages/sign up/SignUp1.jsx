@@ -1,7 +1,9 @@
 import "./signup.css";
 import Input from "../../components/Input";
 import SelectType from "../../components/selectType";
-export default function SignUp1({ formData, setFormData }) {
+
+
+export default function SignUp1({ formData, setFormData ,errors}) {
   const optionsAcc = ["Attendee", "Organizer"];
 
   return (
@@ -10,32 +12,40 @@ export default function SignUp1({ formData, setFormData }) {
         <Input
           title="First Name"
           type="text"
-          placeholder="Type your first name"
+          placeholder="John"
+          error={errors.firstName}
           value={formData.firstName}
-          onChange={(e) =>
+          onChange={(e) =>{
+            e.target.value = e.target.value.replace(/[0-9]/g,""); 
             setFormData({ ...formData, firstName: e.target.value })
+          }
           }
         />
         <Input
           title="Last Name"
           type="text"
-          placeholder="Type your last name"
+          placeholder="Doe"
           value={formData.lastName}
-          onChange={(e) =>
+          error={errors.lastName}
+          onChange={(e) =>{
+            e.target.value = e.target.value.replace(/[0-9]/g,"");
             setFormData({ ...formData, lastName: e.target.value })
+          }
           }
         />
       </div>
       <Input
         title="Email"
         type="email"
-        placeholder="Type your Email"
+        placeholder="email@example.com"
         value={formData.email}
+        error={errors.email}
         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
       />
       <SelectType
         title="Account Type"
         options={optionsAcc}
+        error={errors.accountType}
         // value={formData.accountType}
         onChange={(e) =>
           setFormData({ ...formData, accountType: e.target.value })
@@ -52,18 +62,25 @@ export function SignUp2({ formData, setFormData }) {
         type="text"
         placeholder="Select your country"
         value={formData.country}
-        onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+        onChange={(e) => {
+          e.target.value = e.target.value.replace(/[0-9]/g,"");
+          setFormData({ ...formData, country: e.target.value })
+        }}
       />
       <Input
         title="City"
         type="text"
         placeholder="Select your city"
         value={formData.city}
-        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+        onChange={(e) => {
+          e.target.value = e.target.value.replace(/[0-9]/g,"");
+          setFormData({ ...formData, city: e.target.value })
+      }}
       />
       <Input
         title="Phone Number"
-        type="digit"
+        type="text"
+        pattern="\d{11}"
         placeholder="Enter your phone"
         value={formData.phoneNumber}
         onChange={(e) =>
