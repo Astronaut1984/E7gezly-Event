@@ -25,7 +25,7 @@ export default function SignUp() {
     console.log("Final form data:", formData);
 
     // Send to backend
-    fetch("http://localhost:8000/E7gezly/signup/", {
+    fetch("http://localhost:8000/account/signup/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),

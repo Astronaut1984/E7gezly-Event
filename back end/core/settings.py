@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'api',
     'corsheaders',
-    'E7gezly'
+    'account'
 ]
 
 MIDDLEWARE = [
