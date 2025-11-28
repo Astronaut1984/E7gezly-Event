@@ -74,5 +74,5 @@ def login_view(request):
 def checkUsername(request):
     username = json.loads(request.body).get("username")
     if User.objects.filter(username=username).exists():
-        return JsonResponse({"UsernameExists": True})
-    return JsonResponse({"UsernameExists": False})
+        return JsonResponse({"usernameExists": True})
+    return JsonResponse({"usernameExists": False})
