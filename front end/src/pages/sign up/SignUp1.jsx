@@ -28,7 +28,7 @@ export default function SignUp1({ formData, setFormData }) {
       </div>
       <Input
         title="Email"
-        type="text"
+        type="email"
         placeholder="Type your Email"
         value={formData.email}
         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -36,7 +36,7 @@ export default function SignUp1({ formData, setFormData }) {
       <SelectType
         title="Account Type"
         options={optionsAcc}
-        value={formData.accountType}
+        // value={formData.accountType}
         onChange={(e) =>
           setFormData({ ...formData, accountType: e.target.value })
         }
