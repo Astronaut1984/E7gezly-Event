@@ -43,6 +43,7 @@ export default function SignUp1({ formData, setFormData, errors }) {
         title="Account Type"
         options={optionsAcc}
         placeholder="Select account type"
+        value={formData.accountType}
         error={!formData.accountType}
         onSelect={(option) => setFormData({ ...formData, accountType: option })}
       />
