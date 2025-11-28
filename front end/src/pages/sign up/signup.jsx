@@ -8,7 +8,32 @@ import SignUp1, { SignUp2, SignUp3 } from "./SignUp1";
 export default function SignUp() {
   const bgColor = "bg-gradient-to-tr from-blue-200 via-blue-400 to-blue-600";
   const [pageNumber, setPageNumber] = useState(1);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    accountType: "",
+    country: "",
+    city: "",
+    phoneNumber: "",
+    username: "",
+    password: "",
+    rePassword: "",
+  });
+  function handleSubmit() {
+    // You can do validation here
+    console.log("Final form data:", formData);
 
+    // Send to backend
+    fetch("http://localhost:8000/E7gezly/signup/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    })
+      .then((res) => res.json())
+      .then((data) => console.log(data))
+      .catch((err) => console.error(err));
+  }
   function nextPageHandeler() {
     setPageNumber((currPageNumber) => currPageNumber + 1);
   }
@@ -30,18 +55,26 @@ export default function SignUp() {
             {pageNumber > 1 && (
               <i
                 onClick={previousPageHandler}
-                class="z-2 cursor-pointer fa-solid fa-arrow-left-long absolute -translate-y-37 -translate-x-7 text-2xl"
+                className="z-2 cursor-pointer fa-solid fa-arrow-left-long absolute -translate-y-37 -translate-x-7 text-2xl"
               ></i>
             )}
 
-            {pageNumber === 1 && <SignUp1 />}
-            {pageNumber === 2 && <SignUp2 />}
-            {pageNumber === 3 && <SignUp3 />}
+            {/* Pass formData and setFormData to children */}
+            {pageNumber === 1 && (
+              <SignUp1 formData={formData} setFormData={setFormData} />
+            )}
+            {pageNumber === 2 && (
+              <SignUp2 formData={formData} setFormData={setFormData} />
+            )}
+            {pageNumber === 3 && (
+              <SignUp3 formData={formData} setFormData={setFormData} />
+            )}
             <div className="flex flex-wrap justify-center pt-7.5">
               <div className="w-full block relative z-1 rounded-[25px] overflow-hidden">
                 {pageNumber === 3 ? (
                   <button
                     type="button"
+                    onClick={handleSubmit}
                     className={
                       "bg-blue-400 transition-colors duration-300 text-[16px] text-white flex justify-center items-center w-full h-[50px] border-0 cursor-pointer font-semibold hover:bg-blue-600"
                     }
