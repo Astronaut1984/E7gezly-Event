@@ -6,8 +6,6 @@ import json
 import hashlib
 
 # Create your views here.
-def home(request):
-    return JsonResponse({"message": "home"})
 def login(request):
     with connection.cursor() as cursor:
         cursor.execute("SELECT COUNT(*) FROM api_user")
