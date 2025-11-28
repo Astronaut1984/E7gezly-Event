@@ -4,10 +4,12 @@ import SelectType from "../../components/selectType";
 import { useState } from "react";
 import Navbar from "../../components/Navbar";
 import SignUp1, { SignUp2, SignUp3 } from "./SignUp1";
+import { validateForm1 } from "./validations";
 
 export default function SignUp() {
   const bgColor = "bg-gradient-to-tr from-blue-200 via-blue-400 to-blue-600";
   const [pageNumber, setPageNumber] = useState(1);
+  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -35,7 +37,17 @@ export default function SignUp() {
       .catch((err) => console.error(err));
   }
   function nextPageHandeler() {
-    setPageNumber((currPageNumber) => currPageNumber + 1);
+    if (pageNumber === 1) {
+      let formErrors = validateForm1(formData);
+      console.log(formErrors);
+      console.log(formData);
+      if (Object.keys(formErrors).length === 0) {
+        setPageNumber((currPageNumber) => currPageNumber + 1);
+      } else {
+        setErrors(formErrors);
+        return;
+      }
+    }
   }
 
   function previousPageHandler() {
@@ -61,7 +73,11 @@ export default function SignUp() {
 
             {/* Pass formData and setFormData to children */}
             {pageNumber === 1 && (
-              <SignUp1 formData={formData} setFormData={setFormData} />
+              <SignUp1
+                formData={formData}
+                setFormData={setFormData}
+                errors={errors}
+              />
             )}
             {pageNumber === 2 && (
               <SignUp2 formData={formData} setFormData={setFormData} />
@@ -97,10 +113,10 @@ export default function SignUp() {
 
             {/* Sign Up */}
             <div className="flex justify-center gap-1 items-center pt-7.5 transition-colors duration-300">
-              I have an account{" "}
+              Already have an account?{" "}
               <a href="#" className="hover:text-blue-600">
                 {" "}
-                Login ?{" "}
+                Login{" "}
               </a>
             </div>
           </form>
