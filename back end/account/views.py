@@ -16,12 +16,7 @@ def login(request):
 def signup(request):
     if request.method == "POST":
         try:
-            data = json.loads(request.body)
-            password = data.get("password")
-            re_password = data.get("rePassword")
-
-            if password != re_password:
-                return JsonResponse({"error": "Passwords do not match"}, status=400)         
+            data = json.loads(request.body)     
             hashed = hashlib.sha256(data.get("password").encode()).hexdigest()
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -32,9 +27,26 @@ def signup(request):
                     """,
                     [data.get("username"), hashed, data.get("firstName"), data.get("lastName"), data.get("email"), data.get("accountType"), data.get("country"), data.get("city"), data.get("phoneNumber"), 0],
                 )
-
             return JsonResponse({"message": "User created successfully"})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    else:
+        return JsonResponse({"error": "Only POST method allowed"}, status=405)
 
+
+@csrf_exempt
+def checkemail(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)     
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    Select COUNT(*) From api_user wher
+                    """,
+                    [data.get("username"), hashed, data.get("firstName"), data.get("lastName"), data.get("email"), data.get("accountType"), data.get("country"), data.get("city"), data.get("phoneNumber"), 0],
+                )
+            return JsonResponse({"message": "User created successfully"})
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
     else:
