@@ -25,7 +25,7 @@ export default function SelectType({
 
   return (
     <div className={`w-full relative mb-[23px] ${classNameVar}`}>
-      <span className="text-[14px] text-[#666666] leading-[1.5] pl-[7px]">
+      <span className="text-[14px] text-[#666666] leading-normal pl-[7px]">
         {title}
       </span>
       <input

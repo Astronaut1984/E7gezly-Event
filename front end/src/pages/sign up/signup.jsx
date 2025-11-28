@@ -4,7 +4,7 @@ import SelectType from "../../components/selectType";
 import { useState } from "react";
 import Navbar from "../../components/Navbar";
 import SignUp1, { SignUp2, SignUp3 } from "./SignUp1";
-import { validateForm1 } from "./validations";
+import { validateForm1, validateForm2, validateForm3 } from "./validations";
 
 export default function SignUp() {
   const bgColor = "bg-gradient-to-tr from-blue-200 via-blue-400 to-blue-600";
@@ -25,6 +25,12 @@ export default function SignUp() {
   function handleSubmit() {
     // You can do validation here
     console.log("Final form data:", formData);
+
+    let formErrors = validateForm3(formData);
+    if (Object.keys(formErrors).length !== 0) {
+      setErrors(formErrors);
+      return;
+    }
 
     // Send to backend
     fetch("http://localhost:8000/account/signup/", {
@@ -47,6 +53,14 @@ export default function SignUp() {
         setErrors(formErrors);
         return;
       }
+    } else if (pageNumber === 2) {
+      let formErrors = validateForm2(formData);
+      if (Object.keys(formErrors).length === 0) {
+        setPageNumber((currPageNumber) => currPageNumber + 1);
+      } else {
+        setErrors(formErrors);
+        return;
+      }
     }
   }
 
@@ -61,7 +75,7 @@ export default function SignUp() {
       >
         <div className="w-[500px] bg-white rounded-[10px] p-[65px] h-160 relative">
           <form className="w-full">
-            <span className="block font-bold text-[39px] text-[#333333] leading-[1.2] text-center mb-4 text-blue-500">
+            <span className="block font-bold text-[39px] leading-[1.2] text-center mb-4 text-blue-500">
               E7gezly Event Create Account
             </span>
             {pageNumber > 1 && (
@@ -80,10 +94,18 @@ export default function SignUp() {
               />
             )}
             {pageNumber === 2 && (
-              <SignUp2 formData={formData} setFormData={setFormData} />
+              <SignUp2
+                formData={formData}
+                setFormData={setFormData}
+                errors={errors}
+              />
             )}
             {pageNumber === 3 && (
-              <SignUp3 formData={formData} setFormData={setFormData} />
+              <SignUp3
+                formData={formData}
+                setFormData={setFormData}
+                errors={errors}
+              />
             )}
             <div className="flex flex-wrap justify-center pt-7.5">
               <div className="w-full block relative z-1 rounded-[25px] overflow-hidden">

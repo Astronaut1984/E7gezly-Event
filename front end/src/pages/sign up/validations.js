@@ -47,3 +47,86 @@ export function validateForm1(formData) {
   }
   return errors;
 }
+
+export function validateForm2(formData) {
+  let errors = {};
+  if (formData.country === "") {
+    errors = {
+      ...errors,
+      country: {
+        isError: true,
+        message: "Enter your country",
+      },
+    };
+  } else {
+    delete errors.country;
+  }
+  if (formData.city === "") {
+    errors = {
+      ...errors,
+      city: {
+        isError: true,
+        message: "Enter your city",
+      },
+    };
+  } else {
+    delete errors.city;
+  }
+  if (formData.phoneNumber === "") {
+    errors = {
+      ...errors,
+      phoneNumber: {
+        isError: true,
+        message: "Enter your phone number",
+      },
+    };
+  } else {
+    delete errors.phoneNumber;
+  }
+  return errors;
+}
+export function validateForm3(formData) {
+  let errors = {};
+  if (formData.username === "") {
+    errors = {
+      ...errors,
+      username: {
+        isError: true,
+        message: "Enter your username",
+      },
+    };
+  } else {
+    delete errors.username;
+  }
+  if (formData.password === "") {
+    errors = {
+      ...errors,
+        password: {
+        isError: true,
+        message: "Enter your password",
+        },
+    };
+    } else {
+    delete errors.password;
+    }
+    if (formData.rePassword === "") {
+    errors = {
+        ...errors,
+        rePassword: {
+        isError: true,
+        message: "Re-enter your password",
+        },
+    };
+    } else if (formData.rePassword !== formData.password) {
+    errors = {
+        ...errors,
+        rePassword: {
+        isError: true,
+        message: "Passwords do not match",
+        },
+    };
+    } else {
+    delete errors.rePassword;
+    }
+  return errors;
+}

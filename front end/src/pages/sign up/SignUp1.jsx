@@ -50,7 +50,7 @@ export default function SignUp1({ formData, setFormData, errors }) {
     </>
   );
 }
-export function SignUp2({ formData, setFormData }) {
+export function SignUp2({ formData, setFormData, errors }) {
   return (
     <>
       <Input
@@ -58,6 +58,7 @@ export function SignUp2({ formData, setFormData }) {
         type="text"
         placeholder="Select your country"
         value={formData.country}
+        error={errors.country}
         onChange={(e) => {
           e.target.value = e.target.value.replace(/[0-9]/g, "");
           setFormData({ ...formData, country: e.target.value });
@@ -68,6 +69,7 @@ export function SignUp2({ formData, setFormData }) {
         type="text"
         placeholder="Select your city"
         value={formData.city}
+        error={errors.city}
         onChange={(e) => {
           e.target.value = e.target.value.replace(/[0-9]/g, "");
           setFormData({ ...formData, city: e.target.value });
@@ -79,6 +81,7 @@ export function SignUp2({ formData, setFormData }) {
         pattern="\d{11}"
         placeholder="Enter your phone"
         value={formData.phoneNumber}
+        error={errors.phoneNumber}
         onChange={(e) =>
           setFormData({ ...formData, phoneNumber: e.target.value })
         }
@@ -86,7 +89,7 @@ export function SignUp2({ formData, setFormData }) {
     </>
   );
 }
-export function SignUp3({ formData, setFormData }) {
+export function SignUp3({ formData, setFormData, errors }) {
   return (
     <>
       <Input
@@ -94,6 +97,7 @@ export function SignUp3({ formData, setFormData }) {
         type="text"
         placeholder="Type a username"
         value={formData.username}
+        error={errors.username}
         onChange={(e) => setFormData({ ...formData, username: e.target.value })}
       />
       <Input
@@ -101,6 +105,7 @@ export function SignUp3({ formData, setFormData }) {
         type="password"
         placeholder="Type a password"
         value={formData.password}
+        error={errors.password}
         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
       />
       <Input
@@ -108,6 +113,7 @@ export function SignUp3({ formData, setFormData }) {
         type="password"
         placeholder="Re-type a password"
         value={formData.rePassword}
+        error={errors.rePassword}
         onChange={(e) =>
           setFormData({ ...formData, rePassword: e.target.value })
         }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./login.css";
 import Input from "../../components/Input";
-import NavBar from "../../components/NavBar";
+import NavBar from "../../components/Navbar";
 
 export default function Login() {
   let bgColor = "bg-gradient-to-tr from-blue-200 via-blue-400 to-blue-600";
