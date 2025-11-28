@@ -8,7 +8,7 @@ export default function Login() {
   const [userCount, setUserCount] = useState(0);
 
   useEffect(() => {
-    fetch("http://localhost:8000/E7gezly/login/") // call Django view
+    fetch("http://localhost:8000/account/login/") // call Django view
       .then((res) => res.json())
       .then((data) => {
         console.log(data); // see structure
