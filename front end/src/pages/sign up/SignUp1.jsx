@@ -1,9 +1,8 @@
 import "./signup.css";
 import Input from "../../components/Input";
-import SelectType from "../../components/selectType";
+import SelectOnly from "../../components/SelectOnly";
 
-
-export default function SignUp1({ formData, setFormData ,errors}) {
+export default function SignUp1({ formData, setFormData, errors }) {
   const optionsAcc = ["Attendee", "Organizer"];
 
   return (
@@ -15,11 +14,10 @@ export default function SignUp1({ formData, setFormData ,errors}) {
           placeholder="John"
           error={errors.firstName}
           value={formData.firstName}
-          onChange={(e) =>{
-            e.target.value = e.target.value.replace(/[0-9]/g,""); 
-            setFormData({ ...formData, firstName: e.target.value })
-          }
-          }
+          onChange={(e) => {
+            e.target.value = e.target.value.replace(/[0-9]/g, "");
+            setFormData({ ...formData, firstName: e.target.value });
+          }}
         />
         <Input
           title="Last Name"
@@ -27,11 +25,10 @@ export default function SignUp1({ formData, setFormData ,errors}) {
           placeholder="Doe"
           value={formData.lastName}
           error={errors.lastName}
-          onChange={(e) =>{
-            e.target.value = e.target.value.replace(/[0-9]/g,"");
-            setFormData({ ...formData, lastName: e.target.value })
-          }
-          }
+          onChange={(e) => {
+            e.target.value = e.target.value.replace(/[0-9]/g, "");
+            setFormData({ ...formData, lastName: e.target.value });
+          }}
         />
       </div>
       <Input
@@ -42,14 +39,12 @@ export default function SignUp1({ formData, setFormData ,errors}) {
         error={errors.email}
         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
       />
-      <SelectType
+      <SelectOnly
         title="Account Type"
         options={optionsAcc}
-        error={errors.accountType}
-        // value={formData.accountType}
-        onChange={(e) =>
-          setFormData({ ...formData, accountType: e.target.value })
-        }
+        placeholder="Select account type"
+        error={!formData.accountType}
+        onSelect={(option) => setFormData({ ...formData, accountType: option })}
       />
     </>
   );
@@ -63,8 +58,8 @@ export function SignUp2({ formData, setFormData }) {
         placeholder="Select your country"
         value={formData.country}
         onChange={(e) => {
-          e.target.value = e.target.value.replace(/[0-9]/g,"");
-          setFormData({ ...formData, country: e.target.value })
+          e.target.value = e.target.value.replace(/[0-9]/g, "");
+          setFormData({ ...formData, country: e.target.value });
         }}
       />
       <Input
@@ -73,9 +68,9 @@ export function SignUp2({ formData, setFormData }) {
         placeholder="Select your city"
         value={formData.city}
         onChange={(e) => {
-          e.target.value = e.target.value.replace(/[0-9]/g,"");
-          setFormData({ ...formData, city: e.target.value })
-      }}
+          e.target.value = e.target.value.replace(/[0-9]/g, "");
+          setFormData({ ...formData, city: e.target.value });
+        }}
       />
       <Input
         title="Phone Number"

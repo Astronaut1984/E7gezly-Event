@@ -8,9 +8,8 @@ export function validateForm1(formData) {
         message: "Enter your first name",
       },
     };
-  }
-  else{
-    console.log(errors)
+  } else {
+    console.log(errors);
     delete errors.firstName;
   }
   if (formData.lastName === "") {
@@ -21,10 +20,9 @@ export function validateForm1(formData) {
         message: "Enter your last name",
       },
     };
-}
-else{
-  delete errors.lastName;
-}
+  } else {
+    delete errors.lastName;
+  }
   if (formData.email === "") {
     errors = {
       ...errors,
@@ -33,8 +31,7 @@ else{
         message: "Enter your email",
       },
     };
-  }
-  else{
+  } else {
     delete errors.email;
   }
   if (formData.accountType === "") {
@@ -45,8 +42,7 @@ else{
         message: "Choose account type",
       },
     };
-  }
-  else{
+  } else {
     delete errors.accountType;
   }
   return errors;

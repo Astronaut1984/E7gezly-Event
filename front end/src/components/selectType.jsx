@@ -29,8 +29,10 @@ export default function SelectType({
         {title}
       </span>
       <input
-        className={`${error && "placeholder-red-400"} peer text-[16px] text-[#333333] leading-[1.2] block w-full h-[45px] bg-transparent pl-[7px] pr-[30px] border-0 outline-none`}
-        placeholder={error ? error.message :"Select Type"}
+        className={`${
+          error && "placeholder-red-400"
+        } peer text-[16px] text-[#333333] leading-[1.2] block w-full h-[45px] bg-transparent pl-[7px] pr-[30px] border-0 outline-none`}
+        placeholder={error ? error.message : "Select Type"}
         value={inputValue}
         onChange={(e) => {
           setInputValue(e.target.value);
