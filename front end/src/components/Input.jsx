@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function Input({ title, type, classNameVar, ...props }) {
+export default function Input({ title, error, type, classNameVar,placeholder, ...props }) {
   const [showPassword, togglePassword] = useState(false);
 
   function toggleShowPassword() {
@@ -12,8 +12,9 @@ export default function Input({ title, type, classNameVar, ...props }) {
         {title}
       </span>
       <input
-        className="peer text-[16px] text-[#333333] leading-[1.2] block w-full h-[45px] bg-transparent px-[7px]  border-0 outline-none"
+        className={`${error && "placeholder-red-400"} peer text-[16px] text-[#333333] leading-[1.2] block w-full h-[45px] bg-transparent px-[7px]  border-0 outline-none`}
         type={showPassword ? "text" : type}
+        placeholder={error? error.message : placeholder}
         {...props}
       />
       <span className="absolute block w-full h-full top-0 left-0 pointer-events-none border-b-2 border-[#d9d9d9] peer-focus:border-blue-600 transition-colors duration-300"></span>
