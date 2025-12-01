@@ -47,7 +47,7 @@ def checkEmail(request):
 def getType(request):
     data = json.loads(request.body)
     with connection.cursor() as cursor:
-        cursor.execute(""" SELECT status FROM api_user WHERE usernamr = %s""",[data.get("usernamr")])
+        cursor.execute(""" SELECT status FROM api_user WHERE username = %s""",[data.get("username")])
         result = cursor.fetchone()
         return JsonResponse({"accountType": result[0]})
 
