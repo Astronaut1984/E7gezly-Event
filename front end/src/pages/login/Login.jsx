@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "./login.css";
+import "../../index.css";
 import Input from "../../components/Input";
 import NavBar from "../../components/Navbar";
 

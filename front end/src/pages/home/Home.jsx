@@ -1,19 +1,19 @@
-import "./Home.css";
+import "../../index.css";
 import HomePic from "../../assets/home-page-init.jpg";
 import { Routes, Link } from "react-router-dom";
-import NavBar from "../../components/NavBar";
+import NavBar from "../../components/Navbar";
 import Event from "../../components/Event";
 import Category from "../../components/Category";
 import Footer from "../../components/Footer";
 
 export default function Home() {
-  let bgColor = "bg-gradient-to-b from-blue-900 via-blue-600 to-blue-400";
+  let bgColor = "bg-background";
   return (
     <main id="homeBackground" className={`${bgColor} w-full min-h-screen`}>
       <NavBar />
       <section
         id="Home"
-        className=" relative w-full h-screen bg-cover bg-center bg-no-repeat"
+        className="relative w-full h-screen bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url(${HomePic})`,
         }}
@@ -38,7 +38,7 @@ export default function Home() {
         className={`flex flex-col justify-center items-center w-full  bg-cover bg-center bg-no-repeat `}
       >
         <div className="w-full">
-          <h1 className="flex justify-center items-center m-10 text-4xl font-bold text-white">
+          <h1 className="flex justify-center items-center m-10 text-4xl font-bold text-foreground">
             Top Events
           </h1>
         </div>
@@ -81,7 +81,7 @@ export default function Home() {
         className={`pb-10 flex flex-col justify-center items-center w-full  bg-cover bg-center bg-no-repeat `}
       >
         <div className="w-full">
-          <h1 className="flex justify-center items-center m-10 text-4xl font-bold text-white">
+          <h1 className="flex justify-center items-center m-10 text-4xl font-bold text-foreground">
             Categories
           </h1>
         </div>
