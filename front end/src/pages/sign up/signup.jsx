@@ -2,7 +2,7 @@ import "../../index.css";
 import Input from "../../components/Input";
 import SelectType from "../../components/selectType";
 import { useState } from "react";
-import Navbar from "../../components/Navbar";
+import Navbar from "../../components/NavBar";
 import SignUp1, { SignUp2, SignUp3 } from "./SignUp1";
 import { validateForm1, validateForm2, validateForm3 } from "./validations";
 
@@ -69,13 +69,12 @@ export default function SignUp() {
   }
   return (
     <>
-      <Navbar />
       <main
-        className={`${bgColor} flex justify-center items-center w-full min-h-screen relative`}
+        className={`bg-background flex justify-center items-center w-full min-h-screen relative pt-16`}
       >
-        <div className="w-[500px] bg-white rounded-[10px] p-[65px] h-160 relative">
+        <div className="w-[500px] bg-card rounded-[10px] p-[65px] h-160 relative">
           <form className="w-full">
-            <span className="block font-bold text-[39px] leading-[1.2] text-center mb-4 text-blue-500">
+            <span className="block font-bold text-[39px] leading-[1.2] text-center mb-4 text-primary">
               E7gezly Event Create Account
             </span>
             {pageNumber > 1 && (
@@ -134,9 +133,9 @@ export default function SignUp() {
             </div>
 
             {/* Sign Up */}
-            <div className="flex justify-center gap-1 items-center pt-7.5 transition-colors duration-300">
+            <div className="flex justify-center gap-1 items-center pt-7.5 transition-colors duration-300 text-foreground">
               Already have an account?{" "}
-              <a href="#" className="hover:text-blue-600">
+              <a href="#" className="text-primary-hover">
                 {" "}
                 Login{" "}
               </a>

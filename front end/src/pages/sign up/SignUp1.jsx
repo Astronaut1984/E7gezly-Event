@@ -15,7 +15,7 @@ export default function SignUp1({ formData, setFormData, errors }) {
           error={errors.firstName}
           value={formData.firstName}
           onChange={(e) => {
-            e.target.value = e.target.value.replace(/[0-9]/g, "");
+            e.target.value = e.target.value.replace(/[^a-zA-Z]/g, "");
             setFormData({ ...formData, firstName: e.target.value });
           }}
         />
@@ -26,7 +26,7 @@ export default function SignUp1({ formData, setFormData, errors }) {
           value={formData.lastName}
           error={errors.lastName}
           onChange={(e) => {
-            e.target.value = e.target.value.replace(/[0-9]/g, "");
+            e.target.value = e.target.value.replace(/[^a-zA-Z]/g, "");
             setFormData({ ...formData, lastName: e.target.value });
           }}
         />
@@ -44,7 +44,7 @@ export default function SignUp1({ formData, setFormData, errors }) {
         options={optionsAcc}
         placeholder="Select account type"
         value={formData.accountType}
-        error={!formData.accountType}
+        error={errors.accountType}
         onSelect={(option) => setFormData({ ...formData, accountType: option })}
       />
     </>
@@ -60,7 +60,7 @@ export function SignUp2({ formData, setFormData, errors }) {
         value={formData.country}
         error={errors.country}
         onChange={(e) => {
-          e.target.value = e.target.value.replace(/[0-9]/g, "");
+          e.target.value = e.target.value.replace(/[^a-zA-Z]/g, "");
           setFormData({ ...formData, country: e.target.value });
         }}
       />
@@ -71,7 +71,7 @@ export function SignUp2({ formData, setFormData, errors }) {
         value={formData.city}
         error={errors.city}
         onChange={(e) => {
-          e.target.value = e.target.value.replace(/[0-9]/g, "");
+          e.target.value = e.target.value.replace(/[^a-zA-Z]/g, "");
           setFormData({ ...formData, city: e.target.value });
         }}
       />
