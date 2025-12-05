@@ -13,7 +13,7 @@ export default function Home() {
       <NavBar />
       <section
         id="Home"
-        className="relative w-full h-screen bg-cover bg-center bg-no-repeat"
+        className="relative w-full h-screen pt-16 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url(${HomePic})`,
         }}

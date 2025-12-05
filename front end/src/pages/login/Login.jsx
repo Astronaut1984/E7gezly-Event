@@ -21,7 +21,7 @@ export default function Login() {
     <>
       <NavBar />
       <main
-        className={`${bgColor} flex justify-center items-center w-full min-h-screen`}
+        className={`${bgColor} flex justify-center items-center w-full min-h-screen pt-16`}
       >
         <div className="w-[400px] bg-card rounded-[10px] p-[65px]">
           {/* Display backend data */}
