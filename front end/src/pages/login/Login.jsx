@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "../../index.css";
 import Input from "../../components/Input";
-import NavBar from "../../components/Navbar";
+import NavBar from "../../components/NavBar";
 
 export default function Login() {
   let bgColor = "bg-background";

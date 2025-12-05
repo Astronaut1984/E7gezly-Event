@@ -1,15 +1,15 @@
 import "../../index.css";
 import HomePic from "../../assets/home-page-init.jpg";
 import { Routes, Link } from "react-router-dom";
-import NavBar from "../../components/Navbar";
+import NavBar from "../../components/NavBar";
 import Event from "../../components/Event";
 import Category from "../../components/Category";
 import Footer from "../../components/Footer";
 
 export default function Home() {
-  let bgColor = "bg-background";
+  console.log("Home page rendered");
   return (
-    <main id="homeBackground" className={`${bgColor} w-full min-h-screen`}>
+    <main id="homeBackground" className="bg-background w-full min-h-screen">
       <NavBar />
       <section
         id="Home"
@@ -26,7 +26,7 @@ export default function Home() {
           <h1 className="text-white text-5xl font-bold">Events Made Simple</h1>
           <Link
             to="/Events"
-            className="transform hover:scale-110 transition duration-700 ease-in-out text-white text-3xl bg-blue-400 px-10 py-6 rounded-4xl hover:bg-blue-600 transition"
+            className="transform hover:scale-110 transition duration-700 ease-in-out text-white text-3xl bg-blue-400 px-10 py-6 rounded-4xl hover:bg-blue-600"
           >
             View Events
           </Link>
