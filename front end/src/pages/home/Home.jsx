@@ -5,6 +5,7 @@ import NavBar from "../../components/NavBar";
 import Event from "../../components/Event";
 import Category from "../../components/Category";
 import Footer from "../../components/Footer";
+import SaqyaConcert from "../../assets/Saqya.jpg"
 
 export default function Home() {
   let bgColor = "bg-gradient-to-b from-blue-900 via-blue-600 to-blue-400";
@@ -88,7 +89,7 @@ export default function Home() {
         <div className="w-full p-10 flex flexbox gap-10 justify-center items-center flex-wrap">
           <Category
             title="Concerts"
-            img="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%2Fid%2FOIP.4DkGUbOui9t5OI62K9aCtwHaEK%3Fpid%3DApi&f=1&ipt=655d029f755b2fca664704ff9156c6bcc84151e9c756e56e1d33aa6ec75b45f0&ipo=images"
+            img={SaqyaConcert}
           />
           <Category
             title="Comedy"
