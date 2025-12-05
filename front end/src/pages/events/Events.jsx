@@ -10,6 +10,7 @@ export default function Events() {
     const [showModalVenues, setShowModalVenues] = useState(false);
 
     const [selectedCategories, setSelectedCategories] = useState([]);
+    const [selectedVenues, setSelectedVenues] = useState([]);
 
     function showModalHandler(modal){
         if(modal === "Categories"){
@@ -26,7 +27,10 @@ export default function Events() {
       }} title="Select Category" 
         appliedItems={selectedCategories}
       />
-      <Modal open={showModalVenues} onClose={() => setShowModalVenues(false)} title="Select Venue" />
+      <Modal open={showModalVenues} onClose={(appliedVenues) => {
+        setShowModalVenues(false);
+        setSelectedVenues(appliedVenues)
+        }} title="Select Venue" />
       <NavBar />
       <div className="bg-background w-full h-max text-foreground translate-y-20">
         <div className="w-full flex justify-center p-5 space-x-2">
