@@ -159,18 +159,18 @@
   transform: translateX(0);
 
   &:hover {
-    transform: translateX(5px);
+    transform: translateX(10px);
     background-color: var(--card-dark);
     cursor: pointer;
   }
 
   &.selected {
-    transform: translateX(5px);
+    transform: translateX(10px);
     background-color: var(--primary);
   }
 
   &.selected:hover {
-    transform: translateX(5px);
+    transform: translateX(10px);
     background-color: var(--primary);
   }
 }

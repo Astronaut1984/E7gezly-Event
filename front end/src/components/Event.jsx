@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 
 export default function Event({ title, img, priceRange, venue, time }) {
+  
   return (
     <div className="flex flex-col items-center h-max text-card-foreground bg-card w-100 rounded-3xl">
       <div
