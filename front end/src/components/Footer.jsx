@@ -1,10 +1,10 @@
 export default function Footer() {
   return (
-    <footer className="w-full h-60 bg-gray-50 flex flex-row flex-wrap">
-      <div className="h-50 w-1/3 text-blue-600 text-2xl font-bold flex justify-center items-center">
+    <footer className="w-full h-60 bg-card flex flex-row flex-wrap">
+      <div className="h-50 w-1/3 text-primary text-2xl font-bold flex justify-center items-center">
         E7gezly Event
       </div>
-      <div className="h-50 w-1/3 text-blue-600 text-l font-bold flex justify-center items-center flex-col">
+      <div className="h-50 w-1/3 text-primary text-l font-bold flex justify-center items-center flex-col">
         <h1 className="w-100 text-xl flex justify-center items-center">
           Follow Us:
         </h1>
@@ -34,8 +34,8 @@ export default function Footer() {
           </li>
         </ul>
       </div>
-      <div className="h-50 w-1/3 text-blue-600 text-2xl font-bold flex justify-center items-center">
-        <button className="border-3 px-10 py-3 border-blue-600 rounded-2xl hover:bg-blue-600 hover:text-white transition duration-300 ease-in-out cursor-pointer">
+      <div className="h-50 w-1/3 text-primary text-2xl font-bold flex justify-center items-center">
+        <button className="border-3 px-10 py-3 border-primary rounded-2xl hover:bg-primary hover:text-white transition duration-300 ease-in-out cursor-pointer">
           Contact Us
         </button>
       </div>

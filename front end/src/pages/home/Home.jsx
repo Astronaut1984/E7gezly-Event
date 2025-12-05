@@ -1,4 +1,4 @@
-import "./Home.css";
+import "../../index.css";
 import HomePic from "../../assets/home-page-init.jpg";
 import { Routes, Link } from "react-router-dom";
 import NavBar from "../../components/NavBar";
@@ -8,13 +8,13 @@ import Footer from "../../components/Footer";
 import SaqyaConcert from "../../assets/Saqya.jpg"
 
 export default function Home() {
-  let bgColor = "bg-gradient-to-b from-blue-900 via-blue-600 to-blue-400";
+  console.log("Home page rendered");
   return (
-    <main id="homeBackground" className={`${bgColor} w-full min-h-screen`}>
+    <main id="homeBackground" className="bg-background w-full min-h-screen">
       <NavBar />
       <section
         id="Home"
-        className=" relative w-full h-screen bg-cover bg-center bg-no-repeat"
+        className="relative w-full h-screen bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url(${HomePic})`,
         }}
@@ -27,7 +27,7 @@ export default function Home() {
           <h1 className="text-white text-5xl font-bold">Events Made Simple</h1>
           <Link
             to="/Events"
-            className="transform hover:scale-110 transition duration-700 ease-in-out text-white text-3xl bg-blue-400 px-10 py-6 rounded-4xl hover:bg-blue-600 transition"
+            className="transform hover:scale-110 transition duration-700 ease-in-out text-white text-3xl bg-blue-400 px-10 py-6 rounded-4xl hover:bg-blue-600"
           >
             View Events
           </Link>
@@ -39,7 +39,7 @@ export default function Home() {
         className={`flex flex-col justify-center items-center w-full  bg-cover bg-center bg-no-repeat `}
       >
         <div className="w-full">
-          <h1 className="flex justify-center items-center m-10 text-4xl font-bold text-white">
+          <h1 className="flex justify-center items-center m-10 text-4xl font-bold text-foreground">
             Top Events
           </h1>
         </div>
@@ -82,7 +82,7 @@ export default function Home() {
         className={`pb-10 flex flex-col justify-center items-center w-full  bg-cover bg-center bg-no-repeat `}
       >
         <div className="w-full">
-          <h1 className="flex justify-center items-center m-10 text-4xl font-bold text-white">
+          <h1 className="flex justify-center items-center m-10 text-4xl font-bold text-foreground">
             Categories
           </h1>
         </div>

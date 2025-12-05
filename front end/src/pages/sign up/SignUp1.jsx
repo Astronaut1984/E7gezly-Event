@@ -1,4 +1,4 @@
-import "./signup.css";
+import "../../index.css";
 import Input from "../../components/Input";
 import SelectOnly from "../../components/SelectOnly";
 

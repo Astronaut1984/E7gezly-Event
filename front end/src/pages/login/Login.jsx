@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import "./login.css";
+import "../../index.css";
 import Input from "../../components/Input";
-import NavBar from "../../components/Navbar";
+import NavBar from "../../components/NavBar";
 
 export default function Login() {
-  let bgColor = "bg-gradient-to-tr from-blue-200 via-blue-400 to-blue-600";
+  let bgColor = "bg-background";
   const [userCount, setUserCount] = useState(0);
 
   useEffect(() => {
@@ -23,14 +23,14 @@ export default function Login() {
       <main
         className={`${bgColor} flex justify-center items-center w-full min-h-screen`}
       >
-        <div className="w-[400px] bg-white rounded-[10px] p-[65px]">
+        <div className="w-[400px] bg-card rounded-[10px] p-[65px]">
           {/* Display backend data */}
-          <div className="text-center mb-4 text-blue-500">
+          <div className="text-center mb-4 text-primary">
             Users in DB: {userCount}
           </div>
 
           <form className="w-full">
-            <span className="block font-bold leading-[1.2] text-center mb-10 text-blue-500">
+            <span className="block font-bold leading-[1.2] text-3xl text-center mb-10 text-primary">
               E7gezly Event
             </span>
             <Input
@@ -47,8 +47,11 @@ export default function Login() {
             />
 
             {/* Forget password */}
-            <div className="text-right hover:text-blue-600 transition-colors duration-300">
-              <a href="#"> Forgot password? </a>
+            <div className="text-right">
+              <a href="#" className="text-primary-hover">
+                {" "}
+                Forgot password?{" "}
+              </a>
             </div>
 
             {/* Login Button */}
@@ -56,7 +59,7 @@ export default function Login() {
               <div className="w-full block relative z-1 rounded-[25px] overflow-hidden">
                 <button
                   className={
-                    "bg-blue-400 transition-colors duration-300 text-[16px] text-white flex justify-center items-center w-full h-[50px] border-0 cursor-pointer font-semibold hover:bg-blue-600"
+                    "bg-primary-hover text-[16px] text-white flex justify-center items-center w-full h-[50px] border-0 cursor-pointer font-semibold "
                   }
                 >
                   Login
@@ -65,8 +68,11 @@ export default function Login() {
             </div>
 
             {/* Signup */}
-            <div className="flex flex-col items-center pt-7.5 transition-colors duration-300 hover:text-blue-600">
-              <a href="#"> Sign Up </a>
+            <div className="flex flex-col items-center pt-7.5 ">
+              <a href="#" className="text-primary-hover">
+                {" "}
+                Sign Up{" "}
+              </a>
             </div>
           </form>
         </div>
