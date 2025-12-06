@@ -1,132 +1,115 @@
-export function validateForm1(formData) {
-  let errors = {};
-  if (formData.firstName === "") {
-    errors = {
-      ...errors,
-      firstName: {
-        isError: true,
-        message: "Enter your first name",
-      },
-    };
+// Step 1: Async because it calls backend
+export async function validateForm1(formData) {
+  const errors = {};
+
+  // First Name
+  if (!formData.firstName) {
+    errors.firstName = { isError: true, message: "Enter your first name" };
   } else {
-    console.log(errors);
     delete errors.firstName;
   }
-  if (formData.lastName === "") {
-    errors = {
-      ...errors,
-      lastName: {
-        isError: true,
-        message: "Enter your last name",
-      },
-    };
+
+  // Last Name
+  if (!formData.lastName) {
+    errors.lastName = { isError: true, message: "Enter your last name" };
   } else {
     delete errors.lastName;
   }
-  if (formData.email === "") {
-    errors = {
-      ...errors,
-      email: {
-        isError: true,
-        message: "Enter your email",
-      },
-    };
+
+  // Email
+  if (!formData.email) {
+    errors.email = { isError: true, message: "Enter your email" };
   } else {
-    delete errors.email;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      errors.email = { isError: true, message: "Invalid email format" };
+    } else {
+      try {
+        const response = await fetch(
+          "http://localhost:8000/account/checkemail/",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: formData.email }),
+          }
+        );
+        const data = await response.json();
+        if (data.emailExists) {
+          errors.email = {
+            isError: true,
+            message: "This email is already registered",
+          };
+        } else {
+          delete errors.email;
+        }
+      } catch (err) {
+        console.error("Error checking email:", err);
+        errors.email = {
+          isError: true,
+          message: "Unable to verify email",
+        };
+      }
+    }
   }
-  if (formData.accountType === "") {
-    errors = {
-      ...errors,
-      accountType: {
-        isError: true,
-        message: "Choose account type",
-      },
-    };
+
+  // Account Type
+  if (!formData.accountType) {
+    errors.accountType = { isError: true, message: "Choose account type" };
   } else {
     delete errors.accountType;
   }
+
   return errors;
 }
 
+// Step 2: Sync validations for form 2
 export function validateForm2(formData) {
-  let errors = {};
-  if (formData.country === "") {
-    errors = {
-      ...errors,
-      country: {
-        isError: true,
-        message: "Enter your country",
-      },
-    };
+  const errors = {};
+
+  if (!formData.country) {
+    errors.country = { isError: true, message: "Enter your country" };
   } else {
     delete errors.country;
   }
-  if (formData.city === "") {
-    errors = {
-      ...errors,
-      city: {
-        isError: true,
-        message: "Enter your city",
-      },
-    };
+
+  if (!formData.city) {
+    errors.city = { isError: true, message: "Enter your city" };
   } else {
     delete errors.city;
   }
-  if (formData.phoneNumber === "") {
-    errors = {
-      ...errors,
-      phoneNumber: {
-        isError: true,
-        message: "Enter your phone number",
-      },
-    };
+
+  if (!formData.phoneNumber) {
+    errors.phoneNumber = { isError: true, message: "Enter your phone number" };
   } else {
     delete errors.phoneNumber;
   }
+
   return errors;
 }
+
+// Step 3: Sync validations for form 3
 export function validateForm3(formData) {
-  let errors = {};
-  if (formData.username === "") {
-    errors = {
-      ...errors,
-      username: {
-        isError: true,
-        message: "Enter your username",
-      },
-    };
+  const errors = {};
+
+  if (!formData.username) {
+    errors.username = { isError: true, message: "Enter your username" };
   } else {
     delete errors.username;
   }
-  if (formData.password === "") {
-    errors = {
-      ...errors,
-        password: {
-        isError: true,
-        message: "Enter your password",
-        },
-    };
-    } else {
+
+  if (!formData.password) {
+    errors.password = { isError: true, message: "Enter your password" };
+  } else {
     delete errors.password;
-    }
-    if (formData.rePassword === "") {
-    errors = {
-        ...errors,
-        rePassword: {
-        isError: true,
-        message: "Re-enter your password",
-        },
-    };
-    } else if (formData.rePassword !== formData.password) {
-    errors = {
-        ...errors,
-        rePassword: {
-        isError: true,
-        message: "Passwords do not match",
-        },
-    };
-    } else {
+  }
+
+  if (!formData.rePassword) {
+    errors.rePassword = { isError: true, message: "Re-enter your password" };
+  } else if (formData.rePassword !== formData.password) {
+    errors.rePassword = { isError: true, message: "Passwords do not match" };
+  } else {
     delete errors.rePassword;
-    }
+  }
+
   return errors;
 }

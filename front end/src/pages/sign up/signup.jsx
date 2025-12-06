@@ -22,11 +22,11 @@ export default function SignUp() {
     password: "",
     rePassword: "",
   });
-  function handleSubmit() {
+  async function handleSubmit() {
     // You can do validation here
     console.log("Final form data:", formData);
 
-    let formErrors = validateForm3(formData);
+    let formErrors = await validateForm3(formData);
     if (Object.keys(formErrors).length !== 0) {
       setErrors(formErrors);
       return;
@@ -42,9 +42,9 @@ export default function SignUp() {
       .then((data) => console.log(data))
       .catch((err) => console.error(err));
   }
-  function nextPageHandeler() {
+  async function nextPageHandeler() {
     if (pageNumber === 1) {
-      let formErrors = validateForm1(formData);
+      let formErrors = await validateForm1(formData);
       console.log(formErrors);
       console.log(formData);
       if (Object.keys(formErrors).length === 0) {
@@ -90,6 +90,7 @@ export default function SignUp() {
                 formData={formData}
                 setFormData={setFormData}
                 errors={errors}
+                setErrors={setErrors}
               />
             )}
             {pageNumber === 2 && (

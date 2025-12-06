@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'api',
     'corsheaders',
     'account',
-    'event'
+    'Event'
 ]
 
 MIDDLEWARE = [
