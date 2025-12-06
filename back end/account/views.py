@@ -34,7 +34,7 @@ def signup(request):
     else:
         return JsonResponse({"error": "Only POST method allowed"}, status=405)
 
-
+@csrf_exempt
 def checkEmail(request):
     data = json.loads(request.body)  
     with connection.cursor() as cursor:
@@ -42,7 +42,7 @@ def checkEmail(request):
         result = cursor.fetchone()
         if result[0] == 1:
             return JsonResponse({"emailExists": True})
-        else : return JsonResponse({"emailExists": False})
+        return JsonResponse({"emailExists": False})
         
 def getType(request):
     data = json.loads(request.body)
@@ -51,6 +51,7 @@ def getType(request):
         result = cursor.fetchone()
         return JsonResponse({"accountType": result[0]})
 
+@csrf_exempt
 def login_view(request):
     if request.method == "POST":
         data = json.loads(request.body)    
@@ -70,7 +71,7 @@ def login_view(request):
             return JsonResponse({"success": False, "message": "User not found"})
     return JsonResponse({"error": "Invalid request"}, status=400)
 
-    
+@csrf_exempt    
 def checkUsername(request):
     username = json.loads(request.body).get("username")
     if User.objects.filter(username=username).exists():

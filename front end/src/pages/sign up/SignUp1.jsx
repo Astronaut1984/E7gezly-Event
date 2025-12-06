@@ -113,7 +113,7 @@ export function SignUp3({ formData, setFormData, errors }) {
         placeholder="Type a password"
         value={formData.password}
         error={errors.password}
-        onChange={(e) => setFormData({ ...formData, password: e.gittarget.value })}
+        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
       />
       <Input
         title="Reconfirm Password"

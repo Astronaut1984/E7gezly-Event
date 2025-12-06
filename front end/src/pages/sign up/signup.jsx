@@ -29,6 +29,12 @@ export default function SignUp() {
     let formErrors = await validateForm3(formData);
     if (Object.keys(formErrors).length !== 0) {
       setErrors(formErrors);
+      if (formErrors.username) {
+        setFormData((prevData) => ({
+          ...prevData,
+          username: "", // <--- This deletes the text you wrote
+        }));
+      }
       return;
     }
 
@@ -41,6 +47,8 @@ export default function SignUp() {
       .then((res) => res.json())
       .then((data) => console.log(data))
       .catch((err) => console.error(err));
+    //change the path to login page
+    window.location.href = "/login";
   }
   async function nextPageHandeler() {
     if (pageNumber === 1) {
@@ -51,6 +59,12 @@ export default function SignUp() {
         setPageNumber((currPageNumber) => currPageNumber + 1);
       } else {
         setErrors(formErrors);
+        if (formErrors.email) {
+          setFormData((prevData) => ({
+            ...prevData,
+            email: "", // <--- This deletes the text you wrote
+          }));
+        }
         return;
       }
     } else if (pageNumber === 2) {

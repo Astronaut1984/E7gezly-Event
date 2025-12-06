@@ -20,8 +20,8 @@ export async function validateForm1(formData) {
   if (!formData.email) {
     errors.email = { isError: true, message: "Enter your email" };
   } else {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
+    const input = document.querySelector('input[type="email"]');
+    if (input && !input.validity.valid) {
       errors.email = { isError: true, message: "Invalid email format" };
     } else {
       try {
@@ -88,7 +88,7 @@ export function validateForm2(formData) {
 }
 
 // Step 3: Sync validations for form 3
-export function validateForm3(formData) {
+export async function validateForm3(formData) {
   const errors = {};
 
   if (!formData.username) {
@@ -101,6 +101,31 @@ export function validateForm3(formData) {
     errors.password = { isError: true, message: "Enter your password" };
   } else {
     delete errors.password;
+    try {
+      const response = await fetch(
+        "http://localhost:8000/account/checkusername/",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: formData.username }),
+        }
+      );
+      const data = await response.json();
+      if (data.usernameExists) {
+        errors.username = {
+          isError: true,
+          message: "This username is already registered",
+        };
+      } else {
+        delete errors.username;
+      }
+    } catch (err) {
+      console.error("Error checking username:", err);
+      errors.username = {
+        isError: true,
+        message: "Unable to verify username",
+      };
+    }
   }
 
   if (!formData.rePassword) {
