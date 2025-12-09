@@ -21,6 +21,10 @@ export default function Login() {
       .catch((err) => console.error(err));
   }, []);
 
+  useEffect(() => {
+    console.log(user);
+  }, [user])
+
   // 2. Create a dedicated function for the button click
   async function handleLogin(e) {
     e.preventDefault(); // Good practice to prevent reloads
@@ -32,14 +36,16 @@ export default function Login() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
-      });
+      }).then((response) => response.json());
 
-      const data = await response.json();
+      const data = await response;
 
       if (data.success) {
         setUser(data.user);
         // This is just a placeholder to make sure the user is logged in, replace in the future
-        alert(`Login Successful!\nName: ${user.first_name} ${user.last_name}\n${user.username}\n${user.city}, ${user.country}`);
+        alert(
+          `Login Successful!\nName: ${data.user.first_name} ${data.user.last_name}\n${data.user.username}\n${data.user.city}, ${data.user.country}`
+        );
         // Redirect user here if needed
       } else {
         // Show error from backend (e.g., "User not found")
