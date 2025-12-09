@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import "../../index.css";
 import Input from "../../components/Input";
 import NavBar from "../../components/NavBar";
+import { UserContext } from "../../UserContext.jsx";
 
 export default function Login() {
   let bgColor = "bg-background";
   const [userCount, setUserCount] = useState(0);
-
+  const { user, setUser } = useContext(UserContext);
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
 
@@ -36,8 +37,9 @@ export default function Login() {
       const data = await response.json();
 
       if (data.success) {
-        alert("Login Successful!");
-        Login();
+        setUser(data.user);
+        // This is just a placeholder to make sure the user is logged in, replace in the future
+        alert(`Login Successful!\nName: ${user.first_name} ${user.last_name}\n${user.username}\n${user.city}, ${user.country}`);
         // Redirect user here if needed
       } else {
         // Show error from backend (e.g., "User not found")
