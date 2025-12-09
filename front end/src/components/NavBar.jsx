@@ -1,26 +1,15 @@
 import { Routes, NavLink, useLocation } from "react-router-dom";
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleTheme,setTheme } from "@/store/themeSlice";
 
 export default function NavBar() {
-  const HOVER_COLOR = "hover:text-blue-950";
-  const [isDark, setIsDark] = useState(() => {
-    try {
-      const saved = localStorage.getItem("theme");
-      if (saved) return saved === "dark";
-    } catch (e) {}
-    return (
-      typeof window !== "undefined" &&
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-    );
-  });
-  const [darkMode, toggleDarkMode] = useState(true);
+  const dispatch = useDispatch();
+  dispatch(setTheme(useSelector((state) => state.theme.dark)))
+  const dark = useSelector((state) => state.theme.dark);
+
   const location = useLocation();
 
-  function toggleDark() {
-    setIsDark((v) => !v);
-    document.documentElement.classList.toggle("dark");
-  }
   return (
     <div className="z-10 fixed w-full bg-card text-primary items-center flex justify-between p-1">
       <div className="ml-5">
@@ -35,12 +24,11 @@ export default function NavBar() {
         <NavBtn link="/login" title="Login" />
         <NavBtn link="/signup" title="Sign up" />
         <button
-          onClick={toggleDark}
-          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          onClick={() => dispatch(toggleTheme())}
           className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
         >
           <i
-            className={`fa-solid ${isDark ? "fa-sun" : "fa-moon"} text-base`}
+            className={`fa-solid ${dark ? "fa-sun" : "fa-moon"} text-base`}
           ></i>
         </button>
       </nav>
