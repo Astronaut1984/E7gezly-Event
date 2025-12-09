@@ -7,12 +7,12 @@ import Category from "../../components/Category";
 import Footer from "../../components/Footer";
 import SaqyaConcert from "../../assets/Saqya.jpg";
 import { useContext } from "react";
-import { UserContext } from "../../contexts/UserContext";
+import { UserContext } from "../../UserContext";
 
 export default function Home() {
   const userContext = useContext(UserContext);
-  //console.log(userContext);
-  //console.log("Home page rendered");
+  console.log(userContext);
+  console.log("Home page rendered");
   return (
     <main id="homeBackground" className="bg-background w-full min-h-screen">
       <NavBar />
