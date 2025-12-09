@@ -8,10 +8,15 @@ import Events from "./pages/events/Events.jsx";
 import "./index.css";
 import User from "./pages/dashboards/user-dashboard/User";
 import AdminEvents from "./pages/dashboards/admin-dashboard/adminEvents";
-import { Admin, AdminSideBar } from "./pages/dashboards/admin-dashboard/Admin";
+import { Admin, adminItems } from "./pages/dashboards/admin-dashboard/Admin";
 import Layout from "./components/Layout";
 import AdminVenues from "./pages/dashboards/admin-dashboard/adminVenues";
 import AdminOrg from "./pages/dashboards/admin-dashboard/adminOrg";
+import { DashboardSideBar } from "./components/DashboardComponents/DashboardSideBar";
+import { Organizer, orgItems } from "./pages/dashboards/org-dashboard/Organizer";
+import OrganizerAddEvents from "./pages/dashboards/org-dashboard/OrganizerAddEvents";
+import OrganizerMyEvents from "./pages/dashboards/org-dashboard/OrganizerMyEvents";
+import OrganizerFollowers from "./pages/dashboards/org-dashboard/OrganizerFollowers";
 
 function App() {
   return (
@@ -21,11 +26,17 @@ function App() {
       <Route path="/signup" element={<SignUp />} />
       <Route path="/events" element={<Events />} />
       <Route path="/user" element={<User />} />
-      <Route path="/admin" element={<Layout sidebar={<AdminSideBar />} />}>
+      <Route path="/admin" element={<Layout sidebar={<DashboardSideBar items={adminItems} />} />}>
         <Route path="/admin" index element={<Admin />} />
         <Route path="/admin/venues" element={<AdminVenues />} />
         <Route path="/admin/events" element={<AdminEvents />} />
         <Route path="/admin/org" element={<AdminOrg />} />
+      </Route>
+      <Route path="/org" element={<Layout sidebar={<DashboardSideBar items={orgItems} />} />}>
+        <Route path="/org" index element={<Organizer />} />
+        <Route path="/org/add-events" element={<OrganizerAddEvents />} />
+        <Route path="/org/followers" element={<OrganizerFollowers />} />
+        <Route path="/org/my-events" element={<OrganizerMyEvents />} />
       </Route>
     </Routes>
   );

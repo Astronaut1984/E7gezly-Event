@@ -5,6 +5,7 @@ import { useState } from "react";
 import Navbar from "../../components/NavBar";
 import SignUp1, { SignUp2, SignUp3 } from "./SignUp1";
 import { validateForm1, validateForm2, validateForm3 } from "./validations";
+import { NavLink } from "react-router-dom";
 
 export default function SignUp() {
   const bgColor = "bg-gradient-to-tr from-blue-200 via-blue-400 to-blue-600";
@@ -150,10 +151,10 @@ export default function SignUp() {
             {/* Sign Up */}
             <div className="flex justify-center gap-1 items-center pt-7.5 transition-colors duration-300 text-foreground">
               Already have an account?{" "}
-              <a href="#" className="text-primary-hover">
+              <NavLink to="/login" className="text-primary-hover">
                 {" "}
                 Login{" "}
-              </a>
+              </NavLink>
             </div>
           </form>
         </div>
