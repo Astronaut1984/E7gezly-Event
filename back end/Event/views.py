@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.db import connection
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from api.models import Event, User, Venue
+from api.models import Event, User, Venue, TicketType
 
 @csrf_exempt
 def addEvent(request):
@@ -28,20 +28,32 @@ def addEvent(request):
         event.buses.set(json.loads(request.POST["buses"]))
 
     return JsonResponse({"message": "Event created", "id": event.event_id})
-def getVenue(request):
+
+def getVenues(request):
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM api_venue")
         result = cursor.fetchone()
     return JsonResponse({"venue": result})
 
-def getCategory(request):
+def getCategories(request):
     with connection.cursor() as cursor:
-        cursor.execute("SELECT distinct(category) FROM api_event")
+        cursor.execute("SELECT * FROM api_category")
         result = cursor.fetchone()
     return JsonResponse({"categories": result})
 
-def getEvent(request):
+def getEvents(request):
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM api_event")
         result = cursor.fetchone()
     return JsonResponse({"Events": result})
+
+def addTicketType(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST only"}, status=405)
+    ticket = TicketType.objects.create(
+        name=request.POST("name"),
+        price=request.POST("price"),
+        quantity=request.POST("quantity"),
+        event=request.POST("event")
+    )
+    return JsonResponse({"message": "Ticket Type created", "id": ticket.ticket_type_id})

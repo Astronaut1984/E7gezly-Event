@@ -64,9 +64,7 @@ def login_view(request):
                 request.session['user_country'] = user.country
                 request.session['user_first_name'] = user.first_name
                 request.session['user_last_name'] = user.last_name
-                return JsonResponse({
-                    "success": True,
-                    "message": "Logged in",
+                return JsonResponse({ "success": True, "message": "Logged in",
                     "user": {
                         "username": user.username,
                         "first_name": user.first_name,
