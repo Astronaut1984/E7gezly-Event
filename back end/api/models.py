@@ -48,17 +48,17 @@ class Performer(models.Model):
 
 class Event(models.Model):
     event_id = models.AutoField(primary_key=True)
-    name = models.TextField()
+    name = models.CharField(max_length=255)
     description = models.TextField()
     category = models.CharField(max_length=255, null=True, blank=True)
     status = models.CharField(max_length=255, null=True, blank=True)
-    start_date = models.DateField(null=True, blank=True)
+    start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
-    owner = models.ForeignKey(User, on_delete=models.RESTRICT, to_field='username', db_column='owner_Username', related_name='events')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, to_field='username', db_column='owner_Username', related_name='events')
     location = models.ForeignKey(Venue, on_delete=models.SET_NULL, null=True, blank=True, db_column='Location_Id')
     performers = models.ManyToManyField(Performer, through='HasPerformer')
     buses = models.ManyToManyField(Vehicle, through='HasBus')
-    banner = models.ImageField(default="fallback.png", blank=True)
+    banner = models.ImageField(default="fallback.png")
 
     def __str__(self):
         return self.name
