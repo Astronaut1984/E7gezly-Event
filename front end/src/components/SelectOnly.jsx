@@ -20,11 +20,11 @@ export default function SelectOnly({
 
   return (
     <div className={`w-full relative mb-[23px] ${classNameVar}`}>
-      <span className="text-[14px] text-secondary-foreground leading-normal pl-[7px]">
+      <span className="text-[14px] text-card-foreground leading-normal pl-[7px]">
         {title}
       </span>
       <div
-        className={`peer text-[16px] text-secondary-foreground bg-transparent w-full h-[45px] px-[7px] border border-card rounded-md flex items-center justify-between cursor-pointer ${
+        className={`peer text-[16px] text-card-foreground bg-transparent w-full h-[45px] px-[7px] border border-card rounded-md flex items-center justify-between cursor-pointer ${
           error ? "border-destructive" : "border-secondary"
         }`}
         onClick={() => setOpen(!open)}

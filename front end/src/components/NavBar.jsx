@@ -3,18 +3,18 @@ import { useState } from "react";
 
 export default function NavBar() {
   const HOVER_COLOR = "hover:text-blue-950";
-    const [isDark, setIsDark] = useState(() => {
-      try {
-        const saved = localStorage.getItem("theme");
-        if (saved) return saved === "dark";
-      } catch (e) {}
-      return (
-        typeof window !== "undefined" &&
-        window.matchMedia &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches
-      );
-    });
-  const [darkMode, toggleDarkMode] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    try {
+      const saved = localStorage.getItem("theme");
+      if (saved) return saved === "dark";
+    } catch (e) {}
+    return (
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    );
+  });
+  const [darkMode, toggleDarkMode] = useState(true);
   const location = useLocation();
 
   function toggleDark() {
@@ -34,13 +34,15 @@ export default function NavBar() {
       <nav className="mx-5 max-w-5xl flex items-center gap-6 py-4">
         <NavBtn link="/login" title="Login" />
         <NavBtn link="/signup" title="Sign up" />
-          <button
-            onClick={toggleDark}
-            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-            className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
-          >
-            <i className={`fa-solid ${isDark ? "fa-sun" : "fa-moon"} text-base`}></i>
-          </button>
+        <button
+          onClick={toggleDark}
+          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
+        >
+          <i
+            className={`fa-solid ${isDark ? "fa-sun" : "fa-moon"} text-base`}
+          ></i>
+        </button>
       </nav>
     </div>
   );
@@ -50,7 +52,9 @@ export default function NavBar() {
       <NavLink
         to={props.link}
         className={({ isActive }) =>
-          isActive ? "bg-primary px-4 pb-px rounded-md text-white" : "text-primary-hover"
+          isActive
+            ? "bg-primary px-4 pb-px rounded-md text-white"
+            : "text-primary-hover"
         }
       >
         {props.title}

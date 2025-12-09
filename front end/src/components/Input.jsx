@@ -15,13 +15,13 @@ export default function Input({
   }
   return (
     <div className={`w-full relative mb-[23px] ${classNameVar}`}>
-      <span className="text-[14px] text-secondary-foreground leading-normal pl-[7px]">
+      <span className="text-[14px] text-card-foreground leading-normal pl-[7px]">
         {title}
       </span>
       <input
         className={`${
           error && "placeholder-destructive"
-        } peer text-[16px] text-secondary-foreground leading-[1.2] block w-full h-[45px] bg-transparent px-[7px]  border-0 outline-none`}
+        } peer text-[16px] text-card-foreground leading-[1.2] block w-full h-[45px] bg-transparent px-[7px]  border-0 outline-none`}
         type={showPassword ? "text" : type}
         placeholder={error ? error.message : placeholder}
         {...props}
