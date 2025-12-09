@@ -58,6 +58,7 @@ class Event(models.Model):
     location = models.ForeignKey(Venue, on_delete=models.SET_NULL, null=True, blank=True, db_column='Location_Id')
     performers = models.ManyToManyField(Performer, through='HasPerformer')
     buses = models.ManyToManyField(Vehicle, through='HasBus')
+    banner = models.ImageField(default="fallback.png", blank=True)
 
     def __str__(self):
         return self.name
