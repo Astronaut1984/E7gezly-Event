@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout";
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
+import { Calendar, Home, Ticket, Search, Settings } from "lucide-react";
 import {
   SidebarContent,
   SidebarGroup,
@@ -9,77 +9,71 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   Sidebar,
+  SidebarHeader,
 } from "@/components/ui/sidebar";
-import NavBar from "@/components/NavBar";
-import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleTheme, setTheme } from "@/store/themeSlice";
+import { NavLink } from "react-router-dom";
 
-export default function Admin() {
-  const [isDark, toggleDarkMode] = useState(true);
-
-  function toggleDark() {
-    toggleDarkMode((prev) => !prev);
-    document.documentElement.classList.toggle("dark");
-  }
-
-  return (
-    <Layout sidebar={<AdminSideBar />}>
-      <h1>Hello World</h1>{" "}
-      <button
-        onClick={toggleDark}
-        aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-        className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
-      >
-        <i
-          className={`fa-solid ${isDark ? "fa-sun" : "fa-moon"} text-base`}
-        ></i>
-      </button>
-    </Layout>
-  );
+export function Admin() {
+  return <h1>Admin Page Main</h1>;
 }
 
 const items = [
   {
     title: "Home",
-    url: "#",
+    url: "/admin",
     icon: Home,
   },
   {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
+    title: "Events",
+    url: "/admin/events",
+    icon: Ticket,
   },
   {
-    title: "Calendar",
-    url: "#",
+    title: "Venues",
+    url: "/admin/venues",
     icon: Calendar,
   },
   {
-    title: "Search",
-    url: "#",
+    title: "Organizers",
+    url: "/admin/org",
     icon: Search,
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
   },
 ];
 
 export function AdminSideBar() {
+  const dispatch = useDispatch();
+  dispatch(setTheme(useSelector((state) => state.theme.dark)));
+  const dark = useSelector((state) => state.theme.dark);
+
   return (
     <Sidebar>
+      <SidebarHeader>
+        <div className="flex justify-between">
+          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <button
+            onClick={() => dispatch(toggleTheme())}
+            aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+            className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
+          >
+            <i
+              className={`fa-solid ${dark ? "fa-sun" : "fa-moon"} text-base`}
+            ></i>
+          </button>
+        </div>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a href={item.url}>
+                    <NavLink to={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
