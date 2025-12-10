@@ -89,19 +89,21 @@ class Discount(models.Model):
     end_time = models.DateTimeField(null=True, blank=True)
 
 class TicketType(models.Model):
-    pk = models.CompositePrimaryKey('event', 'ticket_type_id')
+    ticket_type_id = models.AutoField(primary_key=True)
     event = models.ForeignKey(Event, on_delete=models.RESTRICT, db_column='Event_Id')
-    ticket_type_id = models.AutoField()
     quantity = models.IntegerField(null=True, blank=True)
     price = models.IntegerField()
     name = models.TextField()
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['event', 'name'], name='unique_ticket_type_per_event')]
 
 class Ticket(models.Model):
-    pk = models.CompositePrimaryKey('event', 'ticket_type_id', 'attendee')
-    event = models.ForeignKey(Event, on_delete=models.RESTRICT, db_column='Event_Id')
-    ticket_type_id = models.IntegerField(db_column='Ticket_Type_Id')
+    ticket_id = models.AutoField(primary_key=True)
+    ticket_type = models.ForeignKey(TicketType, on_delete=models.RESTRICT, default=None)
     attendee = models.ForeignKey(User, on_delete=models.RESTRICT, to_field='username', db_column='Attendee_Username')
     quantity = models.IntegerField()
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['ticket_type', 'attendee'], name='unique_ticket_per_type_per_attendee')]
 
 class LostItem(models.Model):
     pk = models.CompositePrimaryKey('event', 'lost_id')

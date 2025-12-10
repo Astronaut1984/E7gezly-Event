@@ -3,6 +3,7 @@ from django.db import connection
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from api.models import Event, User, Venue, TicketType
+import json
 
 @csrf_exempt
 def addEvent(request):
