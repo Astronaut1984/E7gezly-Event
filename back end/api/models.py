@@ -22,8 +22,7 @@ class Venue(models.Model):
     city = models.CharField(max_length=255, null=True, blank=True)
     details = models.TextField(null=True, blank=True)
     type = models.CharField(max_length=255, null=True, blank=True)
-    start_date = models.DateField(null=True, blank=True)
-    end_date = models.DateField(null=True, blank=True)
+    available = models.BooleanField(default=True)
     capacity = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
