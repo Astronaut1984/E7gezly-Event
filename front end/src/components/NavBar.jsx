@@ -12,7 +12,7 @@ export default function NavBar() {
     dispatch(setTheme(dark));
   }, [dark, dispatch]);
 
-  const { user, setUser, loadingUser } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
 
   async function handleLogout() {
     try {
