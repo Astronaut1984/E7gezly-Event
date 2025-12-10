@@ -7,6 +7,7 @@ import json
 import hashlib
 
 # Create your views here.
+@csrf_exempt
 def login(request):
     with connection.cursor() as cursor:
         cursor.execute("SELECT COUNT(*) FROM api_user")
@@ -18,16 +19,15 @@ def signup(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)     
-            hashed = hashlib.sha256(data.get("password").strip().encode()).hexdigest()
-            account_type = data.get("accounttype")
+            hashed = hashlib.sha256(data.get("password").encode()).hexdigest()
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
                     INSERT INTO api_user 
-                    (username, password, first_name, last_name, email, status, country, city, phone)
+                    (username, password, first_name, last_name, email, status, country, city, phone, wallet)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """,
-                    [data.get("username").strip(), hashed, data.get("firstName").strip().capitalize(), data.get("lastName").strip().capitalize(), data.get("email").strip().lower(), 'U' if account_type=="Attendee" else 'OP', data.get("country").strip().capitalize(), data.get("city").strip().capitalize(), data.get("phoneNumber").strip()],
+                    [data.get("username"), hashed, data.get("firstName"), data.get("lastName"), data.get("email"), data.get("accountType"), data.get("country"), data.get("city"), data.get("phoneNumber"), 0],
                 )
             return JsonResponse({"message": "User created successfully"})
         except Exception as e:
@@ -39,7 +39,7 @@ def signup(request):
 def checkEmail(request):
     data = json.loads(request.body)  
     with connection.cursor() as cursor:
-        cursor.execute(""" SELECT COUNT(*) FROM api_user WHERE email = %s""",[data.get("email").lower()])
+        cursor.execute(""" SELECT COUNT(*) FROM api_user WHERE email = %s""",[data.get("email")])
         result = cursor.fetchone()
         if result[0] == 1:
             return JsonResponse({"emailExists": True})
@@ -122,6 +122,7 @@ def checkUsername(request):
 @csrf_exempt
 def getUserFriends(request):
     username = json.loads(request.body).get("username")
+    status = json.loads(request.body)
     with connection.cursor() as cursor:
         cursor.execute("""(select attendee1 from api_friend where attendee2 = %s and status = 'A')
                        union
@@ -138,3 +139,19 @@ def getFollowedOrganizers(request):
                        [username])
         followed = [f[0] for f in cursor.fetchall()]
     return JsonResponse({"followed": followed})
+
+@csrf_exempt
+def getFollowers(request):
+    username = json.loads(request.body).get("username")
+    with connection.cursor() as cursor:
+        cursor.execute("""(select attendee from api_follow where organizer = %s and status = 'A');""",
+                       [username])
+        followed = [f[0] for f in cursor.fetchall()]
+    return JsonResponse({"followed": followed})
+"""
+@csrf_exempt
+def addFriend(request):
+    attendee1 = json.loads(request.body).get("sender")
+    attendee2 = json.loads(request.body).get("receiver")
+    if not Friend.objects.filter(attendee1=attendee1, attendee2=attendee2).exists():
+"""

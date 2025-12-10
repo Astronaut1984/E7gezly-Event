@@ -1,11 +1,8 @@
 import "../../index.css";
-import Input from "../../components/Input";
-import SelectType from "../../components/selectType";
-import { useState } from "react";
-import Navbar from "../../components/NavBar";
 import SignUp1, { SignUp2, SignUp3 } from "./SignUp1";
 import { validateForm1, validateForm2, validateForm3 } from "./validations";
 import { NavLink } from "react-router-dom";
+import { useState } from "react";
 
 export default function SignUp() {
   const bgColor = "bg-gradient-to-tr from-blue-200 via-blue-400 to-blue-600";

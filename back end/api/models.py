@@ -10,15 +10,9 @@ class User(models.Model):
     country = models.CharField(max_length=255, null=True, blank=True)
     city = models.CharField(max_length=255, null=True, blank=True)
     phone = models.CharField(max_length=255, null=True, blank=True)
-    STATUS_CHOICES = [
-        ('U', 'Attendee'),
-        ('OP', 'Pending organizer'),
-        ('OA', 'Active organizer'),
-        ('A', 'Administrator')
-    ]
-    status = models.CharField(max_length=2, choices=STATUS_CHOICES, default='U')
+    status = models.CharField(max_length=255, null=True, blank=True)
 
-    def __str__(self):
+    def _str_(self):
         return self.username
 
 class Venue(models.Model):
@@ -73,25 +67,32 @@ class Event(models.Model):
         return self.name
 
 class HasBus(models.Model):
-    pk = models.CompositePrimaryKey('transportation', 'event')
     number_assigned = models.IntegerField(null=True, blank=True)
     transportation = models.ForeignKey(Vehicle, on_delete=models.RESTRICT, db_column='Transportation_Id')
     event = models.ForeignKey(Event, on_delete=models.RESTRICT, db_column='Event_Id')
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['transportation', 'event'], name='unique_bus_per_event')
+        ]
+
 class HasPerformer(models.Model):
-    pk = models.CompositePrimaryKey('performer', 'event')
     performer = models.ForeignKey(Performer, on_delete=models.RESTRICT, db_column='performer_id')
     event = models.ForeignKey(Event, on_delete=models.RESTRICT, db_column='Event_Id')
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['performer', 'event'], name='unique_performer_per_event')
+        ]
+
 class Discount(models.Model):
-    pk = models.CompositePrimaryKey('event', 'discount_id')
     event = models.ForeignKey(Event, on_delete=models.RESTRICT, db_column='Event_Id')
     discount_id = models.CharField(max_length=25)
-    quantity = models.IntegerField()
-    maximum_value = models.IntegerField(null=True)
-    percentage = models.IntegerField()
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['event', 'discount_id'], name='unique_discount_per_event')
+        ]
 
 class TicketType(models.Model):
     ticket_type_id = models.AutoField(primary_key=True)
@@ -140,7 +141,7 @@ class Follow(models.Model):
     attendee = models.ForeignKey(User, on_delete=models.RESTRICT, related_name='following')
     organizer = models.ForeignKey(User, on_delete=models.RESTRICT, related_name='followers')
     class Meta:
-        constraints = models.UniqueConstraint(fields=["attendee, organizer"])
+        constraints = [models.UniqueConstraint(fields=["attendee", "organizer"], name="unique_follow")]
 
 class Friend(models.Model):
     STATUS_CHOICES = [
@@ -152,7 +153,7 @@ class Friend(models.Model):
     attendee1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='friend_requests_sent')
     attendee2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='friend_requests_received')
     class Meta:
-        constraints = models.UniqueConstraint(fields=["attendee, organizer"])
+        constraints = [models.UniqueConstraint(fields=["attendee1", "attendee2"], name='unique_friendship')]
 
 class Feedback(models.Model):
     feedback_id = models.AutoField(primary_key=True)
@@ -164,10 +165,15 @@ class Feedback(models.Model):
         constraints = [models.UniqueConstraint(fields=['feedback_id', 'attendee'], name='unique_feedback_id_per_attendee')]
 
 class Wishlist(models.Model):
-    pk = models.CompositePrimaryKey('attendee', 'event')
+    # REMOVE: pk = models.CompositePrimaryKey('attendee', 'event')
+    
     attendee = models.ForeignKey(User, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['attendee', 'event'], name='unique_wishlist_item')
+        ]
 class Report(models.Model):
     report_id = models.AutoField(primary_key=True)
     report_content = models.TextField()

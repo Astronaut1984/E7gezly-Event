@@ -8,14 +8,14 @@ export async function validateForm1(formData) {
   } else {
     delete errors.firstName;
   }
-
+  
   // Last Name
   if (!formData.lastName) {
     errors.lastName = { isError: true, message: "Enter your last name" };
   } else {
     delete errors.lastName;
   }
-
+  
   // Email
   if (!formData.email) {
     errors.email = { isError: true, message: "Enter your email" };
@@ -33,6 +33,7 @@ export async function validateForm1(formData) {
             body: JSON.stringify({ email: formData.email }),
           }
         );
+        console.log("ana hena aho");
         const data = await response.json();
         if (data.emailExists) {
           errors.email = {
@@ -46,19 +47,19 @@ export async function validateForm1(formData) {
         console.error("Error checking email:", err);
         errors.email = {
           isError: true,
-          message: "Unable to verify email",
+          message: err,
         };
       }
     }
   }
 
+  
   // Account Type
   if (!formData.accountType) {
     errors.accountType = { isError: true, message: "Choose account type" };
   } else {
     delete errors.accountType;
   }
-
   return errors;
 }
 
