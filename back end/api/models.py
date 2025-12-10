@@ -45,16 +45,20 @@ class Performer(models.Model):
 
     def __str__(self):
         return self.name
+    
+class Category(models.Model):
+    category_id = models.AutoField(primary_key=True)
+    category_name = models.CharField(max_length=63)
 
 class Event(models.Model):
     event_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
     description = models.TextField()
-    category = models.CharField(max_length=255, null=True, blank=True)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=False)
     status = models.CharField(max_length=255, null=True, blank=True)
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, to_field='username', db_column='owner_Username', related_name='events')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, db_column='owner_Username', related_name='events')
     location = models.ForeignKey(Venue, on_delete=models.SET_NULL, null=True, blank=True, db_column='Location_Id')
     performers = models.ManyToManyField(Performer, through='HasPerformer')
     buses = models.ManyToManyField(Vehicle, through='HasBus')
@@ -87,7 +91,7 @@ class Discount(models.Model):
 class TicketType(models.Model):
     pk = models.CompositePrimaryKey('event', 'ticket_type_id')
     event = models.ForeignKey(Event, on_delete=models.RESTRICT, db_column='Event_Id')
-    ticket_type_id = models.IntegerField()
+    ticket_type_id = models.AutoField()
     quantity = models.IntegerField(null=True, blank=True)
     price = models.IntegerField()
     name = models.TextField()
