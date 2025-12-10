@@ -52,6 +52,38 @@ def getType(request):
         return JsonResponse({"accountType": result[0]})
 
 @csrf_exempt
+def me(request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return JsonResponse({
+            "authenticated": False
+        }) 
+    
+    user = User.objects.get(username = user_id)
+
+    return JsonResponse(
+        {
+            "authenticated": True,
+            "user": {
+                "username": user.username,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "city": user.city,
+                "country": user.country,
+                "status": user.status,
+            }
+        }
+    )
+
+@csrf_exempt
+def logout(request):
+    request.session.flush()
+    return JsonResponse({
+        "success": True,
+        "message": "Logged Out"
+    })
+
+@csrf_exempt
 def login_view(request):
     if request.method == "POST":
         data = json.loads(request.body)    
@@ -65,6 +97,7 @@ def login_view(request):
                 request.session['user_first_name'] = user.first_name
                 request.session['user_last_name'] = user.last_name
                 request.session['user_status'] = user.status
+                request.session.set_expiry(60 * 60 * 24 * 30)
                 return JsonResponse({
                     "success": True,
                     "message": "Logged in",

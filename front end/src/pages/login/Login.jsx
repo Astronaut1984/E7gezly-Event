@@ -38,19 +38,20 @@ export default function Login() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
-      }).then((response) => response.json());
+        credentials: "include", // Include cookies
+      });
 
-      const data = await response;
+      const data = await response.json();
 
       if (data.success) {
-        console.log(data)
+        console.log(data);
         setUser(data.user);
         // Redirect user here if needed
         if (data.user.status == "Attendee") {
           navigate("/");
         } else if (data.user.status == "Organizer") {
           navigate("/org");
-        }else{
+        } else {
           navigate("/admin");
         }
       } else {

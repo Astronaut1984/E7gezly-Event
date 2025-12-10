@@ -3,18 +3,27 @@ import { useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme, setTheme } from "@/store/themeSlice";
 import { UserContext } from "@/UserContext";
+import { useEffect } from "react";
 
 export default function NavBar() {
-  const dispatch = useDispatch();
-  dispatch(setTheme(useSelector((state) => state.theme.dark)));
   const dark = useSelector((state) => state.theme.dark);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(setTheme(dark));
+  }, [dark, dispatch]);
 
-  const { user, setUser } = useContext(UserContext);
+  const { user, setUser, loadingUser } = useContext(UserContext);
 
-  function handleLogout() {
-    // Clear user context on logout
-    setUser(null);
-    
+  async function handleLogout() {
+    try {
+      await fetch("http://localhost:8000/account/logout/", {
+        method: "POST",
+        credentials: "include",
+      });
+      setUser(null);
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
   }
 
   return (
@@ -40,7 +49,7 @@ export default function NavBar() {
         )}
         {user && (
           <NavLink
-            link="/profile"
+            to={user.status == "Organiser" ? "/org" : "/admin"}
             className="bg-primary flex items-center justify-center pt-0.5 text-2xl h-10 w-10 rounded-full text-white hover:bg-primary-hover"
           >
             {`${user?.first_name.charAt(0).toUpperCase()}`}
