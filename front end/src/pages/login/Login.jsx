@@ -3,6 +3,7 @@ import "../../index.css";
 import Input from "../../components/Input";
 import NavBar from "../../components/NavBar";
 import { UserContext } from "../../UserContext.jsx";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   let bgColor = "bg-background";
@@ -10,6 +11,7 @@ export default function Login() {
   const { user, setUser } = useContext(UserContext);
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("http://localhost:8000/account/login/") // call Django view
@@ -23,7 +25,7 @@ export default function Login() {
 
   useEffect(() => {
     console.log(user);
-  }, [user])
+  }, [user]);
 
   // 2. Create a dedicated function for the button click
   async function handleLogin(e) {
@@ -41,12 +43,16 @@ export default function Login() {
       const data = await response;
 
       if (data.success) {
+        console.log(data)
         setUser(data.user);
-        // This is just a placeholder to make sure the user is logged in, replace in the future
-        alert(
-          `Login Successful!\nName: ${data.user.first_name} ${data.user.last_name}\n${data.user.username}\n${data.user.city}, ${data.user.country}`
-        );
         // Redirect user here if needed
+        if (data.user.status == "Attendee") {
+          navigate("/");
+        } else if (data.user.status == "Organizer") {
+          navigate("/org");
+        }else{
+          navigate("/admin");
+        }
       } else {
         // Show error from backend (e.g., "User not found")
         setError(data.message);
@@ -63,7 +69,7 @@ export default function Login() {
       <main
         className={`${bgColor} flex justify-center items-center w-full min-h-screen pt-16`}
       >
-        <div className="w-[400px] bg-card rounded-[10px] p-[65px]">
+        <div className="w-[400px] bg-card rounded-[10px] p-[65px] shadow">
           {/* Display backend data */}
           <div className="text-center mb-4 text-primary">
             Users in DB: {userCount}

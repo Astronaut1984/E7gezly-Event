@@ -1,4 +1,4 @@
-import { Calendar, Home, Ticket, Search, Settings,UserRoundCheck } from "lucide-react";
+import { Home, Ticket, UserRoundCheck, MessageCircle } from "lucide-react";
 
 export function Organizer() {
   return <h1>Organizer Page Main</h1>;
@@ -24,5 +24,10 @@ export const orgItems = [
     title: "My Events",
     url: "/org/my-events",
     icon: Ticket,
+  },
+  {
+    title: "Chat",
+    url: "/org/chat",
+    icon: MessageCircle,
   },
 ];

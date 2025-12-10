@@ -5,7 +5,7 @@ export default function Layout({ children, sidebar }) {
   return (
     <SidebarProvider>
       <div>{sidebar}</div>
-      <main>
+      <main className="w-full h-screen">
         {sidebar && <SidebarTrigger />}
         <Outlet />
       </main>

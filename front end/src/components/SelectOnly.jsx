@@ -24,8 +24,8 @@ export default function SelectOnly({
         {title}
       </span>
       <div
-        className={`peer text-[16px] text-card-foreground bg-transparent w-full h-[45px] px-[7px] border border-card rounded-md flex items-center justify-between cursor-pointer ${
-          error ? "border-destructive" : "border-secondary"
+        className={`peer text-[16px] text-card-foreground bg-transparent w-full h-[45px] px-[7px] border-2 rounded-md flex items-center justify-between cursor-pointer ${
+          error ? "border-destructive" : "border-border"
         }`}
         onClick={() => setOpen(!open)}
       >
@@ -38,7 +38,7 @@ export default function SelectOnly({
           {options.map((option) => (
             <li
               key={option}
-              className="px-4 py-2 hover:bg-card cursor-pointer"
+              className="px-4 text-base py-2 hover:bg-card cursor-pointer"
               onMouseDown={() => handleSelect(option)}
             >
               {option}

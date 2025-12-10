@@ -14,13 +14,13 @@ export default function NavBar() {
   function handleLogout() {
     // Clear user context on logout
     setUser(null);
+    
   }
 
   return (
     <div className="z-10 fixed w-full bg-card text-primary items-center flex justify-between p-1">
       <div className="ml-5">
         <h1 className="text-2xl font-bold">E7gezly Event</h1>
-        {/* dark mode toggle icon */}
       </div>
       <nav className="mx-auto max-w-5xl flex items-center gap-6 py-4">
         <NavBtn link="/" title="Home" />
@@ -41,7 +41,7 @@ export default function NavBar() {
         {user && (
           <NavLink
             link="/profile"
-            className="bg-primary p-2 px-4 rounded-full text-white hover:bg-primary-hover"
+            className="bg-primary flex items-center justify-center pt-0.5 text-2xl h-10 w-10 rounded-full text-white hover:bg-primary-hover"
           >
             {`${user?.first_name.charAt(0).toUpperCase()}`}
           </NavLink>
