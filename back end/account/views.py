@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.db import connection
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from api.models import User
+from api.models import User, Friend
 import json
 import hashlib
 
@@ -18,15 +18,16 @@ def signup(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)     
-            hashed = hashlib.sha256(data.get("password").encode()).hexdigest()
+            hashed = hashlib.sha256(data.get("password").strip().encode()).hexdigest()
+            account_type = data.get("accounttype")
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
                     INSERT INTO api_user 
-                    (username, password, first_name, last_name, email, status, country, city, phone, wallet)
+                    (username, password, first_name, last_name, email, status, country, city, phone)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """,
-                    [data.get("username"), hashed, data.get("firstName"), data.get("lastName"), data.get("email"), data.get("accountType"), data.get("country"), data.get("city"), data.get("phoneNumber"), 0],
+                    [data.get("username").strip(), hashed, data.get("firstName").strip().capitalize(), data.get("lastName").strip().capitalize(), data.get("email").strip().lower(), 'U' if account_type=="Attendee" else 'OP', data.get("country").strip().capitalize(), data.get("city").strip().capitalize(), data.get("phoneNumber").strip()],
                 )
             return JsonResponse({"message": "User created successfully"})
         except Exception as e:
@@ -38,19 +39,12 @@ def signup(request):
 def checkEmail(request):
     data = json.loads(request.body)  
     with connection.cursor() as cursor:
-        cursor.execute(""" SELECT COUNT(*) FROM api_user WHERE email = %s""",[data.get("email")])
+        cursor.execute(""" SELECT COUNT(*) FROM api_user WHERE email = %s""",[data.get("email").lower()])
         result = cursor.fetchone()
         if result[0] == 1:
             return JsonResponse({"emailExists": True})
         return JsonResponse({"emailExists": False})
         
-def getType(request):
-    data = json.loads(request.body)
-    with connection.cursor() as cursor:
-        cursor.execute(""" SELECT status FROM api_user WHERE username = %s""",[data.get("username")])
-        result = cursor.fetchone()
-        return JsonResponse({"accountType": result[0]})
-
 @csrf_exempt
 def me(request):
     user_id = request.session.get("user_id")
@@ -71,6 +65,7 @@ def me(request):
                 "city": user.city,
                 "country": user.country,
                 "status": user.status,
+                "wallet": user.wallet
             }
         }
     )
@@ -107,7 +102,8 @@ def login_view(request):
                         "last_name": user.last_name,
                         "city": user.city,
                         "country": user.country,
-                        "status": user.status
+                        "status": user.status,
+                        "wallet": user.wallet
                     }
                 })
             else:
@@ -122,3 +118,25 @@ def checkUsername(request):
     if User.objects.filter(username=username).exists():
         return JsonResponse({"usernameExists": True})
     return JsonResponse({"usernameExists": False})
+
+@csrf_exempt
+def getUserFriends(request):
+    username = json.loads(request.body).get("username")
+    with connection.cursor() as cursor:
+        cursor.execute("""(select attendee1 from api_friend where attendee2 = %s and status = 'A')
+                       union
+                       (select attendee2 from api_friend where attendee1 = %s and status = 'A');""",
+                       [username, username])
+        friends = [f[0] for f in cursor.fetchall()]
+    return JsonResponse({"friends": friends})
+
+@csrf_exempt
+def getFollowedOrganized(request):
+    username = json.loads(request.body).get("username")
+    with connection.cursor() as cursor:
+        cursor.execute("""(select attendee1 from api_friend where attendee2 = %s and status = 'A')
+                       union
+                       (select attendee2 from api_friend where attendee1 = %s and status = 'A');""",
+                       [username, username])
+        friends = [f[0] for f in cursor.fetchall()]
+    return JsonResponse({"friends": friends})
