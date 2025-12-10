@@ -58,3 +58,25 @@ def addTicketType(request):
         event=request.POST("event")
     )
     return JsonResponse({"message": "Ticket Type created", "id": ticket.ticket_type_id})
+
+@csrf_exempt
+def addVenue(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST only"}, status=405)
+    
+    data = json.loads(request.body)
+    venue_name = data.get("venueName")
+    
+    if Venue.objects.filter(name=venue_name).exists():
+        return JsonResponse({"error": "a venue with this name already exists"}, status=400)
+    
+    venue = Venue.objects.create(
+        name=venue_name,
+        country=data.get("country"),
+        city=data.get("city"),
+        details=data.get("description"),
+        type=data.get("venueType"),
+        capacity=data.get("capacity")
+    )
+    
+    return JsonResponse({"message": "Venue created", "id": venue.location_id})

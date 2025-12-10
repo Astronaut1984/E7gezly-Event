@@ -1,6 +1,6 @@
 import Input from "@/components/Input";
 import { UserContext } from "@/UserContext";
-import { MapPin, Home, Ticket, UserRound, Flag } from "lucide-react";
+import { MapPin, Home, Ticket, UserRound, Flag, MicVocal} from "lucide-react";
 import { useContext } from "react";
 import { useEffect } from "react";
 import { useState } from "react";
@@ -32,6 +32,11 @@ export const adminItems = [
     url: "/admin/reportCase",
     icon: Flag,
   },
+  {
+    title: "Performers",
+    url: "/admin/performers",
+    icon: MicVocal,
+  }
 ];
 
 export function Admin() {
@@ -43,7 +48,7 @@ export function Admin() {
 
   useEffect(() => {
     if (!loadingUser) {
-      if (!user || user.status !== "Administrator\nAdministrator") {
+      if (!user || user.status !== "Administrator") {
         navigate("/"); // Redirect to home page
       } else {
         setFormData({
@@ -71,7 +76,6 @@ export function Admin() {
 
   async function handleUpdateInfo(e) {
     e.preventDefault();
-
   }
 
   return (
