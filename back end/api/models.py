@@ -138,7 +138,9 @@ class Follow(models.Model):
     ]
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
     attendee = models.ForeignKey(User, on_delete=models.RESTRICT, related_name='following')
-    owner = models.ForeignKey(User, on_delete=models.RESTRICT, related_name='followers')
+    organizer = models.ForeignKey(User, on_delete=models.RESTRICT, related_name='followers')
+    class Meta:
+        constraints = models.UniqueConstraint(fields=["attendee, organizer"])
 
 class Friend(models.Model):
     STATUS_CHOICES = [
@@ -149,6 +151,8 @@ class Friend(models.Model):
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
     attendee1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='friend_requests_sent')
     attendee2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='friend_requests_received')
+    class Meta:
+        constraints = models.UniqueConstraint(fields=["attendee, organizer"])
 
 class Feedback(models.Model):
     feedback_id = models.AutoField(primary_key=True)

@@ -131,12 +131,10 @@ def getUserFriends(request):
     return JsonResponse({"friends": friends})
 
 @csrf_exempt
-def getFollowedOrganized(request):
+def getFollowedOrganizers(request):
     username = json.loads(request.body).get("username")
     with connection.cursor() as cursor:
-        cursor.execute("""(select attendee1 from api_friend where attendee2 = %s and status = 'A')
-                       union
-                       (select attendee2 from api_friend where attendee1 = %s and status = 'A');""",
-                       [username, username])
-        friends = [f[0] for f in cursor.fetchall()]
-    return JsonResponse({"friends": friends})
+        cursor.execute("""(select organizer from api_follow where attendee = %s and status = 'A');""",
+                       [username])
+        followed = [f[0] for f in cursor.fetchall()]
+    return JsonResponse({"followed": followed})
