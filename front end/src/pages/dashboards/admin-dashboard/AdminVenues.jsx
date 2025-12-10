@@ -4,7 +4,7 @@ export default function AdminVenues() {
       <h1>Admin Main Page</h1>
       <div className="flex flex-col flex-wrap w-full px-32 shadow-2xl py-5 rounded-xl bg-card mt-3">
         <h1 className="text-xl">Add Venues</h1>
-        
+        <Input />
       </div>
     </div>
   );

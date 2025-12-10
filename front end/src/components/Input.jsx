@@ -6,12 +6,17 @@ export default function Input({
   type,
   classNameVar,
   placeholder,
+  icon,
   ...props
 }) {
   const [showPassword, togglePassword] = useState(false);
 
   function toggleShowPassword() {
     togglePassword((state) => !state);
+  }
+
+  if(icon){
+    console.log(icon);
   }
   return (
     <div className={`w-full relative mb-[23px] ${classNameVar}`}>
@@ -33,6 +38,11 @@ export default function Input({
           className={`text-primary-hover fa-solid fa-eye${
             showPassword ? "-slash" : ""
           } absolute right-0 top-[41px] cursor-pointer`}
+        ></i>
+      )}
+      {icon && !(type == "password") && (
+        <i
+          className={`${icon} absolute right-2 `}
         ></i>
       )}
     </div>
