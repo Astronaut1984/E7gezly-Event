@@ -37,14 +37,17 @@ export default function SignUp() {
     }
 
     // Send to backend
-    fetch("http://localhost:8000/account/signup/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    })
-      .then((res) => res.json())
-      .then((data) => console.log(data))
-      .catch((err) => console.error(err));
+    try {
+      const res = await fetch("http://localhost:8000/account/signup/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      console.log(data);
+    } catch (err) {
+      console.error(err);
+    }
     //change the path to login page
     window.location.href = "/login";
   }
