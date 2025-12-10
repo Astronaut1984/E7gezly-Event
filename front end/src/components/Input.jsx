@@ -14,7 +14,7 @@ export default function Input({
     togglePassword((state) => !state);
   }
   return (
-    <div className={`w-full relative mb-[23px] ${classNameVar}`}>
+    <div className={`${!classNameVar && "w-full"} relative mb-[23px] ${classNameVar}`}>
       <span className="text-[14px] text-card-foreground leading-normal pl-[7px]">
         {title}
       </span>

@@ -1,59 +1,8 @@
 @import "tailwindcss";
+@import "index.css";
 
 body {
   letter-spacing: var(--tracking-normal);
 }
 
-@utility bg-primary-hover {
-  background-color: var(--primary);
-  transition: background-color 300ms ease-in-out;
 
-  &:hover {
-    background-color: var(--secondary);
-    @media (hover: hover) {
-      cursor: pointer;
-    }
-  }
-
-  &:active {
-    background-color: var(--secondary);
-  }
-}
-
-@utility text-primary-hover {
-  color: var(--primary);
-  transition: color 300ms ease-in-out;
-
-  &:hover {
-    color: var(--secondary);
-    @media (hover: hover) {
-      cursor: pointer;
-    }
-  }
-
-  &:active {
-    color: var(--secondary);
-  }
-}
-
-@utility li-hover {
-  transition: transform 100ms ease-in-out, background-color 100ms ease-in-out;
-  background-color: var(--card);
-  transform: translateX(0);
-
-  &:hover {
-    transform: translateX(10px);
-    background-color: var(--input);
-    cursor: pointer;
-  }
-
-  &.selected {
-    transform: translateX(10px);
-    background-color: var(--primary);
-  }
-
-  &.selected:hover {
-    transform: translateX(10px);
-    background-color: var(--primary);
-  }
-}

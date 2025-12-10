@@ -6,5 +6,5 @@ urlpatterns = [
     path("getvenues/", views.getVenues, name="getvenues"),
     path("getevents/", views.getEvents, name="getevents"),
     path("getcategories/", views.getCategories, name="getcategories"),
-    
+    path("addvenue/", views.addVenue, name="addvenue"),
 ]

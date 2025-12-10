@@ -138,3 +138,63 @@ export async function validateForm3(formData) {
 
   return errors;
 }
+
+export function validateAddVenue(formData) {
+  const errors = {};
+
+  if (!formData.venueName?.trim()) {
+    errors.venueName = {
+      isError: true,
+      message: "Enter the venue name",
+    };
+  } else {
+    delete errors.venueName;
+  }
+
+  if (!formData.country?.trim()) {
+    errors.country = {
+      isError: true,
+      message: "Enter the country",
+    };
+  } else {
+    delete errors.country;
+  }
+
+  if (!formData.city?.trim()) {
+    errors.city = {
+      isError: true,
+      message: "Enter the city",
+    };
+  } else {
+    delete errors.city;
+  }
+
+  if (!formData.venueType?.trim()) {
+    errors.venueType = {
+      isError: true,
+      message: "Enter the venue type",
+    };
+  } else {
+    delete errors.venueType;
+  }
+
+  if (!formData.description?.trim()) {
+    errors.description = {
+      isError: true,
+      message: "Enter a description",
+    };
+  } else {
+    delete errors.description;
+  }
+
+  if (!formData.capacity?.trim() || isNaN(formData.capacity)) {
+    errors.capacity = {
+      isError: true,
+      message: "Enter a valid capacity number",
+    };
+  } else {
+    delete errors.capacity;
+  }
+
+  return errors;
+}

@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "./theme.css";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -13,7 +12,7 @@
   --popover-foreground: oklch(0.2161 0.0061 56.0434);
   --primary: oklch(0.692 0.1595 240.3794);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.692 0.1595 240.3794);
+  --secondary: oklch(0.6152 0.2108 256.099);
   --secondary-foreground: oklch(1 0 0);
   --muted: oklch(0.9232 0.0026 48.7171);
   --muted-foreground: oklch(0.2161 0.0061 56.0434);
@@ -188,5 +187,59 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@utility bg-primary-hover {
+  background-color: var(--primary);
+  transition: background-color 300ms ease-in-out;
+
+  &:hover {
+    background-color: var(--secondary);
+    @media (hover: hover) {
+      cursor: pointer;
+    }
+  }
+
+  &:active {
+    background-color: var(--secondary);
+  }
+}
+
+@utility text-primary-hover {
+  color: var(--primary);
+  transition: color 300ms ease-in-out;
+
+  &:hover {
+    color: var(--secondary);
+    @media (hover: hover) {
+      cursor: pointer;
+    }
+  }
+
+  &:active {
+    color: var(--secondary);
+  }
+}
+
+@utility li-hover {
+  transition: transform 100ms ease-in-out, background-color 100ms ease-in-out;
+  background-color: var(--card);
+  transform: translateX(0);
+
+  &:hover {
+    transform: translateX(10px);
+    background-color: var(--input);
+    cursor: pointer;
+  }
+
+  &.selected {
+    transform: translateX(10px);
+    background-color: var(--primary);
+  }
+
+  &.selected:hover {
+    transform: translateX(10px);
+    background-color: var(--primary);
   }
 }

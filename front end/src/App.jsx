@@ -22,6 +22,7 @@ import OrganizerAddEvents from "./pages/dashboards/org-dashboard/OrganizerAddEve
 import OrganizerMyEvents from "./pages/dashboards/org-dashboard/OrganizerMyEvents";
 import OrganizerFollowers from "./pages/dashboards/org-dashboard/OrganizerFollowers";
 import OrganizerChat from "./pages/dashboards/org-dashboard/OrganizerChat";
+import AdminPerformers from "./pages/dashboards/admin-dashboard/AdminPerformers";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
         <Route path="/admin/events" element={<AdminEvents />} />
         <Route path="/admin/org" element={<AdminOrg />} />
         <Route path="/admin/reportcase" element={<AdminReportCases />} />
+        <Route path="/admin/performers" element={<AdminPerformers />} />
       </Route>
       <Route
         path="/org"
