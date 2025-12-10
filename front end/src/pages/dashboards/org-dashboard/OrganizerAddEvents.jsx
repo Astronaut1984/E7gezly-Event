@@ -45,6 +45,7 @@ export default function OrganizerAddEvents() {
     DiscountQuantity: "",
     DiscountMaximumValue: "",
     Performers: [],
+    buses: [],
   });
 
   const handleChange = (e) => {
@@ -137,7 +138,7 @@ export default function OrganizerAddEvents() {
               setFormData({ ...formData, accountType: option })
             }
           />
-          
+
           <h1>Add Ticket Type</h1>
           <div className="flex justify-between w-full gap-30">
             <Input
@@ -239,6 +240,29 @@ export default function OrganizerAddEvents() {
             <SelectOnly
               title="Performer"
               options={["Amr Diab", "Hany Shaker", "Mohamed Mounir", "Sherine", "Tamer Hosny"]}
+              type="text"
+              name="TicketTypeName"
+              placeholder="Amr Diab"
+              value={formData.Performers}
+              onChange={handleChange}
+            />
+          </div>
+        </div>
+        <h1 className="mt-25">Add Buses</h1>
+        <div className="flex flex-wrap w-full px-32 py-5 rounded-xl mt-3">
+          <div className="flex justify-between w-full gap-30">
+            <SelectOnly
+              title="BusCapacity"
+              options={["20", "30", "40", "50", "60"]}
+              type="text"
+              name="TicketTypeName"
+              placeholder="Amr Diab"
+              value={formData.Performers}
+              onChange={handleChange}
+            />
+            <SelectOnly
+              title="Performer"
+              options={["Bus 1", "Bus 2", "Bus 3", "Bus 4", "Bus 5"]}
               type="text"
               name="TicketTypeName"
               placeholder="Amr Diab"

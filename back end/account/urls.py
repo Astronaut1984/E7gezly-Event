@@ -9,5 +9,6 @@ urlpatterns = [
     path("me/", views.me, name="me"), #User reload
     path("logout/", views.logout, name="logout"),
     path("getuserfriends", views.getUserFriends, name="getuserfriends"),
-    path("getfollowedorganizers", views.getFollowedOrganizers, name="getfollowedorganizers")
+    path("getfollowedorganizers", views.getFollowedOrganizers, name="getfollowedorganizers"),
+    path("getfollowers", views.getFollowers, name="getfollowers")
 ]

@@ -33,7 +33,7 @@ export async function validateForm1(formData) {
             body: JSON.stringify({ email: formData.email }),
           }
         );
-        console.log("ana hena aho");
+        
         const data = await response.json();
         if (data.emailExists) {
           errors.email = {
@@ -47,7 +47,7 @@ export async function validateForm1(formData) {
         console.error("Error checking email:", err);
         errors.email = {
           isError: true,
-          message: err,
+          message: "Unable to verify email",
         };
       }
     }
