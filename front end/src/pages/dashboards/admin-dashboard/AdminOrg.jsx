@@ -11,51 +11,28 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useEffect, useState } from "react";
+import useAdminResource from "@/hooks/useAdminResource";
 import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { Organizer } from "../org-dashboard/Organizer";
 
 export default function AdminOrg() {
-  const [organizers, setOrganizers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    items: organizers,
+    loading,
+    fetchItems: reloadOrganizers,
+    remove: deleteOrg,
+  } = useAdminResource({
+    getUrl: "http://localhost:8000/adminutils/getorganizers/",
+    deleteUrl: "http://localhost:8000/adminutils/deleteorganizer/",
+    listKey: "organizers",
+    deletePayloadKey: "username",
+  });
   const [search, setSearch] = useState(""); // for the search input
 
-  async function getOrganizers() {
-    setLoading(true);
-    try {
-      const response = await fetch(
-        "http://localhost:8000/adminutils/getorganizers/",
-        {
-          method: "GET",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch organizers: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      // Ensure organizers is an array
-      const organizersArray = Array.isArray(data.organizers)
-        ? data.organizers
-        : [];
-
-      setOrganizers(organizersArray);
-      console.log(organizersArray);
-      return organizersArray;
-    } catch (err) {
-      console.error("Error fetching organizers:", err);
-      alert(`Error fetching organizers: ${err.message}`);
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    setOrganizers(getOrganizers());
-  }, []);
+    reloadOrganizers();
+  }, [reloadOrganizers]);
 
   const filteredOrganizers =
     !loading &&
@@ -75,7 +52,7 @@ export default function AdminOrg() {
 
   return (
     <main className="flex justify-center items-center flex-col gap-5 w-full">
-        <h1 className="text-3xl font-bold">Organizers</h1>
+      <h1 className="text-3xl font-bold">Organizers</h1>
       <div className="flex w-100 justify-center items-center">
         <Input
           placeholder="Search..."
@@ -93,7 +70,7 @@ export default function AdminOrg() {
                 key={org["username"]}
                 reportCount={org["report_count"]}
                 username={org["username"]}
-                onUpdat
+                onDelete={() => deleteOrg(org["username"])}
               />
             );
           })
@@ -103,13 +80,13 @@ export default function AdminOrg() {
   );
 }
 
-function OrgCard({ orgName, reportCount, username }) {
+function OrgCard({ orgName, reportCount, username, onDelete }) {
   return (
     <>
       <div className="relative max-w-max pl-3 pr-8 py-5 bg-card rounded-xl shadow mx-5">
         <p>Organizer Name: {orgName}</p>
         <p>Report Cases: {reportCount}</p>
-        <Alert orgName={orgName} username={username}>
+        <Alert orgName={orgName} username={username} onDelete={onDelete}>
           <div
             title="delete from database"
             className="absolute bottom-0 right-0 -mb-4 -mr-6
@@ -123,22 +100,10 @@ function OrgCard({ orgName, reportCount, username }) {
   );
 }
 
-function Alert({ children, orgName, username }) {
-  async function deleteOrg(username) {
+function Alert({ children, orgName, username, onDelete }) {
+  async function handleDelete() {
     try {
-      const response = await fetch(
-        `http://localhost:8000/adminutils/deleteorganizer/`,
-        {
-          method: "DELETE",
-          body: JSON.stringify({ username }),
-        }
-      );
-      const data = await response.json();
-      if (data["message"]) {
-        console.log(data["message"]);
-      } else {
-        console.error(data["error"]);
-      }
+      if (onDelete) await onDelete();
     } catch (err) {
       console.error(err);
     }
@@ -160,10 +125,7 @@ function Alert({ children, orgName, username }) {
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction className="hover:cursor-pointer">
-            <div
-              className="hover:cursor-pointer"
-              onClick={() => deleteOrg(username)}
-            >
+            <div className="hover:cursor-pointer" onClick={handleDelete}>
               Continue
             </div>
           </AlertDialogAction>

@@ -7,4 +7,6 @@ urlpatterns = [
     path("addperformer/", views.addPerformer, name="addperformer"),
     path("getreports/", views.getReports, name="getreports"),
     path("deleteperformer/", views.deletePerformer, name="deleteperformer"),
+    path("getvenues/", views.getVenues, name="getvenues"),
+    path("deletevenue/", views.deleteVenue, name="deletevenue"),
 ]

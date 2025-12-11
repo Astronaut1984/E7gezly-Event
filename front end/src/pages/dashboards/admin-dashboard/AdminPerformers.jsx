@@ -1,6 +1,7 @@
 import Input from "@/components/Input";
 import { validateAddPerformer } from "@/pages/sign up/validations";
 import { useEffect, useState } from "react";
+import useAdminResource from "@/hooks/useAdminResource";
 import { Spinner } from "@/components/ui/spinner";
 import { Input as Search } from "@/components/ui/input";
 import {
@@ -15,15 +16,23 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Trash } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 
 export default function AdminPerformers() {
   const FIELD_CONATIANER_CLASSNAME =
     "text-[20px] flex justify-between gap-20 items-center";
 
   let [errors, setErrors] = useState({});
-  const [performers, setPerformers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    items: performers,
+    loading,
+    fetchItems: reloadPerformers,
+    remove: deletePer,
+  } = useAdminResource({
+    getUrl: "http://localhost:8000/adminutils/getperformers/",
+    deleteUrl: "http://localhost:8000/adminutils/deleteperformer/",
+    listKey: "performers",
+    deletePayloadKey: "id",
+  });
   const [search, setSearch] = useState(""); // for the search input
 
   const [formData, setFormData] = useState({
@@ -61,49 +70,16 @@ export default function AdminPerformers() {
       alert("Performer added successfully!");
       setErrors({});
       setFormData({ name: "", bio: "", id: "" });
-      setPerformers(await getPerformers());
+      await reloadPerformers();
     } catch (err) {
       console.error(err);
       alert("Error adding performer");
     }
   };
 
-  async function getPerformers() {
-    setLoading(true);
-    try {
-      const response = await fetch(
-        "http://localhost:8000/adminutils/getperformers/",
-        {
-          method: "GET",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch performers: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      // Ensure organizers is an array
-      const performersArray = Array.isArray(data.performers)
-        ? data.performers
-        : [];
-
-      setPerformers(performersArray);
-      console.log(performersArray);
-      return performersArray;
-    } catch (err) {
-      console.error("Error fetching performers:", err);
-      alert(`Error fetching performers: ${err.message}`);
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    setPerformers(getPerformers());
-  }, []);
+    reloadPerformers();
+  }, [reloadPerformers]);
 
   const filteredPerformers =
     !loading &&
@@ -173,7 +149,8 @@ export default function AdminPerformers() {
                   key={per.performer_id}
                   reportCount={0}
                   id={per.performer_id}
-                  onUpdate={() => setPerformers(getPerformers())}
+                  onUpdate={() => reloadPerformers()}
+                  onDelete={() => deletePer(per.performer_id)}
                 />
               );
             })}
@@ -188,11 +165,16 @@ export default function AdminPerformers() {
   );
 }
 
-function PerformerCard({ performerName, id, onUpdate }) {
+function PerformerCard({ performerName, id, onUpdate, onDelete }) {
   return (
     <div className="relative max-w-max pl-3 pr-8 py-5 bg-card rounded-xl shadow mx-5 text">
       <p>Performer Name: {performerName}</p>
-      <Alert performerName={performerName} onUpdate={onUpdate} id={id}>
+      <Alert
+        performerName={performerName}
+        onUpdate={onUpdate}
+        id={id}
+        onDelete={onDelete}
+      >
         <div
           title="delete from database"
           className="absolute bottom-0 right-0 -mb-4 -mr-6
@@ -205,23 +187,11 @@ function PerformerCard({ performerName, id, onUpdate }) {
   );
 }
 
-function Alert({ children, id, performerName,onUpdate }) {
-  async function deletePer(id) {
+function Alert({ children, id, performerName, onUpdate, onDelete }) {
+  async function handleDelete() {
     try {
-      const response = await fetch(
-        `http://localhost:8000/adminutils/deleteperformer/`,
-        {
-          method: "DELETE",
-          body: JSON.stringify({ id }),
-        }
-      );
-      const data = await response.json();
-      if (data["message"]) {
-        console.log(data["message"]);
-        onUpdate();
-      } else {
-        console.error(data["error"]);
-      }
+      if (onDelete) await onDelete();
+      if (onUpdate) onUpdate();
     } catch (err) {
       console.error(err);
     }
@@ -243,7 +213,7 @@ function Alert({ children, id, performerName,onUpdate }) {
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction className="hover:cursor-pointer">
-            <div className="hover:cursor-pointer" onClick={() => deletePer(id)}>
+            <div className="hover:cursor-pointer" onClick={handleDelete}>
               Continue
             </div>
           </AlertDialogAction>
