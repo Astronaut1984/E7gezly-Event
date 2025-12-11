@@ -103,7 +103,7 @@ def addVenue(request):
     
     try:
         data = json.loads(request.body)
-        venue_name = data.get("name")
+        venue_name = data.get("venueName")
 
         if not venue_name:
             return JsonResponse({"error": "Venue name is required."}, status=400)
