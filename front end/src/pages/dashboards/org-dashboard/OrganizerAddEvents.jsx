@@ -212,7 +212,6 @@ export default function OrganizerAddEvents() {
               min={minDate}
               value={formData.start_date}
               onChange={handleChange}
-              selectOnly={true}
             />
             <Input
               title="End Date"
@@ -221,7 +220,6 @@ export default function OrganizerAddEvents() {
               min={formData.start_date}
               value={formData.end_date}
               onChange={handleChange}
-              selectOnly={true}
             />
           </div>
           <SelectOnly
@@ -278,14 +276,13 @@ export default function OrganizerAddEvents() {
                   name="TicketQuantity"
                   value={ticket.TicketQuantity}
                   onChange={(e) => handleArrayChange("tickets", index, e)}
-                  selectOnly={true}
                 />
               </div>
               {formData.tickets.length > 1 && (
                 <button
                   type="button"
                   onClick={() => handleRemove("tickets", index)}
-                  className="bg-red-500 hover:bg-red-600 text-[16px] text-white flex justify-center items-center w-40 h-[40px] border-0 cursor-pointer font-semibold rounded-lg self-end mt-2"
+                  className="bg-red-500 hover:bg-red-600 text-[16px] text-white flex justify-center items-center w-40 h-10 border-0 cursor-pointer font-semibold rounded-lg self-end mt-2"
                 >
                   Remove Ticket
                 </button>
@@ -331,7 +328,6 @@ export default function OrganizerAddEvents() {
                   name="DiscountQuantity"
                   value={discount.DiscountQuantity}
                   onChange={(e) => handleArrayChange("discounts", index, e)}
-                  selectOnly={true}
                 />
               </div>
               <div className="flex justify-between w-full gap-30">
@@ -341,7 +337,7 @@ export default function OrganizerAddEvents() {
                   name="DiscountPercentage"
                   value={discount.DiscountPercentage}
                   onChange={(e) => handleArrayChange("discounts", index, e)}
-                  icon="fa-light fa-percent text-black top-[68px] fa-sm"
+                  icon="fa-light fa-percent text-foreground top-[68px] fa-sm"
                 />
                 <Input
                   title="Discount maximum value"
@@ -359,7 +355,6 @@ export default function OrganizerAddEvents() {
                   min={minDate}
                   value={discount.DiscountStartDate}
                   onChange={(e) => handleArrayChange("discounts", index, e)}
-                  selectOnly={true}
                 />
                 <Input
                   title="Discount End Date"
@@ -368,13 +363,12 @@ export default function OrganizerAddEvents() {
                   min={discount.DiscountStartDate || minDate}
                   value={discount.DiscountEndDate}
                   onChange={(e) => handleArrayChange("discounts", index, e)}
-                  selectOnly={true}
                 />
               </div>
               <button
                 type="button"
                 onClick={() => handleRemove("discounts", index)}
-                className="bg-red-500 hover:bg-red-600 text-[16px] text-white flex justify-center items-center w-40 h-[40px] border-0 cursor-pointer font-semibold rounded-lg self-end mt-2"
+                className="bg-red-500 hover:bg-red-600 text-[16px] text-white flex justify-center items-center w-40 h-10 border-0 cursor-pointer font-semibold rounded-lg self-end mt-2"
               >
                 Remove Discount
               </button>
@@ -426,7 +420,7 @@ export default function OrganizerAddEvents() {
               <button
                 type="button"
                 onClick={() => handleRemove("performers", index)}
-                className="bg-red-500 hover:bg-red-600 text-[16px] text-white flex justify-center items-center w-40 h-[40px] border-0 cursor-pointer font-semibold rounded-lg self-end mt-2"
+                className="bg-red-500 hover:bg-red-600 text-[16px] text-white flex justify-center items-center w-40 h-10 border-0 cursor-pointer font-semibold rounded-lg self-end mt-2"
               >
                 Remove Performer
               </button>
@@ -481,7 +475,7 @@ export default function OrganizerAddEvents() {
               <button
                 type="button"
                 onClick={() => handleRemove("buses", index)}
-                className="bg-red-500 hover:bg-red-600 text-[16px] text-white flex justify-center items-center w-40 h-[40px] border-0 cursor-pointer font-semibold rounded-lg self-end mt-2"
+                className="bg-red-500 hover:bg-red-600 text-[16px] text-white flex justify-center items-center w-40 h-10 border-0 cursor-pointer font-semibold rounded-lg self-end mt-2"
               >
                 Remove Bus
               </button>

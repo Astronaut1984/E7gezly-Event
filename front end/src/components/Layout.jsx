@@ -6,7 +6,9 @@ export default function Layout({ children, sidebar }) {
     <SidebarProvider>
       <div>{sidebar}</div>
       <main className="w-full h-screen">
-        {sidebar && <SidebarTrigger />}
+        {sidebar && <SidebarTrigger onClick={() => {
+          console.log("sidebar toggled")
+        }} />}
         <Outlet />
       </main>
     </SidebarProvider>

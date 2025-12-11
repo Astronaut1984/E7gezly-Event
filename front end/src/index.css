@@ -19,6 +19,7 @@
   --accent: oklch(0.9848 0.0013 106.4233);
   --accent-foreground: oklch(0.2161 0.0061 56.0434);
   --destructive: oklch(0.8053 0.1109 19.7816);
+  --destructive-hover: oklch(75.888% 0.14441 18.941);
   --destructive-foreground: oklch(0.583 0.2387 28.4765);
   --border: oklch(97.191% 0.00261 230.426);
   --input: oklch(0.9535 0.0201 286.0133);
@@ -78,8 +79,9 @@
   --muted-foreground: oklch(0.9699 0.0013 106.4238);
   --accent: oklch(0.2685 0.0063 34.2976);
   --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.583 0.2387 28.4765);
-  --destructive-foreground: oklch(0.7022 0.1892 22.2279);
+  --destructive: oklch(44.516% 0.1797 27.705);
+  --destructive-hover: oklch(36.886% 0.14424 27.174);
+  --destructive-foreground: oklch(65.782% 0.12715 20.479);
   --border: oklch(0.2161 0.0061 56.0434);
   --input: oklch(0.3368 0 0);
   --ring: oklch(0.692 0.1595 240.3794);
@@ -137,6 +139,7 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-hover: var(--destructive-hover);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
@@ -241,5 +244,14 @@
   &.selected:hover {
     transform: translateX(10px);
     background-color: var(--primary);
+  }
+}
+
+@utility destructive-on-hover {
+  background-color: var(--destructive);
+  transition: transform 100ms ease-in-out, background-color 100ms ease-in-out;
+
+  &:hover {
+    background-color: var(--destructive-hover);
   }
 }

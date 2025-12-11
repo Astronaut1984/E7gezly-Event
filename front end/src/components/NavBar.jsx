@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme, setTheme } from "@/store/themeSlice";
 import { UserContext } from "@/UserContext";
 import { useEffect } from "react";
+import { Sun, Moon } from "lucide-react";
 
 export default function NavBar() {
   const dark = useSelector((state) => state.theme.dark);
@@ -13,7 +14,6 @@ export default function NavBar() {
   }, [dark, dispatch]);
 
   const { user, setUser } = useContext(UserContext);
-
   async function handleLogout() {
     try {
       await fetch("http://localhost:8000/account/logout/", {
@@ -59,9 +59,7 @@ export default function NavBar() {
           onClick={() => dispatch(toggleTheme())}
           className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
         >
-          <i
-            className={`fa-solid ${dark ? "fa-sun" : "fa-moon"} text-base`}
-          ></i>
+        {dark ? <Sun className="text-primary"/> : <Moon className="text-primary"/>}
         </button>
       </nav>
     </div>

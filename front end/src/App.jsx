@@ -39,7 +39,7 @@ function App() {
         <Route path="/admin" index element={<Admin />} />
         <Route path="/admin/venues" element={<AdminVenues />} />
         <Route path="/admin/events" element={<AdminEvents />} />
-        <Route path="/admin/org" element={<AdminOrg />} />
+        <Route path="/admin/org" element={<AdminOrg />}/>
         <Route path="/admin/reportcase" element={<AdminReportCases />} />
         <Route path="/admin/performers" element={<AdminPerformers />} />
       </Route>

@@ -1,6 +1,6 @@
 import Input from "@/components/Input";
 import { UserContext } from "@/UserContext";
-import { MapPin, Home, Ticket, UserRound, Flag, MicVocal} from "lucide-react";
+import { MapPin, Home, Ticket, UserRound, Flag, MicVocal } from "lucide-react";
 import { useContext } from "react";
 import { useEffect } from "react";
 import { useState } from "react";
@@ -36,7 +36,7 @@ export const adminItems = [
     title: "Performers",
     url: "/admin/performers",
     icon: MicVocal,
-  }
+  },
 ];
 
 export function Admin() {
@@ -68,9 +68,13 @@ export function Admin() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    let newValue = value;
+    if (name === "phone") {
+      newValue = value.replace(/\D/g, "");
+    }
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [name]: newValue,
     }));
   };
 
@@ -85,12 +89,13 @@ export function Admin() {
         <h1 className="text-xl">Change Account Info</h1>
         <div className="text-[20px] flex justify-between gap-20">
           <Input
-            title="User Name"
+            title="Username"
             type="text"
             name="username"
             placeholder=""
             value={formData.username}
             onChange={handleChange}
+            readOnly={true}
           />
         </div>
         <div className="text-[20px] flex justify-between gap-20">

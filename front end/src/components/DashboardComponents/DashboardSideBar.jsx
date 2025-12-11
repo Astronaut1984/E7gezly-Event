@@ -1,19 +1,22 @@
 import {
   SidebarContent,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarGroupContent,
   SidebarMenuItem,
   SidebarMenu,
   SidebarMenuButton,
   Sidebar,
   SidebarHeader,
+  SidebarFooter,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme, setTheme } from "@/store/themeSlice";
 import { NavLink, useLocation } from "react-router-dom";
 import { useContext, useEffect, useRef, useState } from "react";
 import { UserContext } from "@/UserContext";
+
+import { Sun, Moon } from "lucide-react";
 
 export function DashboardSideBar({ items }) {
   const dispatch = useDispatch();
@@ -22,10 +25,11 @@ export function DashboardSideBar({ items }) {
 
   let location = useLocation();
 
-  const { user, setUser } = useContext(UserContext);
+  const { user } = useContext(UserContext);
 
-  const ref = useRef();
-  const [visible, setVisible] = useState(true);
+  const {state} = useSidebar();
+
+  const isCollapsed = state === "collapsed";
 
   const welcomeMessage =
     user === null
@@ -35,16 +39,16 @@ export function DashboardSideBar({ items }) {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex justify-between overflow-hidden whitespace-nowrap">
-          <h1 className="truncate">{welcomeMessage}</h1>
+        <div className="flex justify-between">
+          {!isCollapsed && <h1 className="truncate flex items-center [data-collaped=true]:hidden">
+            {welcomeMessage}
+          </h1>}
           <button
             onClick={() => dispatch(toggleTheme())}
             aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-            className="p-1 rounded bg-sidebar hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 -translate-x-[2.5px]"
+            className="p-2 rounded-sm bg-sidebar hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 -translate-x-[2.5px]"
           >
-            <i 
-              className={`fa-solid ${dark ? "fa-sun" : "fa-moon"} text-base`}
-            ></i>
+            {dark ? <Sun className="text-primary"/> : <Moon className="text-primary"/>}
           </button>
         </div>
       </SidebarHeader>
@@ -69,6 +73,14 @@ export function DashboardSideBar({ items }) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="flex justify-center items-center mb-2 overflow-hidden whitespace-nowrap">
+        <NavLink
+          to="/"
+          className={`bg-primary-hover py-1 px-3 rounded-2xl text-sidebar-accent-foreground ${isCollapsed && "hidden"}`}
+        >
+          Back to Home
+        </NavLink>
+      </SidebarFooter>
     </Sidebar>
   );
 }

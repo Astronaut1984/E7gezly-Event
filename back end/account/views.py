@@ -47,13 +47,13 @@ def checkEmail(request):
         
 @csrf_exempt
 def me(request):
-    user_id = request.session.get("user_id")
-    if not user_id:
+    username = request.session.get("username")
+    if not username:
         return JsonResponse({
             "authenticated": False
         }) 
     
-    user = User.objects.get(username = user_id)
+    user = User.objects.get(username = username)
 
     return JsonResponse(
         {
@@ -86,12 +86,7 @@ def login_view(request):
         try:
             user = User.objects.get(username=data.get("username"))
             if hashed == user.password:
-                request.session['user_id'] = user.username
-                request.session['user_city'] = user.city
-                request.session['user_country'] = user.country
-                request.session['user_first_name'] = user.first_name
-                request.session['user_last_name'] = user.last_name
-                request.session['user_status'] = user.status
+                request.session['username'] = user.username
                 request.session.set_expiry(60 * 60 * 24 * 30)
                 return JsonResponse({
                     "success": True,
@@ -132,7 +127,7 @@ def getUserFriends(request):
 
 @csrf_exempt
 def getSentFriendRequests(request):
-    username = request.session.get('user_id')
+    username = request.session.get('username')
     with connection.cursor() as cursor:
         cursor.execute("""select attendee2 from api_friend where attendee1 = %s and status = 'P';""", [username])
         requests = [f[0] for f in cursor.fetchall()]
@@ -140,7 +135,7 @@ def getSentFriendRequests(request):
 
 @csrf_exempt
 def getReceivedFriendRequests(request):
-    username = request.session.get('user_id')
+    username = request.session.get('username')
     with connection.cursor() as cursor:
         cursor.execute("""select attendee1 from api_friend where attendee2 = %s and status = 'P';""", [username])
         requests = [f[0] for f in cursor.fetchall()]
@@ -148,7 +143,7 @@ def getReceivedFriendRequests(request):
 
 @csrf_exempt
 def getBlockedUsers(request):
-    username = request.session.get('user_id')
+    username = request.session.get('username')
     with connection.cursor() as cursor:
         cursor.execute("""select attendee2 from api_friend where attendee1 = %s and status = 'B';""", [username])
         requests = [f[0] for f in cursor.fetchall()]
@@ -156,7 +151,7 @@ def getBlockedUsers(request):
 
 @csrf_exempt
 def blockUnblockUser(request): #True=Block, False=Unblock
-    attendee1 = request.session.get('user_id')
+    attendee1 = request.session.get('username')
     attendee2 = json.loads(request.body).get("attendee")
     Action = json.loads(request.body).get("action")
     if Action:
@@ -177,7 +172,7 @@ def blockUnblockUser(request): #True=Block, False=Unblock
 @csrf_exempt
 def respondToFriendRequest(request):
     attendee1 = json.loads(request.body).get("attendee")
-    attendee2 = request.session.get('user_id')
+    attendee2 = request.session.get('username')
     response = json.loads(request.body).get("response")
     with connection.cursor() as cursor:
         if response:
@@ -190,7 +185,7 @@ def respondToFriendRequest(request):
 
 @csrf_exempt
 def getFollowedOrganizers(request):
-    username = request.session.get('user_id')
+    username = request.session.get('username')
     with connection.cursor() as cursor:
         cursor.execute("""(select organizer from api_follow where attendee = %s and status = 'A');""",
                        [username])
@@ -208,7 +203,7 @@ def getFollowers(request):
 
 @csrf_exempt
 def addFriend(request):
-    attendee1 = request.session.get('user_id')
+    attendee1 = request.session.get('username')
     attendee2 = json.loads(request.body).get("receiver")
     if not Friend.objects.filter(attendee1=attendee1, attendee2=attendee2).exists() and not Friend.objects.filter(attendee1=attendee2, attendee2=attendee1).exists():
         Friend.objects.create(

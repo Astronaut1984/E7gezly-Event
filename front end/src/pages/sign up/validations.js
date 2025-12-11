@@ -92,16 +92,19 @@ export function validateForm2(formData) {
 export async function validateForm3(formData) {
   const errors = {};
 
+  // USERNAME EMPTY CHECK
   if (!formData.username) {
     errors.username = { isError: true, message: "Enter your username" };
-  } else {
-    delete errors.username;
   }
-
-  if (!formData.password) {
-    errors.password = { isError: true, message: "Enter your password" };
-  } else {
-    delete errors.password;
+  // USERNAME NO-SPACES CHECK
+  else if (/\s/.test(formData.username)) {
+    errors.username = {
+      isError: true,
+      message: "Username cannot contain spaces",
+    };
+  } 
+  else {
+    delete errors.username;
     try {
       const response = await fetch(
         "http://localhost:8000/account/checkusername/",
@@ -111,6 +114,7 @@ export async function validateForm3(formData) {
           body: JSON.stringify({ username: formData.username }),
         }
       );
+
       const data = await response.json();
       if (data.usernameExists) {
         errors.username = {
@@ -129,6 +133,22 @@ export async function validateForm3(formData) {
     }
   }
 
+  // PASSWORD EMPTY CHECK
+  if (!formData.password) {
+    errors.password = { isError: true, message: "Enter your password" };
+  } 
+  // PASSWORD NO-SPACES CHECK
+  else if (/\s/.test(formData.password)) {
+    errors.password = {
+      isError: true,
+      message: "Password cannot contain spaces",
+    };
+  } 
+  else {
+    delete errors.password;
+  }
+
+  // REPASSWORD CHECK
   if (!formData.rePassword) {
     errors.rePassword = { isError: true, message: "Re-enter your password" };
   } else if (formData.rePassword !== formData.password) {
@@ -139,6 +159,7 @@ export async function validateForm3(formData) {
 
   return errors;
 }
+
 
 export function validateAddVenue(formData) {
   const errors = {};
@@ -195,6 +216,30 @@ export function validateAddVenue(formData) {
     };
   } else {
     delete errors.capacity;
+  }
+
+  return errors;
+}
+
+export function validateAddPerformer(formData) {
+  const errors = {};
+
+  if (!formData.name?.trim()) {
+    errors.name = {
+      isError: true,
+      message: "Enter the performer name",
+    };
+  } else {
+    delete errors.name;
+  }
+
+  if (!formData.bio?.trim()) {
+    errors.bio = {
+      isError: true,
+      message: "Enter the performer bio",
+    };
+  } else {
+    delete errors.bio;
   }
 
   return errors;

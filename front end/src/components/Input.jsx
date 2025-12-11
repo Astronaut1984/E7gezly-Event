@@ -15,11 +15,15 @@ export default function Input({
     togglePassword((state) => !state);
   }
 
-  if(icon){
+  if (icon) {
     console.log(icon);
   }
   return (
-    <div className={`${!classNameVar && "w-full"} relative mb-[23px] ${classNameVar}`}>
+    <div
+      className={`${
+        !classNameVar && "w-full"
+      } relative mb-[23px] ${classNameVar}`}
+    >
       <span className="text-[14px] text-card-foreground leading-normal pl-[7px]">
         {title}
       </span>
@@ -41,9 +45,7 @@ export default function Input({
         ></i>
       )}
       {icon && !(type == "password") && (
-        <i
-          className={`${icon} absolute right-2 `}
-        ></i>
+        <i className={`${icon} absolute right-2 `}></i>
       )}
     </div>
   );
