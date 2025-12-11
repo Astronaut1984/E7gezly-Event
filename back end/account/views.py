@@ -122,7 +122,6 @@ def checkUsername(request):
 @csrf_exempt
 def getUserFriends(request):
     username = json.loads(request.body).get("username")
-    status = json.loads(request.body)
     with connection.cursor() as cursor:
         cursor.execute("""(select attendee1 from api_friend where attendee2 = %s and status = 'A')
                        union
@@ -132,8 +131,66 @@ def getUserFriends(request):
     return JsonResponse({"friends": friends})
 
 @csrf_exempt
+def getSentFriendRequests(request):
+    username = request.session.get('user_id')
+    with connection.cursor() as cursor:
+        cursor.execute("""select attendee2 from api_friend where attendee1 = %s and status = 'P';""", [username])
+        requests = [f[0] for f in cursor.fetchall()]
+    return JsonResponse({"requests": requests})
+
+@csrf_exempt
+def getReceivedFriendRequests(request):
+    username = request.session.get('user_id')
+    with connection.cursor() as cursor:
+        cursor.execute("""select attendee1 from api_friend where attendee2 = %s and status = 'P';""", [username])
+        requests = [f[0] for f in cursor.fetchall()]
+    return JsonResponse({"requests": requests})
+
+@csrf_exempt
+def getBlockedUsers(request):
+    username = request.session.get('user_id')
+    with connection.cursor() as cursor:
+        cursor.execute("""select attendee2 from api_friend where attendee1 = %s and status = 'B';""", [username])
+        requests = [f[0] for f in cursor.fetchall()]
+    return JsonResponse({"Blocked": requests})
+
+@csrf_exempt
+def blockUnblockUser(request): #True=Block, False=Unblock
+    attendee1 = request.session.get('user_id')
+    attendee2 = json.loads(request.body).get("attendee")
+    Action = json.loads(request.body).get("action")
+    if Action:
+        if not Friend.objects.filter(attendee1=attendee1, attendee2=attendee2).exists() and not Friend.objects.filter(attendee1=attendee2, attendee2=attendee1).exists() :
+            Friend.objects.create(
+                attendee1=attendee1,
+                attendee2=attendee2,
+                status='B'
+            )
+            return JsonResponse({"error": False, "Action": True})
+    else:
+        blocked_relationship = Friend.objects.filter(attendee1=attendee1, attendee2=attendee2, status='B')
+        if blocked_relationship.exists:
+            blocked_relationship.delete()
+            return JsonResponse({"error": False, "Action": False})
+    return JsonResponse({"error": True})
+
+@csrf_exempt
+def respondToFriendRequest(request):
+    attendee1 = json.loads(request.body).get("attendee")
+    attendee2 = request.session.get('user_id')
+    response = json.loads(request.body).get("response")
+    with connection.cursor() as cursor:
+        if response:
+            cursor.execute("""update friend set status = 'A' where attendee1 = %s and attendee2 = %s""", [attendee1, attendee2])
+            return JsonResponse({"error": False, "response": True})
+        else:
+            cursor.execute("""delete from friend where attendee1=%s and attendee2=%s""", [attendee1, attendee2])
+            return JsonResponse({"error": False, "response": False})
+    return JsonResponse({"error": True})
+
+@csrf_exempt
 def getFollowedOrganizers(request):
-    username = json.loads(request.body).get("username")
+    username = request.session.get('user_id')
     with connection.cursor() as cursor:
         cursor.execute("""(select organizer from api_follow where attendee = %s and status = 'A');""",
                        [username])
@@ -148,10 +205,16 @@ def getFollowers(request):
                        [username])
         followed = [f[0] for f in cursor.fetchall()]
     return JsonResponse({"followed": followed})
-"""
+
 @csrf_exempt
 def addFriend(request):
-    attendee1 = json.loads(request.body).get("sender")
+    attendee1 = request.session.get('user_id')
     attendee2 = json.loads(request.body).get("receiver")
-    if not Friend.objects.filter(attendee1=attendee1, attendee2=attendee2).exists():
-"""
+    if not Friend.objects.filter(attendee1=attendee1, attendee2=attendee2).exists() and not Friend.objects.filter(attendee1=attendee2, attendee2=attendee1).exists():
+        Friend.objects.create(
+            attendee1=attendee1,
+            attendee2=attendee2,
+        )
+        return JsonResponse({"sent": True})
+    return JsonResponse({"sent": False})
+        
