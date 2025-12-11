@@ -75,7 +75,8 @@ export default function AdminOrg() {
 
   return (
     <main className="flex justify-center items-center flex-col gap-5 w-full">
-      <div className="flex w-60 justify-center items-center">
+        <h1 className="text-3xl font-bold">Organizers</h1>
+      <div className="flex w-100 justify-center items-center">
         <Input
           placeholder="Search..."
           onChange={(e) => setSearch(e.target.value)}

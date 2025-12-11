@@ -10,6 +10,7 @@ import User from "./pages/dashboards/user-dashboard/User";
 import AdminEvents from "./pages/dashboards/admin-dashboard/adminEvents";
 import { Admin, adminItems } from "./pages/dashboards/admin-dashboard/Admin";
 import Layout from "./components/Layout";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import AdminVenues from "./pages/dashboards/admin-dashboard/adminVenues";
 import AdminReportCases from "./pages/dashboards/admin-dashboard/AdminReportCases";
 import AdminOrg from "./pages/dashboards/admin-dashboard/adminOrg";
@@ -34,12 +35,16 @@ function App() {
       <Route path="/user" element={<User />} />
       <Route
         path="/admin"
-        element={<Layout sidebar={<DashboardSideBar items={adminItems} />} />}
+        element={
+          <ProtectedAdminRoute>
+            <Layout sidebar={<DashboardSideBar items={adminItems} />} />
+          </ProtectedAdminRoute>
+        }
       >
         <Route path="/admin" index element={<Admin />} />
         <Route path="/admin/venues" element={<AdminVenues />} />
         <Route path="/admin/events" element={<AdminEvents />} />
-        <Route path="/admin/org" element={<AdminOrg />}/>
+        <Route path="/admin/org" element={<AdminOrg />} />
         <Route path="/admin/reportcase" element={<AdminReportCases />} />
         <Route path="/admin/performers" element={<AdminPerformers />} />
       </Route>

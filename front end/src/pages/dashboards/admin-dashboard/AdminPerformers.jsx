@@ -2,8 +2,20 @@ import Input from "@/components/Input";
 import { validateAddPerformer } from "@/pages/sign up/validations";
 import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
-import {Input as Search} from "@/components/ui/input"
-
+import { Input as Search } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Trash } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 export default function AdminPerformers() {
   const FIELD_CONATIANER_CLASSNAME =
@@ -35,17 +47,21 @@ export default function AdminPerformers() {
     }
 
     try {
-      const res = await fetch("http://localhost:8000/event/addperformer/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const res = await fetch(
+        "http://localhost:8000/adminutils/addperformer/",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
 
       if (!res.ok) throw new Error("Failed to add performer");
 
       alert("Performer added successfully!");
       setErrors({});
-      setFormData({ name: "", bio: "" });
+      setFormData({ name: "", bio: "", id: "" });
+      setPerformers(await getPerformers());
     } catch (err) {
       console.error(err);
       alert("Error adding performer");
@@ -92,15 +108,13 @@ export default function AdminPerformers() {
   const filteredPerformers =
     !loading &&
     performers.filter((o) =>
-      `${o.first_name} ${o.last_name}`
-        .toLowerCase()
-        .includes(search.toLowerCase())
+      `${o.name}`.toLowerCase().includes(search.toLowerCase())
     );
 
   return (
-    <div className="flex flex-col justify-center items-center w-full px-32 text-[30px] font-bold">
-      <h1>Admin Main Page</h1>
-      <div className="flex flex-col flex-wrap w-full px-10 shadow-2xl py-5 rounded-xl bg-card mt-3">
+    <div className="flex flex-col justify-center items-center text-[30px] font-bold w-full px-32">
+      <h1>Performers</h1>
+      <div className="flex flex-col flex-wrap w-full px-10 shadow-2xl text-[30px] font-bold py-5 rounded-xl bg-card mt-3 mb-5">
         <h1 className="text-xl mb-3">Add a Performer</h1>
 
         <div className={FIELD_CONATIANER_CLASSNAME}>
@@ -139,41 +153,46 @@ export default function AdminPerformers() {
           </div>
         </div>
       </div>
-
-      <main className="flex justify-center items-center flex-col gap-5 w-full my-10">
-      <div className="flex w-60 justify-center items-center">
-        <Search
-          placeholder="Search..."
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
-      <div className="w-full flex justify-start flex-wrap gap-5 py-5">
-        {!loading && filteredPerformers.length === 0  && 
-          <p className="text-center w-full">No Performers found</p>}
-        {!loading &&
-          filteredPerformers.map((per) => {
-            return (
-              <PerformerCard
-                performerName={`sdfsdf`}
-                key={``}
-                reportCount={0}
-              />
-            );
-          })
-         }
-         {loading && <Spinner />}
-      </div>
-    </main>
+      <div className="w-full border-b-2 border-accent"></div>
+      <main className="flex justify-center items-center flex-col gap-5 w-full text-[15px] my-10">
+        <div className="flex w-100 justify-center items-center">
+          <Search
+            placeholder="Search..."
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="w-full flex justify-start flex-wrap gap-5 py-5">
+          {!loading && filteredPerformers.length === 0 && (
+            <p className="text-center w-full">No Performers found</p>
+          )}
+          {!loading &&
+            filteredPerformers.map((per) => {
+              return (
+                <PerformerCard
+                  performerName={per.name}
+                  key={per.performer_id}
+                  reportCount={0}
+                  id={per.performer_id}
+                  onUpdate={() => setPerformers(getPerformers())}
+                />
+              );
+            })}
+          {loading && (
+            <div className="w-full flex justify-center flex-wrap gap-5 pb-5">
+              <Spinner />
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }
 
-
 function PerformerCard({ performerName, id, onUpdate }) {
   return (
-    <div className="relative max-w-max pl-3 pr-8 py-5 bg-card rounded-xl shadow mx-5">
+    <div className="relative max-w-max pl-3 pr-8 py-5 bg-card rounded-xl shadow mx-5 text">
       <p>Performer Name: {performerName}</p>
-      <Alert performerName={performerName} onUpdate={onUpdate}>
+      <Alert performerName={performerName} onUpdate={onUpdate} id={id}>
         <div
           title="delete from database"
           className="absolute bottom-0 right-0 -mb-4 -mr-6
@@ -183,5 +202,53 @@ function PerformerCard({ performerName, id, onUpdate }) {
         </div>
       </Alert>
     </div>
+  );
+}
+
+function Alert({ children, id, performerName,onUpdate }) {
+  async function deletePer(id) {
+    try {
+      const response = await fetch(
+        `http://localhost:8000/adminutils/deleteperformer/`,
+        {
+          method: "DELETE",
+          body: JSON.stringify({ id }),
+        }
+      );
+      const data = await response.json();
+      if (data["message"]) {
+        console.log(data["message"]);
+        onUpdate();
+      } else {
+        console.error(data["error"]);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete "
+            {performerName}" and remove them from the database
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel className="hover:cursor-pointer">
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction className="hover:cursor-pointer">
+            <div className="hover:cursor-pointer" onClick={() => deletePer(id)}>
+              Continue
+            </div>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

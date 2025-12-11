@@ -2,9 +2,7 @@ import Input from "@/components/Input";
 import { UserContext } from "@/UserContext";
 import { MapPin, Home, Ticket, UserRound, Flag, MicVocal } from "lucide-react";
 import { useContext } from "react";
-import { useEffect } from "react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 export const adminItems = [
   {
@@ -40,26 +38,13 @@ export const adminItems = [
 ];
 
 export function Admin() {
-  // User can change their account info
-  // if the username context is null, redirect to home page
+  // Admin check is now handled universally by ProtectedAdminRoute wrapper
+  // All /admin/* routes are protected
 
-  const { user, loadingUser } = useContext(UserContext);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loadingUser) {
-      if (!user || user.status !== "Administrator") {
-        navigate("/"); // Redirect to home page
-      } else {
-        setFormData({
-          username: user.username,
-        });
-      }
-    }
-  }, [loadingUser, user]);
+  const { user } = useContext(UserContext);
 
   const [formData, setFormData] = useState({
-    username: "",
+    username: user?.username || "",
     oldPassword: "",
     newPassword: "",
     email: "",

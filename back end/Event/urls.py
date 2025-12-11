@@ -5,6 +5,7 @@ urlpatterns = [
     path("addevent/", views.addEvent, name="addevent"),
     path("getvenues/", views.getVenues, name="getvenues"),
     path("getevents/", views.getEvents, name="getevents"),
+    path("getorganizerevents", views.getOrganizerEvents, name="getorganizerevents"),
     path("getcategories/", views.getCategories, name="getcategories"),
     path("addvenue/", views.addVenue, name="addvenue"),
 ]
