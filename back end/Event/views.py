@@ -31,22 +31,33 @@ def addEvent(request):
     return JsonResponse({"message": "Event created", "id": event.event_id})
 
 def getVenues(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "GET only"}, status=405)
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM api_venue")
         result = cursor.fetchone()
     return JsonResponse({"venue": result})
 
 def getCategories(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "GET only"}, status=405)
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM api_category")
         result = cursor.fetchone()
     return JsonResponse({"categories": result})
 
 def getEvents(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "GET only"}, status=405)
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM api_event")
         result = cursor.fetchone()
     return JsonResponse({"Events": result})
+
+def getOrganizerEvents(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "GET only"}, status=405)
+    return Event.objects.filter(owner=request.get("organizer"))
 
 def addTicketType(request):
     if request.method != "POST":
