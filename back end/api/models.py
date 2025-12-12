@@ -12,7 +12,7 @@ class User(models.Model):
     phone = models.CharField(max_length=255, null=True, blank=True)
     status = models.CharField(max_length=255, null=True, blank=True)
 
-    def _str_(self):
+    def __str__(self):
         return self.username
 
 class Venue(models.Model):

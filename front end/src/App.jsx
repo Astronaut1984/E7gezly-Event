@@ -6,7 +6,7 @@ import Login from "./pages/login/Login";
 import SignUp from "./pages/sign up/signup.jsx";
 import Events from "./pages/events/Events.jsx";
 import "./index.css";
-import User from "./pages/dashboards/user-dashboard/User";
+import User from "./pages/dashboards/att-dashboard/Attendee";
 import AdminEvents from "./pages/dashboards/admin-dashboard/adminEvents";
 import { Admin, adminItems } from "./pages/dashboards/admin-dashboard/Admin";
 import Layout from "./components/Layout";
@@ -24,6 +24,12 @@ import OrganizerMyEvents from "./pages/dashboards/org-dashboard/OrganizerMyEvent
 import OrganizerFollowers from "./pages/dashboards/org-dashboard/OrganizerFollowers";
 import OrganizerChat from "./pages/dashboards/org-dashboard/OrganizerChat";
 import AdminPerformers from "./pages/dashboards/admin-dashboard/AdminPerformers";
+import { attItems} from "./pages/dashboards/att-dashboard/Attendee";
+import  Attendee from "./pages/dashboards/att-dashboard/Attendee";
+import AttendeeEvents from "./pages/dashboards/att-dashboard/AttendeeEvents";
+import AttendeeFriends from "./pages/dashboards/att-dashboard/AttendeeFriends";
+import AttendeeFollowedOrg from "./pages/dashboards/att-dashboard/AttendeeFollowedOrg";
+import AttendeeWishlist from "./pages/dashboards/att-dashboard/AttendeeWishlist";
 
 function App() {
   return (
@@ -61,6 +67,17 @@ function App() {
         <Route path="/org/followers" element={<OrganizerFollowers />} />
         <Route path="/org/my-events" element={<OrganizerMyEvents />} />
         <Route path="/org/chat" element={<OrganizerChat />} />
+      </Route>
+      <Route path="/att" element={
+        <ProtectedRoute role="Attendee">
+          <Layout sidebar={<DashboardSideBar items={attItems}/>} />
+        </ProtectedRoute>
+      }>
+        <Route path="/att" index element={<Attendee />}/>
+        <Route path="/att/my-events" index element={<AttendeeEvents />}/>
+        <Route path="/att/friends" index element={<AttendeeFriends />}/>
+        <Route path="/att/followed-org" index element={<AttendeeFollowedOrg />}/>
+        <Route path="/att/wishlist" index element={<AttendeeWishlist />}/>
       </Route>
     </Routes>
   );

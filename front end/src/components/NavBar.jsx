@@ -34,7 +34,7 @@ export default function NavBar() {
   }
 
   return (
-    <div className="z-10 fixed w-full bg-card text-primary items-center flex justify-between p-1">
+    <div className="z-10 fixed w-full bg-card text-primary items-center flex justify-between p-1 select-none">
       <div className="ml-5 flex justify-center items-center">
         <img src={Image} className="w-12 mr-2"/>
         <h1 className="text-2xl font-bold">E7gezly Event</h1>
@@ -65,7 +65,7 @@ export default function NavBar() {
         )}
         <button
           onClick={() => dispatch(toggleTheme())}
-          className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
+          className="p-2 rounded hover:bg-gray-200 cursor-pointer dark:hover:bg-gray-700 transition-colors duration-200"
         >
         {dark ? <Sun className="text-primary"/> : <Moon className="text-primary"/>}
         </button>

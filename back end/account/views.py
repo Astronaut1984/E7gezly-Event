@@ -65,7 +65,9 @@ def me(request):
                     "city": user.city,
                     "country": user.country,
                     "status": user.status,
-                    "wallet": user.wallet
+                    "wallet": user.wallet,
+                    "phone": user.phone,
+                    "email": user.email,
                 }
             }
         )
@@ -94,13 +96,15 @@ def login_view(request):
                     "success": True,
                     "message": "Logged in",
                     "user": {
-                        "username": user.username,
-                        "first_name": user.first_name,
-                        "last_name": user.last_name,
-                        "city": user.city,
-                        "country": user.country,
-                        "status": user.status,
-                        "wallet": user.wallet
+                    "username": user.username,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "city": user.city,
+                    "country": user.country,
+                    "status": user.status,
+                    "wallet": user.wallet,
+                    "phone": user.phone,
+                    "email": user.email,
                     }
                 })
             else:
@@ -116,102 +120,25 @@ def checkUsername(request):
         return JsonResponse({"usernameExists": True})
     return JsonResponse({"usernameExists": False})
 
-@csrf_exempt
-def getUserFriends(request):
-    username = json.loads(request.body).get("username")
-    with connection.cursor() as cursor:
-        cursor.execute("""(select attendee1_id from api_friend where attendee2_id = %s and status = 'A')
-                       union
-                       (select attendee2_id from api_friend where attendee1_id = %s and status = 'A');""",
-                       [username, username])
-        friends = [f[0] for f in cursor.fetchall()]
-    return JsonResponse({"friends": friends})
-
-@csrf_exempt
-def getSentFriendRequests(request):
-    username = request.session.get('username')
-    with connection.cursor() as cursor:
-        cursor.execute("""select attendee2_id from api_friend where attendee1_id = %s and status = 'P';""", [username])
-        requests = [f[0] for f in cursor.fetchall()]
-    return JsonResponse({"requests": requests})
-
-@csrf_exempt
-def getReceivedFriendRequests(request):
-    username = request.session.get('username')
-    with connection.cursor() as cursor:
-        cursor.execute("""select attendee1_id from api_friend where attendee2_id = %s and status = 'P';""", [username])
-        requests = [f[0] for f in cursor.fetchall()]
-    return JsonResponse({"requests": requests})
-
-@csrf_exempt
-def getBlockedUsers(request):
-    username = request.session.get('username')
-    with connection.cursor() as cursor:
-        cursor.execute("""select attendee2_id from api_friend where attendee1_id = %s and status = 'B';""", [username])
-        requests = [f[0] for f in cursor.fetchall()]
-    return JsonResponse({"Blocked": requests})
-
-@csrf_exempt
-def blockUnblockUser(request): #True=Block, False=Unblock
-    attendee1 = request.session.get('username')
-    attendee2 = json.loads(request.body).get("attendee")
-    Action = json.loads(request.body).get("action")
-    if Action:#Block
-        if not Friend.objects.filter(attendee1_id=attendee1, attendee2_id=attendee2).exists() and not Friend.objects.filter(attendee1_id=attendee2, attendee2_id=attendee1).exists() :
-            Friend.objects.create(
-                attendee1_id=attendee1,
-                attendee2_id=attendee2,
-                status='B'
-            )
-            return JsonResponse({"error": False, "Action": True})
-    else:#Unblock
-        blocked_relationship = Friend.objects.filter(attendee1_id=attendee1, attendee2_id=attendee2, status='B')
-        if blocked_relationship.exists():
-            blocked_relationship.delete()
-            return JsonResponse({"error": False, "Action": False})
-    return JsonResponse({"error": True})
-
-@csrf_exempt
-def respondToFriendRequest(request):
-    attendee1 = json.loads(request.body).get("attendee")
-    attendee2 = request.session.get('username')
-    response = json.loads(request.body).get("response")
-    with connection.cursor() as cursor:
-        if response:
-            cursor.execute("""update api_friend set status = 'A' where attendee1_id = %s and attendee2_id = %s""", [attendee1, attendee2])
-            return JsonResponse({"error": False, "response": True})
-        else:
-            cursor.execute("""delete from api_friend where attendee1_id = %s and attendee2_id = %s""", [attendee1, attendee2])
-            return JsonResponse({"error": False, "response": False})
-    return JsonResponse({"error": True})
-
-@csrf_exempt
-def getFollowedOrganizers(request):
-    username = request.session.get('username')
-    with connection.cursor() as cursor:
-        cursor.execute("""(select organizer_id from api_follow where attendee_id = %s and status = 'A');""",
-                       [username])
-        followed = [f[0] for f in cursor.fetchall()]
-    return JsonResponse({"followed": followed})
-
-@csrf_exempt
-def getFollowers(request):
-    username = json.loads(request.body).get("username")
-    with connection.cursor() as cursor:
-        cursor.execute("""(select attendee_id from api_follow where organizer_id = %s and status = 'A');""",
-                       [username])
-        followed = [f[0] for f in cursor.fetchall()]
-    return JsonResponse({"followed": followed})
-
-@csrf_exempt
-def addFriend(request):
-    attendee1 = request.session.get('username')
-    attendee2 = json.loads(request.body).get("receiver")
-    if not Friend.objects.filter(attendee1_id=attendee1, attendee2_id=attendee2).exists() and not Friend.objects.filter(attendee1_id=attendee2, attendee2_id=attendee1).exists():
-        Friend.objects.create(
-            attendee1_id=attendee1,
-            attendee2_id=attendee2,
-        )
-        return JsonResponse({"sent": True})
-    return JsonResponse({"sent": False})
-        
+def editAccountInfo(request):
+    pass
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)    
+            user = User.objects.get(username=request.session.get("username"))
+            new_username = data.get("username") or user.username
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE api_user SET
+                    username = %s, first_name = %s, last_name = %s, email = %s, status = %s, country = %s, city = %s, phone = %s
+                    where username = %s
+                    """,
+                    [new_username, data.get("firstName") or user.first_name, data.get("lastName") or user.last_name, data.get("email") or user.email, data.get("accountType") or user.status, data.get("country") or user.country, data.get("city") or user.city, data.get("phoneNumber") or user.phone, user.username]
+                )
+            request.session['username'] = new_username
+            return JsonResponse({"message": "User updated successfully"})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    else:
+        return JsonResponse({"error": "Only POST method allowed"}, status=405)
