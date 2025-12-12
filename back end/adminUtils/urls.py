@@ -9,4 +9,5 @@ urlpatterns = [
     path("deleteperformer/", views.deletePerformer, name="deleteperformer"),
     path("getvenues/", views.getVenues, name="getvenues"),
     path("deletevenue/", views.deleteVenue, name="deletevenue"),
+    path("resolvereport/", views.resolveReport, name="resolvereport"),
 ]
