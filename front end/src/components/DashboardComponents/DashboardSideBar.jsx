@@ -76,7 +76,7 @@ export function DashboardSideBar({ items }) {
       <SidebarFooter className="flex justify-center items-center mb-2 overflow-hidden whitespace-nowrap">
         <NavLink
           to="/"
-          className={`bg-primary-hover py-1 px-3 rounded-2xl text-sidebar-accent-foreground ${isCollapsed && "hidden"}`}
+          className={`bg-primary-hover py-2 px-5 rounded-xl text-sidebar-accent-foreground ${isCollapsed && "hidden"}`}
         >
           Back to Home
         </NavLink>

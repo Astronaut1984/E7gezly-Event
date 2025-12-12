@@ -5,6 +5,7 @@ import { toggleTheme, setTheme } from "@/store/themeSlice";
 import { UserContext } from "@/UserContext";
 import { useEffect } from "react";
 import { Sun, Moon } from "lucide-react";
+import Image from "./../assets/E7gezly Event Logo.svg"
 
 export default function NavBar() {
   const dark = useSelector((state) => state.theme.dark);
@@ -28,7 +29,8 @@ export default function NavBar() {
 
   return (
     <div className="z-10 fixed w-full bg-card text-primary items-center flex justify-between p-1">
-      <div className="ml-5">
+      <div className="ml-5 flex justify-center items-center">
+        <img src={Image} className="w-12 mr-2"/>
         <h1 className="text-2xl font-bold">E7gezly Event</h1>
       </div>
       <nav className="mx-auto max-w-5xl flex items-center gap-6 py-4">
