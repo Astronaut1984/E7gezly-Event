@@ -42,7 +42,9 @@ INSTALLED_APPS = [
     'api',
     'corsheaders',
     'account',
-    'Event'
+    'Event',
+    'adminUtils',
+    'attendeeUtils',
 ]
 
 MIDDLEWARE = [

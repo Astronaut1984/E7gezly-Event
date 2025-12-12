@@ -24,7 +24,7 @@ export default function Input({
         !classNameVar && "w-full"
       } relative mb-[23px] ${classNameVar}`}
     >
-      <span className="text-[14px] text-card-foreground leading-normal pl-[7px]">
+      <span className="text-[14px] select-none text-card-foreground leading-normal pl-[7px]">
         {title}
       </span>
       <input

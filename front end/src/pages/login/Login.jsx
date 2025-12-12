@@ -14,7 +14,7 @@ export default function Login() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:8000/account/login/") // call Django view
+    fetch("http://localhost:8000/account/usersindb/") // call Django view
       .then((res) => res.json())
       .then((data) => {
         console.log(data); // see structure
