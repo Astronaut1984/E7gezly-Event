@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 urlpatterns = [
-    path("login/", views.login, name="login"),
+    path("usersindb/", views.countUsers, name="usersindb"),
     path("signup/", views.signup, name="signup"),
     path("checkemail/", views.checkEmail, name="checkemail"), #bool: emailExists
     path("checkusername/", views.checkUsername, name="checkusername"), #bool: usernameExists

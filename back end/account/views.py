@@ -2,13 +2,13 @@ from django.shortcuts import render
 from django.db import connection
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from api.models import User, Friend
+from api.models import User
 import json
 import hashlib
 
 # Create your views here.
 @csrf_exempt
-def login(request):
+def countUsers(request):
     with connection.cursor() as cursor:
         cursor.execute("SELECT COUNT(*) FROM api_user")
         result = cursor.fetchone()
@@ -16,7 +16,7 @@ def login(request):
 
 @csrf_exempt
 def signup(request):
-    if request.method == "POST":
+    if request.method == "PUT":
         try:
             data = json.loads(request.body)     
             hashed = hashlib.sha256(data.get("password").encode()).hexdigest()
@@ -33,7 +33,7 @@ def signup(request):
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
     else:
-        return JsonResponse({"error": "Only POST method allowed"}, status=405)
+        return JsonResponse({"error": "Only PUT method allowed"}, status=405)
 
 @csrf_exempt
 def checkEmail(request):
@@ -120,8 +120,10 @@ def checkUsername(request):
         return JsonResponse({"usernameExists": True})
     return JsonResponse({"usernameExists": False})
 
+@csrf_exempt
 def editAccountInfo(request):
-    if request.method == "POST":
+    pass
+    if request.method == "PUT":
         try:
             data = json.loads(request.body)    
             user = User.objects.get(username=request.session.get("username"))
@@ -133,7 +135,7 @@ def editAccountInfo(request):
                     username = %s, first_name = %s, last_name = %s, email = %s, status = %s, country = %s, city = %s, phone = %s
                     where username = %s
                     """,
-                    [new_username, data.get("firstName") or user.first_name, data.get("lastName") or user.last_name, data.get("email") or user.email, data.get("accountType") or user.status, data.get("country") or user.country, data.get("city") or user.city, data.get("phoneNumber") or user.phone, user.username]
+                    [new_username, data.get("firstName") or user.first_name, data.get("lastName") or user.last_name, data.get("email") or user.email, data.get("accountType") or user.status, data.get("country") or user.country, data.get("city") or user.city, data.get("phone") or user.phone, user.username]
                 )
             request.session['username'] = new_username
             return JsonResponse({"message": "User updated successfully"})
