@@ -1,6 +1,9 @@
 import Input from "@/components/Input";
 import SelectOnly from "@/components/SelectOnly";
 import { useState, useEffect } from "react";
+import { Label } from "@/components/ui/label";
+import { Input as ShadcnInput } from "@/components/ui/input";
+import placeholderPic from "../../../assets/placeholder.jpeg"
 
 // --- Options (Unchanged) ---
 const optionsLocation = [
@@ -63,6 +66,13 @@ export default function OrganizerAddEvents() {
   const [loading, setLoading] = useState(true);
   const [venues, setVenues] = useState([]);
   const [loadingVenues, setLoadingVenues] = useState(true);
+  const [preview, setPreview] = useState(null);
+
+  function handleFileChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setPreview(URL.createObjectURL(file));
+  }
 
   async function getCategories() {
     try {
@@ -89,7 +99,7 @@ export default function OrganizerAddEvents() {
       const res = await fetch("http://localhost:8000/event/getvenues/");
 
       if (!res.ok) {
-        setLoading(false)
+        setLoading(false);
         setLoadingVenues(false);
         console.error("Venue fetching failed");
         return [];
@@ -296,6 +306,24 @@ export default function OrganizerAddEvents() {
               }
             }}
           />
+          <div className="grid w-full items-center gap-3">
+            <Label htmlFor="picture">Picture</Label>
+            <ShadcnInput
+              id="picture"
+              type="file"
+              className="hover:cursor-pointer w-80"
+              accept="image/*"
+              onChange={handleFileChange}
+            />
+
+            <div className="flex justify-center w-full mt-4 rounded-xl">
+              {
+              !preview ? <img src={placeholderPic} className="w-160 h-90 object-cover rounded-xl"/> : <img src={preview} className="w-40 h-40 object-cover mt-4 rounded" />
+              }
+            </div>
+
+            
+          </div>
           {/* ---------------------------------------------------- */}
           {/* --- Ticket Types Section (Dynamic) --- */}
           {/* ---------------------------------------------------- */}
