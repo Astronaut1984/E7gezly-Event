@@ -52,5 +52,7 @@ export default function useAdminResource({
     [deleteUrl, deletePayloadKey, fetchItems]
   );
 
+
+
   return { items, loading, error, fetchItems, remove, setItems };
 }

@@ -1,21 +1,29 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.db import connection
-from api.models import User, Performer, Venue
+from api.models import User, Performer, Venue, Report
 from django.db.models import Count
 import json
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Count, Q
+from django.http import JsonResponse
 
 # Create your views here.
 @csrf_exempt
 def getOrganizers(request):
     organizers = list(
         User.objects.filter(status="Organizer")
-        .annotate(report_count=Count("reports_against"))
+        .annotate(
+            report_count=Count(
+                "reports_against",
+                filter=~Q(reports_against__status="R")
+            )
+        )
         .order_by("-report_count")
         .values("username", "first_name", "last_name", "report_count")
     )
-    return JsonResponse({"organizers": organizers}) 
+    return JsonResponse({"organizers": organizers})
+
 
 @csrf_exempt
 def deleteOrganizer(request):
@@ -86,6 +94,32 @@ def deleteVenue(request):
 
 def getReports(request):
     reports = list(
-        reports.objects.all().values()
+        Report.objects.all().values("report_id", "report_content", "status", "attendee", "owner", "administrator")
     )
-    return JsonResponse({"reports": reports})
+    return JsonResponse({"reports" : reports})
+
+@csrf_exempt
+def resolveReport(request):
+    if request.method != "PUT":
+        return JsonResponse({"error": "PUT only"}, status=405)
+    data = json.loads(request.body)
+    report_id = data.get("report_id")
+    admin_username = data.get("administrator")
+    if not report_id:
+        return JsonResponse({"error": "Report ID required"}, status=400)
+    if not admin_username:
+        return JsonResponse({"error": "Admin not found"}, status=400)
+        
+    
+    report = Report.objects.filter(report_id=report_id).first()
+    if report and report.administrator is not None:
+        return JsonResponse({"error": f"Already Resolved by {report.administrator}"}, status=400)
+
+    updated = Report.objects.filter(report_id=report_id).update(
+        administrator=admin_username,
+        status="R"
+    )
+    if updated == 0:
+        return JsonResponse({"error": "Report not found"}, status=404)
+    
+    return JsonResponse({"message": f"Report '{report_id}' resolved"})
