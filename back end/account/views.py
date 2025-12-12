@@ -121,7 +121,6 @@ def checkUsername(request):
     return JsonResponse({"usernameExists": False})
 
 def editAccountInfo(request):
-    pass
     if request.method == "POST":
         try:
             data = json.loads(request.body)    
