@@ -1,15 +1,8 @@
 import Input from "@/components/Input";
 import SelectOnly from "@/components/SelectOnly";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // --- Options (Unchanged) ---
-const optionsCategory = [
-  "Concert",
-  "Comedy",
-  "Art & Theatre",
-  "Disco",
-  "Week Trip",
-];
 const optionsLocation = [
   "Mall of Egypt",
   "Arabia Mall",
@@ -70,6 +63,37 @@ export default function OrganizerAddEvents() {
     buses: [],
   });
 
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    fetch("http://localhost:8000/event/getcategories/") // call Django view
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data); // see structure
+        setCategories(data.categories); // extract the value
+      })
+      .catch((err) => console.error(err));
+  }, []);
+  // useEffect(() => {
+  //   const fetchCategories = async () => {
+  //     try {
+  //       // Adjust port if needed (assuming 8000 based on Django defaults)
+  //       const response = await fetch(
+  //         "http://localhost:8000/event/getcategories/"
+  //       );
+  //       if (response.ok) {
+  //         const data = await response.json();
+  //         // data.categories is the list from your Django view
+  //         setCategories(data.categories);
+  //       } else {
+  //         console.error("Failed to fetch categories");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error connecting to backend:", error);
+  //     }
+  //   };
+
+  //   fetchCategories();
+  // }, []);
   // --- General Change Handler for static fields ---
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -188,12 +212,19 @@ export default function OrganizerAddEvents() {
             />
             <SelectOnly
               title="Category"
-              options={optionsCategory}
+              options={categories.map((cat) => cat.name)}
               placeholder="Select category"
-              value={formData.category}
-              onSelect={(option) =>
-                setFormData({ ...formData, category: option })
+              value={
+                categories.find((c) => c.id === formData.category)?.name || ""
               }
+              onSelect={(selectedName) => {
+                const selectedCategory = categories.find(
+                  (c) => c.name === selectedName
+                );
+                if (selectedCategory) {
+                  setFormData({ ...formData, category: selectedCategory.id });
+                }
+              }}
             />
           </div>
           <Input
