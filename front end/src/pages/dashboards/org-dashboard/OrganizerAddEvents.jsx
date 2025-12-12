@@ -46,13 +46,10 @@ const initialBus = {
 };
 
 export default function OrganizerAddEvents() {
-  // ----------------------------------------------------
-  // Task 3: Updated formData Structure
-  // ----------------------------------------------------
   const [formData, setFormData] = useState({
     eventName: "",
     description: "",
-    category: "",
+    category: null,
     start_date: "",
     end_date: "",
     location: "",
@@ -62,38 +59,62 @@ export default function OrganizerAddEvents() {
     performers: [],
     buses: [],
   });
-
   const [categories, setCategories] = useState([]);
-  useEffect(() => {
-    fetch("http://localhost:8000/event/getcategories/") // call Django view
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data); // see structure
-        setCategories(data.categories); // extract the value
-      })
-      .catch((err) => console.error(err));
-  }, []);
-  // useEffect(() => {
-  //   const fetchCategories = async () => {
-  //     try {
-  //       // Adjust port if needed (assuming 8000 based on Django defaults)
-  //       const response = await fetch(
-  //         "http://localhost:8000/event/getcategories/"
-  //       );
-  //       if (response.ok) {
-  //         const data = await response.json();
-  //         // data.categories is the list from your Django view
-  //         setCategories(data.categories);
-  //       } else {
-  //         console.error("Failed to fetch categories");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error connecting to backend:", error);
-  //     }
-  //   };
+  const [loading, setLoading] = useState(true);
+  const [venues, setVenues] = useState([]);
+  const [loadingVenues, setLoadingVenues] = useState(true);
 
-  //   fetchCategories();
-  // }, []);
+  async function getCategories() {
+    try {
+      setLoading(true);
+      const res = await fetch("http://localhost:8000/event/getcategories/");
+      if (!res.ok) {
+        setLoading(false);
+        console.error("Category fetching failed");
+        return [];
+      }
+      const data = await res.json();
+      setLoading(false);
+      return data["categories"] || [];
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  }
+
+  async function getVenues() {
+    try {
+      setLoadingVenues(true);
+      const res = await fetch("http://localhost:8000/event/getvenues/");
+
+      if (!res.ok) {
+        setLoadingVenues(false);
+        console.error("Venue fetching failed");
+        return [];
+      }
+      const data = await res.json();
+      setLoadingVenues(false);
+      return data["venues"] || [];
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  }
+
+  useEffect(() => {
+    async function loadCategories() {
+      const cats = await getCategories();
+      setCategories(cats);
+    }
+    async function loadVenues() {
+      const fetchedVenues = await getVenues();
+      setVenues(fetchedVenues);
+    }
+
+    loadVenues();
+    loadCategories();
+  }, []);
+
   // --- General Change Handler for static fields ---
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -212,17 +233,19 @@ export default function OrganizerAddEvents() {
             />
             <SelectOnly
               title="Category"
-              options={categories.map((cat) => cat.name)}
-              placeholder="Select category"
-              value={
-                categories.find((c) => c.id === formData.category)?.name || ""
+              options={
+                !loading && categories.map((cat) => cat["category_name"])
               }
+              placeholder="Select category"
+              value={(!loading && categories["category_name"]) || ""}
               onSelect={(selectedName) => {
                 const selectedCategory = categories.find(
                   (c) => c.name === selectedName
                 );
                 if (selectedCategory) {
                   setFormData({ ...formData, category: selectedCategory.id });
+                } else {
+                  setFormData({ ...formData, category: "" });
                 }
               }}
             />
@@ -255,12 +278,20 @@ export default function OrganizerAddEvents() {
           </div>
           <SelectOnly
             title="Venue"
-            options={optionsLocation}
-            placeholder="Select location"
-            value={formData.location}
-            onSelect={(option) =>
-              setFormData({ ...formData, location: option })
+            options={
+              !loadingVenues &&
+              venues.map((fetchedVenues) => fetchedVenues["venue_name"])
             }
+            placeholder="Select location"
+            value={(!loadingVenues && venues["venue_name"]) || ""}
+            onSelect={(selectedName) => {
+              const selectedVenue = venues.find((v) => v.name === selectedName);
+              if (selectedVenue) {
+                setFormData({ ...formData, venue: selectedVenue.location_id });
+              } else {
+                setFormData({ ...formData, venue: "" });
+              }
+            }}
           />
           {/* ---------------------------------------------------- */}
           {/* --- Ticket Types Section (Dynamic) --- */}
