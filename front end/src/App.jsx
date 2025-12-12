@@ -10,7 +10,7 @@ import User from "./pages/dashboards/user-dashboard/User";
 import AdminEvents from "./pages/dashboards/admin-dashboard/adminEvents";
 import { Admin, adminItems } from "./pages/dashboards/admin-dashboard/Admin";
 import Layout from "./components/Layout";
-import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+import ProtectedRoute from "./components/ProtectedAdminRoute";
 import AdminVenues from "./pages/dashboards/admin-dashboard/adminVenues";
 import AdminReportCases from "./pages/dashboards/admin-dashboard/AdminReportCases";
 import AdminOrg from "./pages/dashboards/admin-dashboard/adminOrg";
@@ -36,9 +36,9 @@ function App() {
       <Route
         path="/admin"
         element={
-          <ProtectedAdminRoute>
+          <ProtectedRoute role="Administrator">
             <Layout sidebar={<DashboardSideBar items={adminItems} />} />
-          </ProtectedAdminRoute>
+          </ProtectedRoute>
         }
       >
         <Route path="/admin" index element={<Admin />} />
@@ -50,7 +50,11 @@ function App() {
       </Route>
       <Route
         path="/org"
-        element={<Layout sidebar={<DashboardSideBar items={orgItems} />} />}
+        element={
+          <ProtectedRoute role="Organizer">
+            <Layout sidebar={<DashboardSideBar items={orgItems} />} />
+          </ProtectedRoute>
+        }
       >
         <Route path="/org" index element={<Organizer />} />
         <Route path="/org/add-events" element={<OrganizerAddEvents />} />

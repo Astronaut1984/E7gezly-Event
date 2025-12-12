@@ -14,7 +14,7 @@ import { useContext } from "react";
 export default function AdminReportCases() {
   const [value, setValue] = useState("P");
 
-  const { user, loading: userLoading } = useContext(UserContext);
+  const { user } = useContext(UserContext);
 
   const {
     items: reports,

@@ -108,7 +108,7 @@ export default function AdminVenues() {
 
   return (
     <div className="flex flex-col justify-center items-center w-full px-32 text-[30px] font-bold">
-      <h1>Admin Main Page</h1>
+      <h1>Venues</h1>
       <div className="flex flex-col flex-wrap w-full px-10 shadow-2xl py-5 rounded-xl bg-card mt-3">
         <h1 className="text-xl">Add a Venue</h1>
         <div className={FIELD_CONATIANER_CLASSNAME}>
@@ -239,9 +239,7 @@ function VenueCard({ venue, onDelete, onUpdate }) {
       <p className="text-sm">
         {city} - {country}
       </p>
-      <p className="text-sm">
-        Capacity: {capacity}
-      </p>
+      <p className="text-sm">Capacity: {capacity}</p>
       <AlertVenue venueName={name} onDelete={onDelete} onUpdate={onUpdate}>
         <div
           title="delete from database"

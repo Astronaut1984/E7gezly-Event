@@ -9,6 +9,12 @@ import Image from "./../assets/E7gezly Event Logo.svg"
 
 export default function NavBar() {
   const dark = useSelector((state) => state.theme.dark);
+  // Valid redirect URLs for the user icon
+  const validUrls = {
+    "Administrator": "/admin",
+    "Organizer": "/org",
+    "Attendee": "/att"
+  }
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(setTheme(dark));
@@ -51,7 +57,7 @@ export default function NavBar() {
         )}
         {user && (
           <NavLink
-            to={user.status == "Organiser" ? "/org" : "/admin"}
+            to={validUrls[user["status"]]}
             className="bg-primary flex items-center justify-center pt-0.5 text-2xl h-10 w-10 rounded-full text-white hover:bg-primary-hover"
           >
             {`${user?.first_name.charAt(0).toUpperCase()}`}
