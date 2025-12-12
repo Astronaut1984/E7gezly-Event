@@ -2,15 +2,6 @@ import Input from "@/components/Input";
 import SelectOnly from "@/components/SelectOnly";
 import { useState, useEffect } from "react";
 
-// --- Options (Unchanged) ---
-const optionsLocation = [
-  "Mall of Egypt",
-  "Arabia Mall",
-  "Tiba Mall",
-  "Marasi",
-  "Cairo University",
-];
-
 const getMinDateTime = () => {
   const now = new Date();
   // Simplified logic to get ISO string slice for datetime-local min attribute
@@ -37,7 +28,8 @@ const initialDiscount = {
 };
 
 const initialPerformer = {
-  performerName: "", // Using performerName for a distinct name
+  performerId: null, // Change to store ID, not just name
+  performerName: "",
 };
 
 const initialBus = {
@@ -59,66 +51,78 @@ export default function OrganizerAddEvents() {
     performers: [],
     buses: [],
   });
+
+  // State for fetched data lists
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [venues, setVenues] = useState([]);
+  const [performersList, setPerformersList] = useState([]);
+
+  // State for loading indicators
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const [loadingVenues, setLoadingVenues] = useState(true);
+  const [loadingPerformers, setLoadingPerformers] = useState(true);
 
-  async function getCategories() {
+  // ----------------------------------------------------
+  // 🎯 Consolidated Data Fetching Function
+  // ----------------------------------------------------
+  /**
+   * Fetches data from a specific endpoint and updates the relevant state.
+   * @param {string} url - The API endpoint URL.
+   * @param {function} setter - The state setter function (e.g., setCategories).
+   * @param {function} loadingSetter - The loading state setter (e.g., setLoadingCategories).
+   * @param {string} dataKey - The key in the JSON response (e.g., "categories", "venues", "performers").
+   */
+  const fetchData = async (url, setter, loadingSetter, dataKey) => {
+    loadingSetter(true);
+    console.log(`Fetching ${dataKey} from API: ${url}`);
     try {
-      setLoading(true);
-      const res = await fetch("http://localhost:8000/event/getcategories/");
-      if (!res.ok) {
-        setLoading(false);
-        console.error("Category fetching failed");
-        return [];
-      }
-      const data = await res.json();
-      setLoading(false);
-      return data["categories"] || [];
-    } catch (err) {
-      console.error(err);
-      return [];
-    }
-  }
+      // Simulate network delay for performers, if needed, otherwise remove this line
+      if (dataKey === "performers")
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
-  async function getVenues() {
-    try {
-      setLoading(true);
-      setLoadingVenues(true);
-      const res = await fetch("http://localhost:8000/event/getvenues/");
+      const res = await fetch(url);
 
       if (!res.ok) {
-        setLoading(false)
-        setLoadingVenues(false);
-        console.error("Venue fetching failed");
-        return [];
+        console.error(`${dataKey} fetching failed with status:`, res.status);
+        setter([]);
+        return;
       }
+
       const data = await res.json();
-      setLoadingVenues(false);
-      return data["venues"] || {};
+      setter(data[dataKey] || []);
     } catch (err) {
-      console.error(err);
-      return [];
+      console.error(`Error fetching ${dataKey}:`, err);
+      setter([]);
+    } finally {
+      loadingSetter(false);
     }
-  }
+  };
 
   useEffect(() => {
-    async function loadCategories() {
-      const cats = await getCategories();
-      setCategories(cats);
-    }
-    async function loadVenues() {
-      const fetchedVenues = await getVenues();
-      setVenues(fetchedVenues);
-    }
+    // Call the single fetch function for each data type
+    fetchData(
+      "http://localhost:8000/event/getcategories/",
+      setCategories,
+      setLoadingCategories,
+      "categories"
+    );
 
-    loadVenues();
-    loadCategories();
-    console.log(venues);
-  }, []);
+    fetchData(
+      "http://localhost:8000/event/getvenues/",
+      setVenues,
+      setLoadingVenues,
+      "venues"
+    );
 
-  // --- General Change Handler for static fields ---
+    fetchData(
+      "http://localhost:8000/event/getperformers/",
+      setPerformersList,
+      setLoadingPerformers,
+      "performers"
+    );
+  }, []); // Empty dependency array ensures this runs once on mount
+
+  // --- General Change Handler for static fields (UNCHANGED) ---
   const handleChange = (e) => {
     const { name, value } = e.target;
     let newValue = value;
@@ -157,7 +161,7 @@ export default function OrganizerAddEvents() {
   };
 
   // ----------------------------------------------------
-  // Task 4: New Change Handler for Array Fields
+  // Change Handler for Array Fields (UNCHANGED)
   // ----------------------------------------------------
   const handleArrayChange = (arrayName, index, e) => {
     const { name, value } = e.target;
@@ -211,6 +215,13 @@ export default function OrganizerAddEvents() {
   const handleRemove = (arrayName, index) => {
     setFormData((prevData) => {
       const newArray = prevData[arrayName].filter((_, i) => i !== index);
+      // Ensure there is always at least one ticket
+      if (arrayName === "tickets" && newArray.length === 0) {
+        return {
+          ...prevData,
+          [arrayName]: [{ ...initialTicket }],
+        };
+      }
       return {
         ...prevData,
         [arrayName]: newArray,
@@ -218,9 +229,22 @@ export default function OrganizerAddEvents() {
     });
   };
 
+  // ----------------------------------------------------
+  // Placeholder for Handle Submit
+  // ----------------------------------------------------
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Submitting form data:", formData);
+    // TODO: Add validation logic here
+    // TODO: Add API call (e.g., POST) to submit formData
+    alert("Form submitted! Check console for data structure.");
+  };
+
   const minDate = getMinDateTime();
   return (
-    <>
+    <form onSubmit={handleSubmit}>
+      {" "}
+      {/* Use a form element and handleSubmit */}
       <div className="flex flex-col justify-center items-center w-full px-32 text-[30px] font-bold">
         <h1>Add Event</h1>
         <div className="flex flex-wrap w-full px-32 shadow-2xl py-5 rounded-xl bg-card mt-3">
@@ -237,19 +261,23 @@ export default function OrganizerAddEvents() {
             <SelectOnly
               title="Category"
               options={
-                !loading && categories.map((cat) => cat["category_name"])
+                !loadingCategories &&
+                categories.map((cat) => cat["category_name"])
               }
               placeholder="Select category"
-              value={(!loading && categories["category_name"]) || ""}
+              // Corrected value binding logic
+              value={
+                categories.find((c) => c.category_id === formData.category)
+                  ?.category_name || ""
+              }
               onSelect={(selectedName) => {
                 const selectedCategory = categories.find(
-                  (c) => c.name === selectedName
+                  (c) => c.category_name === selectedName
                 );
-                if (selectedCategory) {
-                  setFormData({ ...formData, category: selectedCategory.id });
-                } else {
-                  setFormData({ ...formData, category: "" });
-                }
+                setFormData((prevData) => ({
+                  ...prevData,
+                  category: selectedCategory ? selectedCategory.id : null,
+                }));
               }}
             />
           </div>
@@ -282,27 +310,25 @@ export default function OrganizerAddEvents() {
           <SelectOnly
             title="Venue"
             options={
-              !loadingVenues &&
-              venues.map((fetchedVenues) => fetchedVenues["name"])
+              !loadingVenues && venues.map((v) => v["name"]) // Use 'name' from venues
             }
             placeholder="Select location"
-            value={(!loadingVenues && venues["name"]) || ""}
+            // Corrected value binding logic
+            value={
+              venues.find((v) => v.location_id === formData.venue)?.name || ""
+            }
             onSelect={(selectedName) => {
               const selectedVenue = venues.find((v) => v.name === selectedName);
-              if (selectedVenue) {
-                setFormData({ ...formData, venue: selectedVenue.location_id });
-              } else {
-                setFormData({ ...formData, venue: "" });
-              }
+              setFormData((prevData) => ({
+                ...prevData,
+                venue: selectedVenue ? selectedVenue.location_id : "",
+              }));
             }}
           />
-          {/* ---------------------------------------------------- */}
           {/* --- Ticket Types Section (Dynamic) --- */}
-          {/* ---------------------------------------------------- */}
           <h1 className="mt-5 w-full">
             Ticket Types (Count: {formData.tickets.length})
           </h1>{" "}
-          {/* Task 2: Counter */}
           {formData.tickets.map((ticket, index) => (
             <div
               key={index}
@@ -363,13 +389,10 @@ export default function OrganizerAddEvents() {
           >
             Add Ticket Type
           </button>
-          {/* ---------------------------------------------------- */}
           {/* --- Discount Section (Dynamic) --- */}
-          {/* ---------------------------------------------------- */}
           <h1 className="mt-5 w-full">
             Discounts (Count: {formData.discounts.length})
           </h1>{" "}
-          {/* Task 2: Counter */}
           {formData.discounts.map((discount, index) => (
             <div
               key={index}
@@ -448,65 +471,96 @@ export default function OrganizerAddEvents() {
           >
             Add Discount
           </button>
-          {/* ---------------------------------------------------- */}
           {/* --- Performers Section (Dynamic) --- */}
-          {/* ---------------------------------------------------- */}
           <h1 className="mt-5 w-full">
             Performers (Count: {formData.performers.length})
           </h1>{" "}
-          {/* Task 2: Counter */}
-          {formData.performers.map((performer, index) => (
-            <div
-              key={index}
-              className="flex flex-col w-full border-2 border-dashed border-gray-300 p-4 mb-4 rounded-lg"
-            >
-              <h2 className="text-[20px] font-semibold">
-                Performer #{index + 1}
-              </h2>
-              <div className="flex justify-between w-full gap-30">
-                <SelectOnly
-                  title="Performer Name"
-                  options={[
-                    "Amr Diab",
-                    "Hany Shaker",
-                    "Mohamed Mounir",
-                    "Sherine",
-                    "Tamer Hosny",
-                  ]}
-                  placeholder="Select Performer"
-                  value={performer.performerName}
-                  onSelect={(option) =>
-                    handleArrayChange("performers", index, {
-                      target: { name: "performerName", value: option },
-                    })
-                  }
-                />
+          {formData.performers.map((performer, index) => {
+            // 🎯 FILTER LOGIC (1): Calculate available performers for this specific slot
+            // Get IDs of all performers *already assigned* to other slots
+            const assignedPerformerIds = formData.performers
+              .filter((p, i) => i !== index) // Exclude the current performer slot
+              .map((p) => p.performerId);
+
+            // Filter the full list to get only available performers
+            const availablePerformers = performersList.filter(
+              (p) => !assignedPerformerIds.includes(p.performer_id)
+            );
+
+            // Map available performers to options (names)
+            const performerOptions = availablePerformers.map((p) => p.name);
+
+            return (
+              <div
+                key={index}
+                className="flex flex-col w-full border-2 border-dashed border-gray-300 p-4 mb-4 rounded-lg"
+              >
+                <h2 className="text-[20px] font-semibold">
+                  Performer #{index + 1}
+                </h2>
+                <div className="flex justify-between w-full gap-30">
+                  <SelectOnly
+                    title="Performer Name"
+                    // Use the filtered options list
+                    options={!loadingPerformers && performerOptions}
+                    placeholder="Select Performer"
+                    value={performer.performerName}
+                    onSelect={(selectedName) => {
+                      const selectedPerformer = performersList.find(
+                        (p) => p.name === selectedName
+                      );
+
+                      if (!selectedPerformer) return;
+
+                      // Update the array item with both ID and Name
+                      setFormData((prevData) => {
+                        const newArray = [...prevData.performers];
+                        newArray[index] = {
+                          ...newArray[index],
+                          performerName: selectedName,
+                          performerId: selectedPerformer.performer_id,
+                        };
+                        return {
+                          ...prevData,
+                          performers: newArray,
+                        };
+                      });
+                    }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRemove("performers", index)}
+                  className="bg-red-500 hover:bg-red-600 text-[16px] text-white flex justify-center items-center w-40 h-10 border-0 cursor-pointer font-semibold rounded-lg self-end mt-2"
+                >
+                  Remove Performer
+                </button>
               </div>
+            );
+          })}
+          {/* 👇 DISABLE BUTTON LOGIC (2) 👇 */}
+          {(() => {
+            const canAddPerformer =
+              formData.performers.length < performersList.length;
+            const buttonClass = canAddPerformer
+              ? "bg-primary-hover text-[16px] text-white"
+              : "bg-gray-400 text-[16px] text-gray-700 cursor-not-allowed";
+
+            return (
               <button
                 type="button"
-                onClick={() => handleRemove("performers", index)}
-                className="bg-red-500 hover:bg-red-600 text-[16px] text-white flex justify-center items-center w-40 h-10 border-0 cursor-pointer font-semibold rounded-lg self-end mt-2"
+                onClick={() => handleAdd("performers", initialPerformer)}
+                disabled={!canAddPerformer}
+                className={`${buttonClass} flex justify-center items-center w-full h-[50px] border-0 font-semibold ml-120 rounded-lg`}
               >
-                Remove Performer
+                {canAddPerformer ? "Add Performer" : "All Performers Assigned"}
               </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={() => handleAdd("performers", initialPerformer)}
-            className={
-              "bg-primary-hover text-[16px] text-white flex justify-center items-center w-full h-[50px] border-0 cursor-pointer font-semibold ml-120 rounded-lg"
-            }
-          >
-            Add Performer
-          </button>
-          {/* ---------------------------------------------------- */}
+            );
+          })()}
           {/* --- Buses Section (Dynamic) --- */}
-          {/* ---------------------------------------------------- */}
           <h1 className="mt-5 w-full">
             Buses (Count: {formData.buses.length})
           </h1>{" "}
-          {/* Task 2: Counter */}
           {formData.buses.map((bus, index) => (
             <div
               key={index}
@@ -556,8 +610,7 @@ export default function OrganizerAddEvents() {
             Add Bus
           </button>
           <button
-            type="button"
-            onClick={() => handleAdd("buses", initialBus)}
+            type="submit" // Changed to type="submit"
             className={
               "bg-primary-hover text-[16px] text-white flex justify-center items-center w-full h-[50px] border-0 cursor-pointer font-semibold mr-20 ml-20 mt-30 rounded-lg"
             }
@@ -566,6 +619,6 @@ export default function OrganizerAddEvents() {
           </button>
         </div>
       </div>
-    </>
+    </form>
   );
 }

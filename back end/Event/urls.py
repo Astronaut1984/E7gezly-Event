@@ -8,4 +8,7 @@ urlpatterns = [
     path("getorganizerevents", views.getOrganizerEvents, name="getorganizerevents"),
     path("getcategories/", views.getCategories, name="getcategories"),
     path("addvenue/", views.addVenue, name="addvenue"),
+    path("getperformers/", views.getPerformers, name="getperformers"),
+    path("getCapacityofBuses/", views.getCapacityofBuses, name="getCapacityofBuses"),
+    path("getBusesWithCapacity/", views.getBusesWithCapacity, name="getBusesWithCapacity"),
 ]

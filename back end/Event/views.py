@@ -57,8 +57,37 @@ def getCategories(request):
     result = list(Category.objects.all().values())
     return JsonResponse({"categories": result})
 
+# Django/Python Backend (views.py)
+
+
+@csrf_exempt
+def getPerformers(request):
+    result = list(Performer.objects.all().values())
+    return JsonResponse({"performers": result})
+
+@csrf_exempt
+def getCapacityofBuses(request):
+    # return the distinct capacities of all buses only
+    result = list(Vehicle.objects.values('capacity').distinct())
+    return JsonResponse({"Capacities": result})
+
+@csrf_exempt
+def getBusesWithCapacity(request):
+    # return buses if has capacity equal to the requested capacity
+    try:
+        target_capacity = json.loads(request.body).get("capacity")
+        if target_capacity is None:
+            raise KeyError("capacity")
+    except Exception:
+        return JsonResponse({"error": "Invalid request payload or missing capacity."}, status=400)
+
+    result = list(Vehicle.objects.filter(capacity=target_capacity).values())
+    return JsonResponse({"buses": result})
+
+
 @csrf_exempt
 def getEvents(request):
+
     result = list(Event.objects.all().values())
     return JsonResponse({"Events": result})
 
