@@ -84,17 +84,19 @@ export default function OrganizerAddEvents() {
 
   async function getVenues() {
     try {
+      setLoading(true);
       setLoadingVenues(true);
       const res = await fetch("http://localhost:8000/event/getvenues/");
 
       if (!res.ok) {
+        setLoading(false)
         setLoadingVenues(false);
         console.error("Venue fetching failed");
         return [];
       }
       const data = await res.json();
       setLoadingVenues(false);
-      return data["venues"] || [];
+      return data["venues"] || {};
     } catch (err) {
       console.error(err);
       return [];
@@ -113,6 +115,7 @@ export default function OrganizerAddEvents() {
 
     loadVenues();
     loadCategories();
+    console.log(venues);
   }, []);
 
   // --- General Change Handler for static fields ---
@@ -280,10 +283,10 @@ export default function OrganizerAddEvents() {
             title="Venue"
             options={
               !loadingVenues &&
-              venues.map((fetchedVenues) => fetchedVenues["venue_name"])
+              venues.map((fetchedVenues) => fetchedVenues["name"])
             }
             placeholder="Select location"
-            value={(!loadingVenues && venues["venue_name"]) || ""}
+            value={(!loadingVenues && venues["name"]) || ""}
             onSelect={(selectedName) => {
               const selectedVenue = venues.find((v) => v.name === selectedName);
               if (selectedVenue) {

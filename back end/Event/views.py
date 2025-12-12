@@ -50,7 +50,7 @@ def addEvent(request):
 @csrf_exempt
 def getVenues(request):
     result = list(Venue.objects.all().values())
-    return JsonResponse({"venue": result})
+    return JsonResponse({"venues": result})
 
 @csrf_exempt
 def getCategories(request):
