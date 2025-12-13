@@ -1,9 +1,7 @@
 import Input from "@/components/Input";
 import SelectOnly from "@/components/SelectOnly";
 import { useState, useEffect } from "react";
-import { Label } from "@/components/ui/label";
-import { Input as ShadcnInput } from "@/components/ui/input";
-import placeholderPic from "../../../assets/placeholder.jpeg";
+import ImagePicker from "@/components/ImagePicker";
 
 const getMinDateTime = () => {
   const now = new Date();
@@ -54,17 +52,8 @@ export default function OrganizerAddEvents() {
   const [loadingVenues, setLoadingVenues] = useState(true);
   const [loadingPerformers, setLoadingPerformers] = useState(true);
   const [loadingCapacities, setLoadingCapacities] = useState(false);
-  const [preview, setPreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
 
-  function handleFileChange(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    setPreview(URL.createObjectURL(file));
-  }
-
-  // ----------------------------------------------------
-  // 🎯 CONSOLIDATED & UPDATED Data Fetching Function
-  // ----------------------------------------------------
   const fetchData = async (
     url,
     setter,
@@ -409,30 +398,7 @@ export default function OrganizerAddEvents() {
               }));
             }}
           />
-          <div className="grid w-full max-w-sm items-center gap-3">
-            <Label htmlFor="picture">Picture</Label>
-            <ShadcnInput
-              id="picture"
-              type="file"
-              className="hover:cursor-pointer"
-              accept="image/*"
-              onChange={handleFileChange}
-            />
-
-            <div className="flex justify-center w-full">
-              {!preview ? (
-                <img
-                  src={placeholderPic}
-                  className="w-40 h-40 object-cover mt-4 rounded"
-                />
-              ) : (
-                <img
-                  src={preview}
-                  className="w-40 h-40 object-cover mt-4 rounded"
-                />
-              )}
-            </div>
-          </div>
+          <ImagePicker onChange={setImageFile} />
           {/* ---------------------------------------------------- */}
           {/* --- Ticket Types Section (Dynamic) --- */}
           {/* ---------------------------------------------------- */}
