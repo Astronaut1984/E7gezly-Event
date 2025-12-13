@@ -11,4 +11,5 @@ urlpatterns = [
     path("getperformers/", views.getPerformers, name="getperformers"),
     path("getCapacityofBuses/", views.getCapacityofBuses, name="getCapacityofBuses"),
     path("getBusesWithCapacity/", views.getBusesWithCapacity, name="getBusesWithCapacity"),
+    path("getavailablebuscapacities/", views.getAvailableBusCapacities, name="getavailablebuscapacities"),
 ]

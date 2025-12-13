@@ -1,3 +1,4 @@
+from urllib import request
 from django.shortcuts import render
 from django.db import connection
 from django.http import JsonResponse
@@ -84,6 +85,41 @@ def getBusesWithCapacity(request):
     result = list(Vehicle.objects.filter(capacity=target_capacity).values())
     return JsonResponse({"buses": result})
 
+
+@csrf_exempt
+def getAvailableBusCapacities(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST only"}, status=405)
+
+    try:
+        print("Raw Request Body:", request.body) # <--- ADD THIS LINE
+        data = json.loads(request.body)
+        print("Parsed Data:", data) # <--- ADD THIS LINE
+        start_date = data.get("start_date")
+        end_date = data.get("end_date") # end_date is optional in Event model, but required for query
+
+        if not start_date:
+            return JsonResponse({"error": "Missing start_date in request payload."}, status=400)
+
+        actual_end_date = end_date if end_date else start_date
+
+        busy_bus_ids = HasBus.objects.filter(
+            event__start_date__lte=actual_end_date,
+            event__end_date__gte=start_date
+        ).values_list('transportation__transportation_id', flat=True).distinct()
+
+        available_capacities = Vehicle.objects.exclude(
+            transportation_id__in=busy_bus_ids
+        ).filter(
+            capacity__isnull=False
+        ).values_list('capacity', flat=True).distinct().order_by('capacity')
+
+        capacities = [str(c) for c in available_capacities]
+
+        return JsonResponse({"availableCapacities": capacities})
+
+    except Exception as e:
+        return JsonResponse({"error": f"Failed to retrieve available bus capacities: {e}"}, status=400)
 
 @csrf_exempt
 def getEvents(request):

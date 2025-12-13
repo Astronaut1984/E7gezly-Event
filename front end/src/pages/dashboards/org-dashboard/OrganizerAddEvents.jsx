@@ -1,23 +1,25 @@
 import Input from "@/components/Input";
 import SelectOnly from "@/components/SelectOnly";
 import { useState, useEffect } from "react";
+import { Label } from "@/components/ui/label";
+import { Input as ShadcnInput } from "@/components/ui/input";
+import placeholderPic from "../../../assets/placeholder.jpeg";
 
 const getMinDateTime = () => {
   const now = new Date();
-  // Simplified logic to get ISO string slice for datetime-local min attribute
+  // Simplified logic to get ISO string slice for date min attribute
   return new Date(now.getTime() - now.getTimezoneOffset() * 60000)
     .toISOString()
-    .slice(0, 16);
+    .slice(0, 10);
 };
 
-// --- Initial Data Structures for Dynamic Fields ---
+// --- Initial Data Structures ---
 const initialTicket = {
   TicketTypeName: "",
   TicketDescription: "",
   TicketPrice: "",
   TicketQuantity: "",
 };
-
 const initialDiscount = {
   DiscountID: "",
   DiscountPercentage: "",
@@ -26,16 +28,8 @@ const initialDiscount = {
   DiscountQuantity: "",
   DiscountMaximumValue: "",
 };
-
-const initialPerformer = {
-  performerId: null, // Change to store ID, not just name
-  performerName: "",
-};
-
-const initialBus = {
-  busCapacity: "",
-  busProvider: "",
-};
+const initialPerformer = { performerId: null, performerName: "" };
+const initialBus = { busCapacity: "", busDepartureLocation: "" };
 
 export default function OrganizerAddEvents() {
   const [formData, setFormData] = useState({
@@ -44,43 +38,56 @@ export default function OrganizerAddEvents() {
     category: null,
     start_date: "",
     end_date: "",
-    location: "",
+    location: "", // Changed 'venue' to 'location' to match state key from previous response
     banner: "",
-    tickets: [{ ...initialTicket }], // Start with 1 ticket type
+    tickets: [{ ...initialTicket }],
     discounts: [],
     performers: [],
     buses: [],
   });
 
-  // State for fetched data lists
   const [categories, setCategories] = useState([]);
   const [venues, setVenues] = useState([]);
   const [performersList, setPerformersList] = useState([]);
-
-  // State for loading indicators
+  const [availableCapacities, setAvailableCapacities] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [loadingVenues, setLoadingVenues] = useState(true);
   const [loadingPerformers, setLoadingPerformers] = useState(true);
+  const [loadingCapacities, setLoadingCapacities] = useState(false);
+  const [preview, setPreview] = useState(null);
+
+  function handleFileChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setPreview(URL.createObjectURL(file));
+  }
 
   // ----------------------------------------------------
-  // 🎯 Consolidated Data Fetching Function
+  // 🎯 CONSOLIDATED & UPDATED Data Fetching Function
   // ----------------------------------------------------
-  /**
-   * Fetches data from a specific endpoint and updates the relevant state.
-   * @param {string} url - The API endpoint URL.
-   * @param {function} setter - The state setter function (e.g., setCategories).
-   * @param {function} loadingSetter - The loading state setter (e.g., setLoadingCategories).
-   * @param {string} dataKey - The key in the JSON response (e.g., "categories", "venues", "performers").
-   */
-  const fetchData = async (url, setter, loadingSetter, dataKey) => {
+  const fetchData = async (
+    url,
+    setter,
+    loadingSetter,
+    dataKey,
+    method = "GET",
+    bodyData = null
+  ) => {
     loadingSetter(true);
-    console.log(`Fetching ${dataKey} from API: ${url}`);
-    try {
-      // Simulate network delay for performers, if needed, otherwise remove this line
-      if (dataKey === "performers")
-        await new Promise((resolve) => setTimeout(resolve, 500));
+    console.log(`Fetching ${dataKey} (${method}) from API: ${url}`);
 
-      const res = await fetch(url);
+    try {
+      const options = {
+        method: method,
+        headers: {},
+      };
+
+      if (bodyData) {
+        options.headers["Content-Type"] = "application/json";
+        options.body = JSON.stringify(bodyData);
+      }
+
+      const res = await fetch(url, options);
 
       if (!res.ok) {
         console.error(`${dataKey} fetching failed with status:`, res.status);
@@ -99,7 +106,6 @@ export default function OrganizerAddEvents() {
   };
 
   useEffect(() => {
-    // Call the single fetch function for each data type
     fetchData(
       "http://localhost:8000/event/getcategories/",
       setCategories,
@@ -120,13 +126,33 @@ export default function OrganizerAddEvents() {
       setLoadingPerformers,
       "performers"
     );
-  }, []); // Empty dependency array ensures this runs once on mount
+  }, []);
 
-  // --- General Change Handler for static fields (UNCHANGED) ---
+  useEffect(() => {
+    const { start_date, end_date } = formData;
+    console.log("Bus Availability Check Triggered. Dates:", {
+      start_date,
+      end_date,
+    });
+
+    if (start_date && end_date) {
+      fetchData(
+        "http://localhost:8000/event/getavailablebuscapacities/",
+        setAvailableCapacities,
+        setLoadingCapacities,
+        "availableCapacities", // The key in the JSON response
+        "POST",
+        { start_date, end_date }
+      );
+    } else {
+      setAvailableCapacities([]);
+      setLoadingCapacities(false);
+    }
+  }, [formData.start_date, formData.end_date]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     let newValue = value;
-    // ... (Your existing validation logic)
     if (
       name === "DiscountMaximumValue" ||
       name === "DiscountPercentage" ||
@@ -160,14 +186,10 @@ export default function OrganizerAddEvents() {
     }));
   };
 
-  // ----------------------------------------------------
-  // Change Handler for Array Fields (UNCHANGED)
-  // ----------------------------------------------------
   const handleArrayChange = (arrayName, index, e) => {
     const { name, value } = e.target;
     let newValue = value;
 
-    // Apply the necessary validation, just like in handleChange
     if (
       name === "DiscountMaximumValue" ||
       name === "DiscountPercentage" ||
@@ -205,11 +227,59 @@ export default function OrganizerAddEvents() {
     });
   };
 
+  const handleArraySelect = async (
+    arrayName,
+    index,
+    fieldName,
+    selectedValue
+  ) => {
+    setFormData((prevData) => {
+      const newArray = [...prevData[arrayName]];
+
+      if (arrayName === "buses" && fieldName === "busCapacity") {
+        newArray[index] = {
+          ...newArray[index],
+          [fieldName]: selectedValue,
+        };
+      } else if (arrayName === "performers" && fieldName === "performerName") {
+        const selectedPerformer = performersList.find(
+          (p) => p.name === selectedValue
+        );
+        newArray[index] = {
+          ...newArray[index],
+          performerName: selectedValue,
+          performerId: selectedPerformer
+            ? selectedPerformer.performer_id
+            : null,
+        };
+      } else {
+        newArray[index] = {
+          ...newArray[index],
+          [fieldName]: selectedValue,
+        };
+      }
+
+      return {
+        ...prevData,
+        [arrayName]: newArray,
+      };
+    });
+  };
+
   const handleAdd = (arrayName, initialItem) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      [arrayName]: [...prevData[arrayName], { ...initialItem }],
-    }));
+    setFormData((prevData) => {
+      if (arrayName === "buses" && !prevData.start_date && !prevData.end_date) {
+        alert(
+          "Please set the Event Start Date before adding a bus to check availability."
+        );
+        return prevData;
+      }
+
+      return {
+        ...prevData,
+        [arrayName]: [...prevData[arrayName], { ...initialItem }],
+      };
+    });
   };
 
   const handleRemove = (arrayName, index) => {
@@ -234,17 +304,28 @@ export default function OrganizerAddEvents() {
   // ----------------------------------------------------
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Submitting form data:", formData);
-    // TODO: Add validation logic here
-    // TODO: Add API call (e.g., POST) to submit formData
+
+    const dataForSubmission = {
+      ...formData,
+      performers: formData.performers
+        .map((p) => p.performerId)
+        .filter((id) => id !== null),
+      // Filter out buses that don't have a valid ID assigned
+      buses: formData.buses.map((b) => ({
+        capacity: parseInt(b.busCapacity),
+        departure_loc: b.busDepartureLocation,
+      })),
+      //till now, we are not sending tickets and discounts to the backend
+      tickets: undefined,
+      discounts: undefined,
+    };
+
+    console.log("Submitting form data:", dataForSubmission);
     alert("Form submitted! Check console for data structure.");
   };
-
   const minDate = getMinDateTime();
   return (
     <form onSubmit={handleSubmit}>
-      {" "}
-      {/* Use a form element and handleSubmit */}
       <div className="flex flex-col justify-center items-center w-full px-32 text-[30px] font-bold">
         <h1>Add Event</h1>
         <div className="flex flex-wrap w-full px-32 shadow-2xl py-5 rounded-xl bg-card mt-3">
@@ -276,7 +357,9 @@ export default function OrganizerAddEvents() {
                 );
                 setFormData((prevData) => ({
                   ...prevData,
-                  category: selectedCategory ? selectedCategory.id : null,
+                  category: selectedCategory
+                    ? selectedCategory.category_id
+                    : null,
                 }));
               }}
             />
@@ -292,7 +375,7 @@ export default function OrganizerAddEvents() {
           <div className="flex justify-between w-full gap-30">
             <Input
               title="Start Date"
-              type="datetime-local"
+              type="date"
               name="start_date"
               min={minDate}
               value={formData.start_date}
@@ -300,7 +383,7 @@ export default function OrganizerAddEvents() {
             />
             <Input
               title="End Date"
-              type="datetime-local"
+              type="date"
               name="end_date"
               min={formData.start_date}
               value={formData.end_date}
@@ -315,17 +398,44 @@ export default function OrganizerAddEvents() {
             placeholder="Select location"
             // Corrected value binding logic
             value={
-              venues.find((v) => v.location_id === formData.venue)?.name || ""
+              venues.find((v) => v.location_id === formData.location)?.name ||
+              ""
             }
             onSelect={(selectedName) => {
               const selectedVenue = venues.find((v) => v.name === selectedName);
               setFormData((prevData) => ({
                 ...prevData,
-                venue: selectedVenue ? selectedVenue.location_id : "",
+                location: selectedVenue ? selectedVenue.location_id : "",
               }));
             }}
           />
+          <div className="grid w-full max-w-sm items-center gap-3">
+            <Label htmlFor="picture">Picture</Label>
+            <ShadcnInput
+              id="picture"
+              type="file"
+              className="hover:cursor-pointer"
+              accept="image/*"
+              onChange={handleFileChange}
+            />
+
+            <div className="flex justify-center w-full">
+              {!preview ? (
+                <img
+                  src={placeholderPic}
+                  className="w-40 h-40 object-cover mt-4 rounded"
+                />
+              ) : (
+                <img
+                  src={preview}
+                  className="w-40 h-40 object-cover mt-4 rounded"
+                />
+              )}
+            </div>
+          </div>
+          {/* ---------------------------------------------------- */}
           {/* --- Ticket Types Section (Dynamic) --- */}
+          {/* ---------------------------------------------------- */}
           <h1 className="mt-5 w-full">
             Ticket Types (Count: {formData.tickets.length})
           </h1>{" "}
@@ -389,7 +499,9 @@ export default function OrganizerAddEvents() {
           >
             Add Ticket Type
           </button>
+          {/* ---------------------------------------------------- */}
           {/* --- Discount Section (Dynamic) --- */}
+          {/* ---------------------------------------------------- */}
           <h1 className="mt-5 w-full">
             Discounts (Count: {formData.discounts.length})
           </h1>{" "}
@@ -471,12 +583,13 @@ export default function OrganizerAddEvents() {
           >
             Add Discount
           </button>
+          {/* ---------------------------------------------------- */}
           {/* --- Performers Section (Dynamic) --- */}
+          {/* ---------------------------------------------------- */}
           <h1 className="mt-5 w-full">
             Performers (Count: {formData.performers.length})
           </h1>{" "}
           {formData.performers.map((performer, index) => {
-            // 🎯 FILTER LOGIC (1): Calculate available performers for this specific slot
             // Get IDs of all performers *already assigned* to other slots
             const assignedPerformerIds = formData.performers
               .filter((p, i) => i !== index) // Exclude the current performer slot
@@ -505,27 +618,14 @@ export default function OrganizerAddEvents() {
                     options={!loadingPerformers && performerOptions}
                     placeholder="Select Performer"
                     value={performer.performerName}
-                    onSelect={(selectedName) => {
-                      const selectedPerformer = performersList.find(
-                        (p) => p.name === selectedName
-                      );
-
-                      if (!selectedPerformer) return;
-
-                      // Update the array item with both ID and Name
-                      setFormData((prevData) => {
-                        const newArray = [...prevData.performers];
-                        newArray[index] = {
-                          ...newArray[index],
-                          performerName: selectedName,
-                          performerId: selectedPerformer.performer_id,
-                        };
-                        return {
-                          ...prevData,
-                          performers: newArray,
-                        };
-                      });
-                    }}
+                    onSelect={(selectedName) =>
+                      handleArraySelect(
+                        "performers",
+                        index,
+                        "performerName",
+                        selectedName
+                      )
+                    }
                   />
                 </div>
                 <button
@@ -538,7 +638,6 @@ export default function OrganizerAddEvents() {
               </div>
             );
           })}
-          {/* 👇 DISABLE BUTTON LOGIC (2) 👇 */}
           {(() => {
             const canAddPerformer =
               formData.performers.length < performersList.length;
@@ -557,60 +656,80 @@ export default function OrganizerAddEvents() {
               </button>
             );
           })()}
-          {/* --- Buses Section (Dynamic) --- */}
+          {/* ---------------------------------------------------- */}
+          {/* --- Buses Section (Dynamic - Updated) --- */}
+          {/* ---------------------------------------------------- */}
           <h1 className="mt-5 w-full">
             Buses (Count: {formData.buses.length})
           </h1>{" "}
-          {formData.buses.map((bus, index) => (
-            <div
-              key={index}
-              className="flex flex-col w-full border-2 border-dashed border-gray-300 p-4 mb-4 rounded-lg"
-            >
-              <h2 className="text-[20px] font-semibold">Bus #{index + 1}</h2>
-              <div className="flex justify-between w-full gap-30">
-                <SelectOnly
-                  title="Bus Capacity"
-                  options={["20", "30", "40", "50", "60"]}
-                  placeholder="Select Capacity"
-                  value={bus.busCapacity}
-                  onSelect={(option) =>
-                    handleArrayChange("buses", index, {
-                      target: { name: "busCapacity", value: option },
-                    })
-                  }
-                />
-                <SelectOnly
-                  title="Bus Provider"
-                  options={["Bus 1", "Bus 2", "Bus 3", "Bus 4", "Bus 5"]}
-                  placeholder="Select Provider"
-                  value={bus.busProvider}
-                  onSelect={(option) =>
-                    handleArrayChange("buses", index, {
-                      target: { name: "busProvider", value: option },
-                    })
-                  }
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => handleRemove("buses", index)}
-                className="bg-red-500 hover:bg-red-600 text-[16px] text-white flex justify-center items-center w-40 h-10 border-0 cursor-pointer font-semibold rounded-lg self-end mt-2"
+          {formData.buses.map((bus, index) => {
+            const selectedCapacity = bus.busCapacity
+              ? parseInt(bus.busCapacity)
+              : null;
+
+            return (
+              <div
+                key={index}
+                className="flex flex-col w-full border-2 border-dashed border-gray-300 p-4 mb-4 rounded-lg"
               >
-                Remove Bus
-              </button>
-            </div>
-          ))}
+                <h2 className="text-[20px] font-semibold">Bus #{index + 1}</h2>
+                <div className="flex justify-between w-full gap-30">
+                  <SelectOnly
+                    title="Bus Capacity (Available)"
+                    // Options are dynamically loaded based on event dates
+                    options={
+                      formData.start_date && loadingCapacities
+                        ? ["Loading..."]
+                        : availableCapacities
+                    }
+                    placeholder={
+                      !formData.start_date
+                        ? "Set event date first"
+                        : availableCapacities.length === 0
+                        ? "No capacities available"
+                        : "Select Capacity"
+                    }
+                    value={bus.busCapacity}
+                    onSelect={(option) =>
+                      handleArraySelect("buses", index, "busCapacity", option)
+                    }
+                    disabled={
+                      !formData.start_date ||
+                      loadingCapacities ||
+                      availableCapacities.length === 0
+                    }
+                  />
+                  <Input
+                    title="Departure Location"
+                    type="text"
+                    name="busDepartureLocation"
+                    placeholder="Cairo Stadium, Gate 3"
+                    value={bus.busDepartureLocation}
+                    onChange={(e) => handleArrayChange("buses", index, e)}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRemove("buses", index)}
+                  className="bg-red-500 hover:bg-red-600 text-[16px] text-white flex justify-center items-center w-40 h-10 border-0 cursor-pointer font-semibold rounded-lg self-end mt-2"
+                >
+                  Remove Bus
+                </button>
+              </div>
+            );
+          })}
           <button
             type="button"
             onClick={() => handleAdd("buses", initialBus)}
             className={
               "bg-primary-hover text-[16px] text-white flex justify-center items-center w-full h-[50px] border-0 cursor-pointer font-semibold ml-120 rounded-lg"
             }
+            disabled={!formData.start_date} // Only allow adding bus if date is set
           >
-            Add Bus
+            Add Bus (Requires Event Dates)
           </button>
           <button
-            type="submit" // Changed to type="submit"
+            type="submit"
             className={
               "bg-primary-hover text-[16px] text-white flex justify-center items-center w-full h-[50px] border-0 cursor-pointer font-semibold mr-20 ml-20 mt-30 rounded-lg"
             }

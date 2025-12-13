@@ -30,12 +30,7 @@ class Venue(models.Model):
 
 class Vehicle(models.Model):
     transportation_id = models.AutoField(primary_key=True)
-    arrival_loc = models.TextField()
-    departure_loc = models.TextField()
     capacity = models.IntegerField(null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.departure_loc} to {self.arrival_loc}"
 
 class Performer(models.Model):
     performer_id = models.AutoField(primary_key=True)
@@ -69,6 +64,7 @@ class Event(models.Model):
 class HasBus(models.Model):
     number_assigned = models.IntegerField(null=True, blank=True)
     transportation = models.ForeignKey(Vehicle, on_delete=models.RESTRICT, db_column='Transportation_Id')
+    departure_loc = models.TextField()
     event = models.ForeignKey(Event, on_delete=models.RESTRICT, db_column='Event_Id')
 
     class Meta:
