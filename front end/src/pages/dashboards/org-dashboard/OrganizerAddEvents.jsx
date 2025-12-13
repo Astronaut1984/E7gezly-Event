@@ -37,7 +37,6 @@ export default function OrganizerAddEvents() {
     start_date: "",
     end_date: "",
     location: "", // Changed 'venue' to 'location' to match state key from previous response
-    banner: "",
     tickets: [{ ...initialTicket }],
     discounts: [],
     performers: [],
@@ -60,7 +59,7 @@ export default function OrganizerAddEvents() {
     loadingSetter,
     dataKey,
     method = "GET",
-    bodyData = null
+    bodyData = null,
   ) => {
     loadingSetter(true);
     console.log(`Fetching ${dataKey} (${method}) from API: ${url}`);
@@ -288,30 +287,72 @@ export default function OrganizerAddEvents() {
     });
   };
 
-  // ----------------------------------------------------
-  // Placeholder for Handle Submit
-  // ----------------------------------------------------
-  const handleSubmit = (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
 
-    const dataForSubmission = {
-      ...formData,
-      performers: formData.performers
-        .map((p) => p.performerId)
-        .filter((id) => id !== null),
-      // Filter out buses that don't have a valid ID assigned
-      buses: formData.buses.map((b) => ({
-        capacity: parseInt(b.busCapacity),
-        departure_loc: b.busDepartureLocation,
-      })),
-      //till now, we are not sending tickets and discounts to the backend
-      tickets: undefined,
-      discounts: undefined,
-    };
+    const formDataToSend = new FormData();
 
-    console.log("Submitting form data:", dataForSubmission);
-    alert("Form submitted! Check console for data structure.");
-  };
+    formDataToSend.append("banner", imageFile);
+
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key !== "performers" && key !== "buses") {
+        formDataToSend.append(key, value);
+      }
+    });
+
+    formDataToSend.append(
+      "performers",
+      JSON.stringify(
+        formData.performers.map((p) => p.performerId).filter(Boolean)
+      )
+    );
+
+    formDataToSend.append(
+      "buses",
+      JSON.stringify(
+        formData.buses.map((b) => ({
+          capacity: parseInt(b.busCapacity),
+          departure_loc: b.busDepartureLocation,
+        }))
+      )
+    );
+
+    for (let [key, value] of formDataToSend.entries()) {
+      console.log(key, value);
+    }
+    const eventRes = await fetch("http://localhost:8000/event/addevent/", {
+      method: "POST",
+      body: formDataToSend,
+      credentials: "include",
+    });
+
+    const eventdata = await eventRes.json();
+    const eventId = eventdata["id"];
+    console.log(eventId)
+
+    for (let ticket of formData.tickets) {
+      const ticketContent = {
+        event: eventId,
+        name: ticket.TicketTypeName,
+        description: ticket.TicketDescription,
+        price: parseInt(ticket.TicketPrice),
+        quantity: parseInt(ticket.TicketQuantity),
+      };
+      const ticketRes = await fetch(
+        "http://localhost:8000/event/addtickettype/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(ticketContent),
+        }
+      );
+
+      const ticketData = await ticketRes.json();
+      console.log(ticketData);
+    }
+  }
   const minDate = getMinDateTime();
   return (
     <form onSubmit={handleSubmit}>
@@ -371,7 +412,7 @@ export default function OrganizerAddEvents() {
               onChange={handleChange}
             />
             <Input
-              title="End Date"
+              title="End Date (optional)"
               type="date"
               name="end_date"
               min={formData.start_date}

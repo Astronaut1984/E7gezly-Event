@@ -4,17 +4,30 @@ import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme, setTheme } from "@/store/themeSlice";
 import { UserContext } from "@/UserContext";
 import { useEffect } from "react";
-import { Sun, Moon } from "lucide-react";
-import Image from "./../assets/E7gezly Event Logo.svg"
+import { Sun, Moon, Wallet } from "lucide-react";
+import Image from "./../assets/E7gezly Event Logo.svg";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { DialogClose } from "@radix-ui/react-dialog";
 
 export default function NavBar() {
   const dark = useSelector((state) => state.theme.dark);
   // Valid redirect URLs for the user icon
   const validUrls = {
-    "Administrator": "/admin",
-    "Organizer": "/org",
-    "Attendee": "/att"
-  }
+    Administrator: "/admin",
+    Organizer: "/org",
+    Attendee: "/att",
+  };
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(setTheme(dark));
@@ -35,15 +48,27 @@ export default function NavBar() {
 
   return (
     <div className="z-10 fixed w-full bg-card text-primary items-center flex justify-between p-1 select-none">
-      <div className="ml-5 flex justify-center items-center">
-        <img src={Image} className="w-12 mr-2"/>
+      <NavLink to="/" className="ml-5 flex justify-center items-center">
+        <img src={Image} className="w-12 mr-2" />
         <h1 className="text-2xl font-bold">E7gezly Event</h1>
-      </div>
-      <nav className="mx-auto max-w-5xl flex items-center gap-6 py-4">
+      </NavLink>
+      <nav
+        className={`mx-auto max-w-5xl flex items-center gap-6 py-4 ${
+          user && "ml-110"
+        }`}
+      >
         <NavBtn link="/" title="Home" />
         <NavBtn link="/Events" title="Events" />
       </nav>
       <nav className="mx-5 max-w-5xl flex items-center gap-6 py-4">
+        {user && (
+          <div className="ml-5 flex justify-center items-center cursor-pointer">
+            <WalletDialog className="hover:cursor-pointer" wallet={user.wallet}>
+              <Wallet className="text-primary-hover" />
+            </WalletDialog>
+            <h1 className="ml-2">{user.wallet} EGP</h1>
+          </div>
+        )}
         {!user && <NavBtn link="/login" title="Login" />}
         {!user && <NavBtn link="/signup" title="Sign up" />}
         {user && (
@@ -67,7 +92,11 @@ export default function NavBar() {
           onClick={() => dispatch(toggleTheme())}
           className="p-2 rounded hover:bg-gray-200 cursor-pointer dark:hover:bg-gray-700 transition-colors duration-200"
         >
-        {dark ? <Sun className="text-primary"/> : <Moon className="text-primary"/>}
+          {dark ? (
+            <Sun className="text-primary" />
+          ) : (
+            <Moon className="text-primary" />
+          )}
         </button>
       </nav>
     </div>
@@ -87,4 +116,27 @@ export default function NavBar() {
       </NavLink>
     );
   }
+}
+
+function WalletDialog({ children, className, wallet }) {
+  return (
+    <Dialog>
+      <DialogTrigger className={className}>{children}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Wallet Info</DialogTitle>
+        </DialogHeader>
+        Current Balance: {wallet} EGP
+        <div className="flex justify-between items-center gap-5">
+          <Input />
+          <Button>Charge Wallet</Button>
+        </div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant={"outline"}>Close</Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }

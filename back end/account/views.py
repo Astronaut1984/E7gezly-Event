@@ -16,7 +16,7 @@ def countUsers(request):
 
 @csrf_exempt
 def signup(request):
-    if request.method == "PUT":
+    if request.method == "POST":
         try:
             data = json.loads(request.body)     
             hashed = hashlib.sha256(data.get("password").encode()).hexdigest()
@@ -33,7 +33,7 @@ def signup(request):
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
     else:
-        return JsonResponse({"error": "Only PUT method allowed"}, status=405)
+        return JsonResponse({"error": "Only POST method allowed"}, status=405)
 
 @csrf_exempt
 def checkEmail(request):

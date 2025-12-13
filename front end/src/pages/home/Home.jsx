@@ -6,8 +6,29 @@ import Event from "../../components/Event";
 import Category from "../../components/Category";
 import Footer from "../../components/Footer";
 import SaqyaConcert from "../../assets/Saqya.jpg";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchMyEvents() {
+      setLoading(true);
+
+      const res = await fetch("http://localhost:8000/event/getevents/", {
+        method: "GET",
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      console.log(data["Events"]);
+
+      setEvents(data["Events"]);
+      setLoading(false);
+    }
+    fetchMyEvents();
+  }, []);
   return (
     <main id="homeBackground" className="bg-background w-full min-h-screen">
       <NavBar />
@@ -39,41 +60,29 @@ export default function Home() {
       >
         <div className="w-full">
           <h1 className="flex justify-center items-center m-10 text-4xl font-bold text-foreground">
-            Top Events
+            Recent Events
           </h1>
         </div>
         {/* Events*/}
         <div className="w-full p-10 flex flexbox gap-10 justify-center items-center flex-wrap">
-          <Event
-            img={HomePic}
-            title="Tamer Hosny & AL Shami"
-            time={{
-              startDate: "May 31",
-              endDate: undefined,
-              time: "8:00 pm",
-            }}
-            venue="COCA-COLA ARENA, DUBAI"
-            priceRange={{
-              currency: "AED",
-              minPrice: 300,
-              maxPrice: 1000,
-            }}
-          />
-          <Event
-            img={HomePic}
-            title="Tamer Hosny & AL Shami"
-            time={{
-              startDate: "May 31",
-              endDate: undefined,
-              time: "8:00 pm",
-            }}
-            venue="COCA-COLA ARENA, DUBAI"
-            priceRange={{
-              currency: "AED",
-              minPrice: 300,
-              maxPrice: 1000,
-            }}
-          />
+          {!loading &&
+            events.map((event) => {
+              return (
+                <Event
+                  key={event.event_id}
+                  title={event.name}
+                  id={event.event_id}
+                  img={event.banner}
+                  priceRange={{
+                    minPrice: event.min_price,
+                    maxPrice: event.max_price,
+                    currency: "EGP",
+                  }}
+                  startDate={event.start_date}
+                  endDate={event.end_date}
+                />
+              );
+            })}
         </div>
       </section>
 

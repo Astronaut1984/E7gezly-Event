@@ -1,4 +1,5 @@
 from django.db import models
+import os
 
 class User(models.Model):
     first_name = models.TextField()
@@ -45,6 +46,10 @@ class Category(models.Model):
     category_name = models.CharField(max_length=63)
 
 class Event(models.Model):
+    STATUS_CHOICES = [
+        ('U', 'Under Review'),
+        ('A', 'Accepted')
+    ]
     event_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
     description = models.TextField()
@@ -56,16 +61,23 @@ class Event(models.Model):
     location = models.ForeignKey(Venue, on_delete=models.SET_NULL, null=True, blank=True, db_column='Location_Id')
     performers = models.ManyToManyField(Performer, through='HasPerformer')
     buses = models.ManyToManyField(Vehicle, through='HasBus')
-    banner = models.ImageField(default="fallback.png")
+    banner = models.ImageField(default="fallback.png", upload_to="uploads/photos/")
 
     def __str__(self):
         return self.name
+    
+    def delete(self, *args, **kwargs):
+        # Delete the file from storage
+        if self.banner and os.path.isfile(self.banner.path):
+            os.remove(self.banner.path)
+        # Delete the model instance
+        super().delete(*args, **kwargs)
 
 class HasBus(models.Model):
     number_assigned = models.IntegerField(null=True, blank=True)
     transportation = models.ForeignKey(Vehicle, on_delete=models.RESTRICT, db_column='Transportation_Id')
     departure_loc = models.TextField()
-    event = models.ForeignKey(Event, on_delete=models.RESTRICT, db_column='Event_Id')
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, db_column='Event_Id')
 
     class Meta:
         constraints = [
@@ -74,7 +86,7 @@ class HasBus(models.Model):
 
 class HasPerformer(models.Model):
     performer = models.ForeignKey(Performer, on_delete=models.RESTRICT, db_column='performer_id')
-    event = models.ForeignKey(Event, on_delete=models.RESTRICT, db_column='Event_Id')
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, db_column='Event_Id')
 
     class Meta:
         constraints = [
@@ -82,7 +94,7 @@ class HasPerformer(models.Model):
         ]
 
 class Discount(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.RESTRICT, db_column='Event_Id')
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, db_column='Event_Id')
     discount_id = models.CharField(max_length=25)
 
     class Meta:
@@ -92,7 +104,7 @@ class Discount(models.Model):
 
 class TicketType(models.Model):
     ticket_type_id = models.AutoField(primary_key=True)
-    event = models.ForeignKey(Event, on_delete=models.RESTRICT, db_column='Event_Id')
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, db_column='Event_Id')
     quantity = models.IntegerField(null=True, blank=True)
     price = models.IntegerField()
     name = models.TextField()
@@ -174,7 +186,7 @@ class Report(models.Model):
     report_id = models.AutoField(primary_key=True)
     report_content = models.TextField()
     STATUS_CHOICES = [
-        ('R', 'Reviewed'),
+        ('R', 'Resolved'),
         ('P', 'Pending')
     ]
     status = models.CharField(max_length=1, choices=STATUS_CHOICES)
