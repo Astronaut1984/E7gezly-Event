@@ -13,4 +13,5 @@ urlpatterns = [
     path("getBusesWithCapacity/", views.getBusesWithCapacity, name="getBusesWithCapacity"),
     path("getavailablebuscapacities/", views.getAvailableBusCapacities, name="getavailablebuscapacities"),
     path("addtickettype/", views.addTicketType, name="addtickettype"),
+    path("deleteevent/", views.deleteEvent, name="deleteevent")
 ]
