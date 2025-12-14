@@ -1,7 +1,8 @@
-import "./signup.css";
+import "../../index.css";
 import Input from "../../components/Input";
-import SelectType from "../../components/selectType";
-export default function SignUp1({ formData, setFormData }) {
+import SelectOnly from "../../components/SelectOnly";
+
+export default function SignUp1({ formData, setFormData, errors, setErrors }) {
   const optionsAcc = ["Attendee", "Organizer"];
 
   return (
@@ -10,41 +11,53 @@ export default function SignUp1({ formData, setFormData }) {
         <Input
           title="First Name"
           type="text"
-          placeholder="Type your first name"
+          placeholder="John"
+          error={errors.firstName}
           value={formData.firstName}
-          onChange={(e) =>
-            setFormData({ ...formData, firstName: e.target.value })
-          }
+          onChange={(e) => {
+            const newValue = e.target.value.replace(/[^a-zA-Z]/g, "");
+            setFormData({ ...formData, firstName: newValue });
+            if (setErrors) {
+              setErrors((prevErrors) => {
+                const newErrors = { ...prevErrors };
+                delete newErrors.firstName;
+                return newErrors;
+              });
+            }
+          }}
         />
         <Input
           title="Last Name"
           type="text"
-          placeholder="Type your last name"
+          placeholder="Doe"
           value={formData.lastName}
-          onChange={(e) =>
-            setFormData({ ...formData, lastName: e.target.value })
-          }
+          error={errors.lastName}
+          onChange={(e) => {
+            const newValue = e.target.value.replace(/[^a-zA-Z]/g, "");
+            setFormData({ ...formData, lastName: newValue });
+          }}
         />
       </div>
       <Input
         title="Email"
         type="email"
-        placeholder="Type your Email"
+        placeholder="email@example.com"
         value={formData.email}
+        error={errors.email}
         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
       />
-      <SelectType
+      <SelectOnly
         title="Account Type"
         options={optionsAcc}
-        // value={formData.accountType}
-        onChange={(e) =>
-          setFormData({ ...formData, accountType: e.target.value })
-        }
+        placeholder="Select account type"
+        value={formData.accountType}
+        error={errors.accountType}
+        onSelect={(option) => setFormData({ ...formData, accountType: option })}
       />
     </>
   );
 }
-export function SignUp2({ formData, setFormData }) {
+export function SignUp2({ formData, setFormData, errors }) {
   return (
     <>
       <Input
@@ -52,20 +65,30 @@ export function SignUp2({ formData, setFormData }) {
         type="text"
         placeholder="Select your country"
         value={formData.country}
-        onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+        error={errors.country}
+        onChange={(e) => {
+          const newValue = e.target.value.replace(/[^a-zA-Z]/g, "");
+          setFormData({ ...formData, country: newValue });
+        }}
       />
       <Input
         title="City"
         type="text"
         placeholder="Select your city"
         value={formData.city}
-        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+        error={errors.city}
+        onChange={(e) => {
+          const newValue = e.target.value.replace(/[^a-zA-Z]/g, "");
+          setFormData({ ...formData, city: newValue });
+        }}
       />
       <Input
         title="Phone Number"
-        type="digit"
+        type="text"
+        pattern="\d{11}"
         placeholder="Enter your phone"
         value={formData.phoneNumber}
+        error={errors.phoneNumber}
         onChange={(e) =>
           setFormData({ ...formData, phoneNumber: e.target.value })
         }
@@ -73,7 +96,7 @@ export function SignUp2({ formData, setFormData }) {
     </>
   );
 }
-export function SignUp3({ formData, setFormData }) {
+export function SignUp3({ formData, setFormData, errors }) {
   return (
     <>
       <Input
@@ -81,6 +104,7 @@ export function SignUp3({ formData, setFormData }) {
         type="text"
         placeholder="Type a username"
         value={formData.username}
+        error={errors.username}
         onChange={(e) => setFormData({ ...formData, username: e.target.value })}
       />
       <Input
@@ -88,6 +112,7 @@ export function SignUp3({ formData, setFormData }) {
         type="password"
         placeholder="Type a password"
         value={formData.password}
+        error={errors.password}
         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
       />
       <Input
@@ -95,6 +120,7 @@ export function SignUp3({ formData, setFormData }) {
         type="password"
         placeholder="Re-type a password"
         value={formData.rePassword}
+        error={errors.rePassword}
         onChange={(e) =>
           setFormData({ ...formData, rePassword: e.target.value })
         }

@@ -1,51 +1,142 @@
-import { Routes, NavLink, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import { useContext } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleTheme, setTheme } from "@/store/themeSlice";
+import { UserContext } from "@/UserContext";
+import { useEffect } from "react";
+import { Sun, Moon, Wallet } from "lucide-react";
+import Image from "./../assets/E7gezly Event Logo.svg";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { DialogClose } from "@radix-ui/react-dialog";
 
 export default function NavBar() {
-  const HOVER_COLOR = "hover:text-blue-950";
-  const location = useLocation();
+  const dark = useSelector((state) => state.theme.dark);
+  // Valid redirect URLs for the user icon
+  const validUrls = {
+    Administrator: "/admin",
+    Organizer: "/org",
+    Attendee: "/att",
+  };
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(setTheme(dark));
+  }, [dark, dispatch]);
+
+  const { user, setUser } = useContext(UserContext);
+  async function handleLogout() {
+    try {
+      await fetch("http://localhost:8000/account/logout/", {
+        method: "POST",
+        credentials: "include",
+      });
+      setUser(null);
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
+  }
 
   return (
-    <div className="z-10 fixed w-full bg-gray-50 text-blue-600 items-center flex justify-between p-1">
-      <div className="ml-5">
+    <div className="z-10 fixed w-full bg-card text-primary items-center flex justify-between p-1 select-none">
+      <NavLink to="/" className="ml-5 flex justify-center items-center">
+        <img src={Image} className="w-12 mr-2" />
         <h1 className="text-2xl font-bold">E7gezly Event</h1>
-      </div>
-      <nav className="mx-auto max-w-5xl flex items-center gap-6 py-4">
-        <NavLink
-          to="/"
-          className={({ isActive }) =>
-            isActive
-              ? "bg-blue-500 px-4 pb-px rounded-md text-white"
-              : HOVER_COLOR
-          }
-        >
-          Home
-        </NavLink>
-        <NavLink
-          to="/Events"
-          className={({ isActive }) =>
-            isActive
-              ? "bg-blue-500 px-4 pb-px rounded-md text-white"
-              : HOVER_COLOR
-          }
-        >
-          Events
-        </NavLink>
+      </NavLink>
+      <nav
+        className={`mx-auto max-w-5xl flex items-center gap-6 py-4 ${
+          user && "ml-110"
+        }`}
+      >
+        <NavBtn link="/" title="Home" />
+        <NavBtn link="/Events" title="Events" />
       </nav>
       <nav className="mx-5 max-w-5xl flex items-center gap-6 py-4">
-        <NavLink
-          to="/login"
-          className={({ isActive }) =>
-            isActive
-              ? "bg-blue-500 px-4 pb-px rounded-md text-white"
-              : HOVER_COLOR
-          }
+        {user && (
+          <div className="ml-5 flex justify-center items-center cursor-pointer">
+            <WalletDialog className="hover:cursor-pointer" wallet={user.wallet}>
+              <Wallet className="text-primary-hover" />
+            </WalletDialog>
+            <h1 className="ml-2">{user.wallet} EGP</h1>
+          </div>
+        )}
+        {!user && <NavBtn link="/login" title="Login" />}
+        {!user && <NavBtn link="/signup" title="Sign up" />}
+        {user && (
+          <NavLink
+            to="/login"
+            onClick={handleLogout}
+            className="text-primary-hover"
+          >
+            Log out
+          </NavLink>
+        )}
+        {user && (
+          <NavLink
+            to={validUrls[user["status"]]}
+            className="bg-primary flex items-center justify-center pt-0.5 text-2xl h-10 w-10 rounded-full text-white hover:bg-primary-hover"
+          >
+            {`${user?.first_name.charAt(0).toUpperCase()}`}
+          </NavLink>
+        )}
+        <button
+          onClick={() => dispatch(toggleTheme())}
+          className="p-2 rounded hover:bg-gray-200 cursor-pointer dark:hover:bg-gray-700 transition-colors duration-200"
         >
-          Login
-        </NavLink>
-        <NavLink to="/signup" className={HOVER_COLOR}>
-          Sign up
-        </NavLink>
+          {dark ? (
+            <Sun className="text-primary" />
+          ) : (
+            <Moon className="text-primary" />
+          )}
+        </button>
       </nav>
     </div>
+  );
+
+  function NavBtn(props) {
+    return (
+      <NavLink
+        to={props.link}
+        className={({ isActive }) =>
+          isActive
+            ? "bg-primary px-4 pb-px rounded-md text-white"
+            : "text-primary-hover"
+        }
+      >
+        {props.title}
+      </NavLink>
+    );
+  }
+}
+
+function WalletDialog({ children, className, wallet }) {
+  return (
+    <Dialog>
+      <DialogTrigger className={className}>{children}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Wallet Info</DialogTitle>
+        </DialogHeader>
+        Current Balance: {wallet} EGP
+        <div className="flex justify-between items-center gap-5">
+          <Input />
+          <Button>Charge Wallet</Button>
+        </div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant={"outline"}>Close</Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

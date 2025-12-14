@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@import "index.css";
+
+body {
+  letter-spacing: var(--tracking-normal);
+}
+
+

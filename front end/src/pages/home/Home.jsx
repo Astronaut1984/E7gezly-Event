@@ -1,19 +1,40 @@
-import "./Home.css";
+import "../../index.css";
 import HomePic from "../../assets/home-page-init.jpg";
 import { Routes, Link } from "react-router-dom";
 import NavBar from "../../components/NavBar";
 import Event from "../../components/Event";
 import Category from "../../components/Category";
 import Footer from "../../components/Footer";
+import SaqyaConcert from "../../assets/Saqya.jpg";
+import { useEffect, useState } from "react";
 
 export default function Home() {
-  let bgColor = "bg-gradient-to-b from-blue-900 via-blue-600 to-blue-400";
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchMyEvents() {
+      setLoading(true);
+
+      const res = await fetch("http://localhost:8000/event/getevents/", {
+        method: "GET",
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      console.log(data["Events"]);
+
+      setEvents(data["Events"]);
+      setLoading(false);
+    }
+    fetchMyEvents();
+  }, []);
   return (
-    <main id="homeBackground" className={`${bgColor} w-full min-h-screen`}>
+    <main id="homeBackground" className="bg-background w-full min-h-screen">
       <NavBar />
       <section
         id="Home"
-        className=" relative w-full h-screen bg-cover bg-center bg-no-repeat"
+        className="relative w-full h-screen pt-16 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url(${HomePic})`,
         }}
@@ -26,7 +47,7 @@ export default function Home() {
           <h1 className="text-white text-5xl font-bold">Events Made Simple</h1>
           <Link
             to="/Events"
-            className="transform hover:scale-110 transition duration-700 ease-in-out text-white text-3xl bg-blue-400 px-10 py-6 rounded-4xl hover:bg-blue-600 transition"
+            className="transform hover:scale-110 transition duration-700 ease-in-out text-white text-3xl bg-blue-400 px-10 py-6 rounded-4xl hover:bg-blue-600"
           >
             View Events
           </Link>
@@ -38,42 +59,30 @@ export default function Home() {
         className={`flex flex-col justify-center items-center w-full  bg-cover bg-center bg-no-repeat `}
       >
         <div className="w-full">
-          <h1 className="flex justify-center items-center m-10 text-4xl font-bold text-white">
-            Top Events
+          <h1 className="flex justify-center items-center m-10 text-4xl font-bold text-foreground">
+            Recent Events
           </h1>
         </div>
         {/* Events*/}
         <div className="w-full p-10 flex flexbox gap-10 justify-center items-center flex-wrap">
-          <Event
-            img={HomePic}
-            title="Tamer Hosny & AL Shami"
-            time={{
-              startDate: "May 31",
-              endDate: undefined,
-              time: "8:00 pm",
-            }}
-            venue="COCA-COLA ARENA, DUBAI"
-            priceRange={{
-              currency: "AED",
-              minPrice: 300,
-              maxPrice: 1000,
-            }}
-          />
-          <Event
-            img={HomePic}
-            title="Tamer Hosny & AL Shami"
-            time={{
-              startDate: "May 31",
-              endDate: undefined,
-              time: "8:00 pm",
-            }}
-            venue="COCA-COLA ARENA, DUBAI"
-            priceRange={{
-              currency: "AED",
-              minPrice: 300,
-              maxPrice: 1000,
-            }}
-          />
+          {!loading &&
+            events.map((event) => {
+              return (
+                <Event
+                  key={event.event_id}
+                  title={event.name}
+                  id={event.event_id}
+                  img={event.banner}
+                  priceRange={{
+                    minPrice: event.min_price,
+                    maxPrice: event.max_price,
+                    currency: "EGP",
+                  }}
+                  startDate={event.start_date}
+                  endDate={event.end_date}
+                />
+              );
+            })}
         </div>
       </section>
 
@@ -81,15 +90,12 @@ export default function Home() {
         className={`pb-10 flex flex-col justify-center items-center w-full  bg-cover bg-center bg-no-repeat `}
       >
         <div className="w-full">
-          <h1 className="flex justify-center items-center m-10 text-4xl font-bold text-white">
+          <h1 className="flex justify-center items-center m-10 text-4xl font-bold text-foreground">
             Categories
           </h1>
         </div>
         <div className="w-full p-10 flex flexbox gap-10 justify-center items-center flex-wrap">
-          <Category
-            title="Concerts"
-            img="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%2Fid%2FOIP.4DkGUbOui9t5OI62K9aCtwHaEK%3Fpid%3DApi&f=1&ipt=655d029f755b2fca664704ff9156c6bcc84151e9c756e56e1d33aa6ec75b45f0&ipo=images"
-          />
+          <Category title="Concerts" img={SaqyaConcert} />
           <Category
             title="Comedy"
             img="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%2Fid%2FOIP.4DkGUbOui9t5OI62K9aCtwHaEK%3Fpid%3DApi&f=1&ipt=655d029f755b2fca664704ff9156c6bcc84151e9c756e56e1d33aa6ec75b45f0&ipo=images"

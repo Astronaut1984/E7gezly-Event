@@ -7,6 +7,7 @@ export default function SelectType({
   options,
   classNameVar,
   onSelect,
+  error,
   ...props
 }) {
   const [inputValue, setInputValue] = useState("");
@@ -24,12 +25,14 @@ export default function SelectType({
 
   return (
     <div className={`w-full relative mb-[23px] ${classNameVar}`}>
-      <span className="text-[14px] text-[#666666] leading-[1.5] pl-[7px]">
+      <span className="text-[14px] text-secondary-foreground leading-normal pl-[7px]">
         {title}
       </span>
       <input
-        className="peer text-[16px] text-[#333333] leading-[1.2] block w-full h-[45px] bg-transparent pl-[7px] pr-[30px] border-0 outline-none"
-        placeholder="Select Type"
+        className={`${
+          error && "placeholder-destructive"
+        } peer text-[16px] text-secondary-foreground leading-[1.2] block w-full h-[45px] bg-transparent pl-[7px] pr-[30px] border-0 outline-none`}
+        placeholder={error ? error.message : "Select Type"}
         value={inputValue}
         onChange={(e) => {
           setInputValue(e.target.value);
@@ -41,7 +44,7 @@ export default function SelectType({
         }}
         {...props}
       />
-      <div className="absolute right-[7px] bottom-[12px] pointer-events-none w-4 h-4">
+      <div className="absolute right-[7px] bottom-3 pointer-events-none w-4 h-4">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -51,16 +54,16 @@ export default function SelectType({
           <path strokeLinecap="round" strokeLinejoin="round" d={arrowPath} />
         </svg>
       </div>
-      <span className="absolute block w-full h-full top-0 left-0 pointer-events-none border-b-2 border-[#d9d9d9] peer-focus:border-blue-600 transition-colors duration-300"></span>
+      <span className="absolute block w-full h-full top-0 left-0 pointer-events-none border-b-2 border-[#d9d9d9] peer-focus:border-primary transition-colors duration-300"></span>
 
       {/* Dropdown List */}
       {showList && (
-        <ul className="absolute w-full bg-white shadow-lg z-20 mt-1 max-h-40 overflow-auto border border-gray-200 rounded-md">
+        <ul className="absolute w-full bg-card shadow-lg z-20 mt-1 max-h-40 overflow-auto border border-card rounded-md">
           {filteredOptions.length > 0 ? (
             filteredOptions.map((option) => (
               <li
                 key={option}
-                className="px-4 py-2 hover:bg-blue-100 cursor-pointer"
+                className="px-4 py-2 hover:bg-card cursor-pointer"
                 onMouseDown={() => handleOptionClick(option)}
               >
                 {option}
