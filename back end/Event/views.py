@@ -277,12 +277,12 @@ def getCategoriesWithBanners(request):
                 SELECT 
                     c.category_id,
                     c.category_name,
-                    COUNT(e.event_id) as event_count,
-                    GROUP_CONCAT(e.banner) as banners
+                    COUNT(e.event_id) AS event_count,
+                    STRING_AGG(e.banner, ',') AS banners
                 FROM api_category c
                 INNER JOIN api_event e ON c.category_id = e.category_id
                 GROUP BY c.category_id, c.category_name
-                HAVING COUNT(e.event_id) > 0
+                HAVING COUNT(e.event_id) > 0;
             """)
             
             columns = [col[0] for col in cursor.description]
