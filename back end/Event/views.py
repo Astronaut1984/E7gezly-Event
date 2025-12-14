@@ -8,11 +8,12 @@ import json
 from django.db.models import ObjectDoesNotExist
 from django.conf import settings
 from django.db.models import Min, Max
+from django.views.decorators.http import require_POST
+
 
 @csrf_exempt
+@require_POST
 def addEvent(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST only"}, status=405)
 
     try:
         owner_obj = User.objects.get(username=request.session.get("username"))
@@ -85,7 +86,6 @@ def getCapacityofBuses(request):
 
 @csrf_exempt
 def getBusesWithCapacity(request):
-    # return buses if has capacity equal to the requested capacity
     try:
         target_capacity = json.loads(request.body).get("capacity")
         if target_capacity is None:
@@ -98,10 +98,8 @@ def getBusesWithCapacity(request):
 
 
 @csrf_exempt
+@require_POST
 def getAvailableBusCapacities(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST only"}, status=405)
-
     try:
         print("Raw Request Body:", request.body) # <--- ADD THIS LINE
         data = json.loads(request.body)
@@ -181,10 +179,8 @@ def getOrganizerEvents(request):
     return JsonResponse({"organizer_events": organizer_events})
 
 @csrf_exempt
+@require_POST
 def addTicketType(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST only"}, status=405)
-        
     try:
         data = json.loads(request.body)
         event_obj = Event.objects.get(pk=data["event"])
@@ -204,10 +200,8 @@ def addTicketType(request):
         return JsonResponse({"error": f"An unexpected error occurred. {e}"}, status=500)
 
 @csrf_exempt
+@require_POST
 def addVenue(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST only"}, status=405)
-    
     try:
         data = json.loads(request.body)
         venue_name = data.get("venueName")
@@ -231,3 +225,20 @@ def addVenue(request):
 
     except Exception as e:
         return JsonResponse({"error": f"Failed to create venue: {e}"}, status=400)
+
+@require_POST  
+def deleteEvent(request):
+    try:
+        data = json.loads(request.body)
+        event = data.get("event_id")
+        if not event:
+            return JsonResponse({"error": "event_id is required"}, status=400)
+        with connection.cursor() as cursor:
+            cursor.execute("""delete from api_event where event_id = %s""", [event])
+            if cursor.rowcount==0:
+                return JsonResponse({"error": "Event not found"}, status=404)
+            return JsonResponse({"success": True, "deleted": event})
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": f"Failed to delete event: {e}"}, status=500)
