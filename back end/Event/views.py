@@ -10,7 +10,6 @@ from django.conf import settings
 from django.db.models import Min, Max
 from django.views.decorators.http import require_POST
 
-
 @csrf_exempt
 @require_POST
 def addEvent(request):
@@ -310,7 +309,8 @@ def getCategoriesWithBanners(request):
 def getEventById(request, event_id):
     try:
         event = Event.objects.get(event_id=event_id)
-        
+        tickets = list(TicketType.objects.filter(event_id=event_id).values())
+
         # Serialize the event data inline
         event_data = {
             'event_id': event.event_id,
@@ -325,7 +325,8 @@ def getEventById(request, event_id):
             'location_name': event.location.name if event.location else None,
             'banner': request.build_absolute_uri(event.banner.url) if event.banner else None,
             'performers': [p.name for p in event.performers.all()],
-            'buses': [b.transportation_id for b in event.buses.all()]
+            'buses': [b.transportation_id for b in event.buses.all()],
+            'tickets': tickets,
         }
         
         return JsonResponse({"event" : event_data})
