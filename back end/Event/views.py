@@ -70,9 +70,6 @@ def getCategories(request):
     result = list(Category.objects.all().values())
     return JsonResponse({"categories": result})
 
-# Django/Python Backend (views.py)
-
-
 @csrf_exempt
 def getPerformers(request):
     result = list(Performer.objects.all().values())
@@ -132,52 +129,64 @@ def getAvailableBusCapacities(request):
 
 @csrf_exempt
 def getEvents(request):
-    result = list(Event.objects.all().values())
-    for event in result:
-        if event.get('banner'):
-            # Construct the full URL using MEDIA_URL
-            banner_path = event['banner']
-            event['banner'] = request.build_absolute_uri(settings.MEDIA_URL + banner_path)
-        price_range = TicketType.objects.filter(
-            event_id=event['event_id']
-        ).aggregate(
-            min_price=Min('price'),
-            max_price=Max('price')
-        )
-        
-        event['min_price'] = price_range['min_price']
-        event['max_price'] = price_range['max_price']
-    return JsonResponse({"Events": result})
-
-@csrf_exempt
-def getOrganizerEvents(request):
     try:
-        owner_username = request.session.get("username")
-        if not owner_username:
-            raise KeyError("username")
-    except Exception:
-        return JsonResponse({"error": "Invalid request payload or missing username."}, status=400)
+        if request.method == "POST":
+            filters_data = json.loads(request.body) if request.body else {}
+        else:
+            filters_data = request.GET.dict()
 
-    organizer_events = list(
-        Event.objects.filter(owner__username=owner_username).values()
-    )
+        category_id = filters_data.get("category_id")
+        venue_id = filters_data.get("venue_id")
+        owner_username = filters_data.get("owner_username")
 
-    for event in organizer_events:
-        if event.get('banner'):
-            # Construct the full URL using MEDIA_URL
-            banner_path = event['banner']
-            event['banner'] = request.build_absolute_uri(settings.MEDIA_URL + banner_path)
-        price_range = TicketType.objects.filter(
-            event_id=event['event_id']
-        ).aggregate(
-            min_price=Min('price'),
-            max_price=Max('price')
-        )
-        
-        event['min_price'] = price_range['min_price']
-        event['max_price'] = price_range['max_price']
-    return JsonResponse({"organizer_events": organizer_events})
+        query_filters = {}
 
+        if category_id:
+            if isinstance(category_id, str) and ',' in category_id:
+                category_ids = [int(x.strip()) for x in category_id.split(',') if x.strip().isdigit()]
+                if category_ids:
+                    query_filters['category_id__in'] = category_ids
+            else:
+                query_filters['category_id'] = category_id
+
+        if venue_id:
+            if isinstance(venue_id, str) and ',' in venue_id:
+                venue_ids = [int(x.strip()) for x in venue_id.split(',') if x.strip().isdigit()]
+                if venue_ids:
+                    query_filters['location_id__in'] = venue_ids
+            else:
+                query_filters['location_id'] = venue_id
+
+        if owner_username:
+            query_filters['owner__username'] = owner_username
+
+        events = list(Event.objects.filter(**query_filters).values())
+
+        for event in events:
+            if event.get('banner'):
+                banner_path = event['banner']
+                event['banner'] = request.build_absolute_uri(settings.MEDIA_URL + banner_path)
+
+            price_range = TicketType.objects.filter(
+                event_id=event['event_id']
+            ).aggregate(
+                min_price=Min('price'),
+                max_price=Max('price')
+            )
+
+            event['min_price'] = price_range['min_price']
+            event['max_price'] = price_range['max_price']
+
+        if owner_username:
+            return JsonResponse({"organizer_events": events})
+        else:
+            return JsonResponse({"Events": events})
+
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON in request body"}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": f"Failed to fetch events: {str(e)}"}, status=500)
+    
 @csrf_exempt
 @require_POST
 def addTicketType(request):
@@ -242,3 +251,58 @@ def deleteEvent(request):
         return JsonResponse({"error": "Invalid JSON"}, status=400)
     except Exception as e:
         return JsonResponse({"error": f"Failed to delete event: {e}"}, status=500)
+    
+@csrf_exempt
+def getCategoriesWithBanners(request):
+    """
+    Get all categories that have at least one event, 
+    along with the banner URLs of all events in each category.
+    
+    Returns:
+    {
+        "categories": [
+            {
+                "category_id": 1,
+                "category_name": "Concerts",
+                "event_count": 5,
+                "event_banners": ["url1", "url2", "url3", ...]
+            },
+            ...
+        ]
+    }
+    """
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT 
+                    c.category_id,
+                    c.category_name,
+                    COUNT(e.event_id) as event_count,
+                    GROUP_CONCAT(e.banner) as banners
+                FROM api_category c
+                INNER JOIN api_event e ON c.category_id = e.category_id
+                GROUP BY c.category_id, c.category_name
+                HAVING COUNT(e.event_id) > 0
+            """)
+            
+            columns = [col[0] for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        categories = []
+        for row in results:
+            banner_paths = row['banners'].split(',') if row['banners'] else []
+            banner_urls = [
+                request.build_absolute_uri(settings.MEDIA_URL + path.strip())
+                for path in banner_paths if path and path.strip()
+            ]
+            
+            categories.append({
+                "category_id": row['category_id'],
+                "category_name": row['category_name'],
+                "event_count": row['event_count'],
+                "event_banners": banner_urls
+            })
+        
+        return JsonResponse({"categories": categories})
+    
+    except Exception as e:
+        return JsonResponse({"error": f"Failed to fetch categories: {str(e)}"}, status=500)

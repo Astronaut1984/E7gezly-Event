@@ -5,7 +5,6 @@ urlpatterns = [
     path("addevent/", views.addEvent, name="addevent"),
     path("getvenues/", views.getVenues, name="getvenues"),
     path("getevents/", views.getEvents, name="getevents"),
-    path("getorganizerevents/", views.getOrganizerEvents, name="getorganizerevents"),
     path("getcategories/", views.getCategories, name="getcategories"),
     path("addvenue/", views.addVenue, name="addvenue"),
     path("getperformers/", views.getPerformers, name="getperformers"),
@@ -13,5 +12,6 @@ urlpatterns = [
     path("getBusesWithCapacity/", views.getBusesWithCapacity, name="getBusesWithCapacity"),
     path("getavailablebuscapacities/", views.getAvailableBusCapacities, name="getavailablebuscapacities"),
     path("addtickettype/", views.addTicketType, name="addtickettype"),
-    path("deleteevent/", views.deleteEvent, name="deleteevent")
+    path("deleteevent/", views.deleteEvent, name="deleteevent"),
+    path("getcategorieswithbanners/", views.getCategoriesWithBanners, name="getcategorieswithbanners")
 ]

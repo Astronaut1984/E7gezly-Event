@@ -1,10 +1,10 @@
 import { createPortal } from "react-dom";
-import { useEffect, useRef,useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ModalListItem from "./ModalListItem";
 
-export default function Modal({ appliedItems, open, title, onClose }) {
+export default function Modal({ appliedItems, open, title, onClose, items }) {
   const dialog = useRef();
-  const [tempSelectedItems, tempSetSelectedItems] =useState(appliedItems || []);
+  const [tempSelectedItems, tempSetSelectedItems] = useState(appliedItems || []);
 
   useEffect(() => {
     if (open) {
@@ -18,16 +18,16 @@ export default function Modal({ appliedItems, open, title, onClose }) {
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [open,appliedItems]);
+  }, [open, appliedItems]);
 
   const handleClose = (isApply = false) => {
-    if(isApply){
+    if (isApply) {
       onClose(tempSelectedItems);
-    }else{
+    } else {
       onClose(appliedItems);
     }
     dialog.current.close();
-    document.body.style.overflow = "auto"; // restore scroll
+    document.body.style.overflow = "auto";
   };
 
   return createPortal(
@@ -45,10 +45,26 @@ export default function Modal({ appliedItems, open, title, onClose }) {
       </div>
       <div className="w-full min-h-min max-h-60">
         <ul className="w-full h-full p-5 max-h-60 overflow-y-auto">
-          <ModalListItem title="Category 1" key={1} selected={tempSelectedItems.includes(1)} toggleSelect={() => tempSetSelectedItems(prev => prev.includes(1) ? prev.filter(i => i !== 1) : [...prev,1])  }/>
-          <ModalListItem title="Category 2" key={2} selected={tempSelectedItems.includes(2)} toggleSelect={() => tempSetSelectedItems(prev => prev.includes(2) ? prev.filter(i => i !== 2) : [...prev,2])  }/>
-          <ModalListItem title="Category 3" key={3} selected={tempSelectedItems.includes(3)} toggleSelect={() => tempSetSelectedItems(prev => prev.includes(3) ? prev.filter(i => i !== 3) : [...prev,3])  }/>
-          <ModalListItem title="Category 4" key={4} selected={tempSelectedItems.includes(4)} toggleSelect={() => tempSetSelectedItems(prev => prev.includes(4) ? prev.filter(i => i !== 4) : [...prev,4])  }/>
+          {items && items.length > 0 ? (
+            items.map((item) => (
+              <ModalListItem
+                title={item.name}
+                key={item.id}
+                selected={tempSelectedItems.includes(item.id)}
+                toggleSelect={() =>
+                  tempSetSelectedItems((prev) =>
+                    prev.includes(item.id)
+                      ? prev.filter((i) => i !== item.id)
+                      : [...prev, item.id]
+                  )
+                }
+              />
+            ))
+          ) : (
+            <li className="text-center py-4 text-muted-foreground">
+              No items available
+            </li>
+          )}
         </ul>
       </div>
 

@@ -1,28 +1,47 @@
 import Event from "@/components/Event";
 import img from "@/assets/image.png";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+import { UserContext } from "../../../UserContext.jsx";
 
 export default function OrganizerMyEvents() {
+  const { user, loadingUser } = useContext(UserContext);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchMyEvents() {
+      // Wait for user to load first
+      if (loadingUser) return;
+      
+      // If no user is logged in, don't fetch
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
-      const res = await fetch(
-        "http://localhost:8000/event/getorganizerevents/",
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
-      const data = await res.json();
-      console.log(data["organizer_events"]);
-      setEvents(data["organizer_events"]);
-      setLoading(false);
+      
+      try {
+        const res = await fetch(
+          `http://localhost:8000/event/getevents/?owner_username=${user.username}`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+        const data = await res.json();
+        console.log(data["organizer_events"]);
+        setEvents(data["organizer_events"] || []);
+      } catch (error) {
+        console.error("Error fetching organizer events:", error);
+        setEvents([]);
+      } finally {
+        setLoading(false);
+      }
     }
+    
     fetchMyEvents();
-  }, []);
+  }, [user, loadingUser]);
 
   // Add this handler to remove deleted event from state
   const handleEventDelete = (deletedEventId) => {

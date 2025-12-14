@@ -1,34 +1,63 @@
 import "../../index.css";
 import HomePic from "../../assets/home-page-init.jpg";
-import { Routes, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import NavBar from "../../components/NavBar";
 import Event from "../../components/Event";
 import Category from "../../components/Category";
 import Footer from "../../components/Footer";
-import SaqyaConcert from "../../assets/Saqya.jpg";
 import { useEffect, useState } from "react";
 
 export default function Home() {
   const [events, setEvents] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
   useEffect(() => {
     async function fetchMyEvents() {
       setLoading(true);
 
-      const res = await fetch("http://localhost:8000/event/getevents/", {
-        method: "GET",
-        credentials: "include",
-      });
+      try {
+        const res = await fetch("http://localhost:8000/event/getevents/", {
+          method: "GET",
+          credentials: "include",
+        });
 
-      const data = await res.json();
-      console.log(data["Events"]);
-
-      setEvents(data["Events"]);
-      setLoading(false);
+        const data = await res.json();
+        console.log(data["Events"]);
+        setEvents(data["Events"] || []);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+        setEvents([]);
+      } finally {
+        setLoading(false);
+      }
     }
+
+    async function fetchCategories() {
+      setLoadingCategories(true);
+
+      try {
+        const res = await fetch("http://localhost:8000/event/getcategorieswithbanners/", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        const data = await res.json();
+        console.log("Categories with banners:", data["categories"]);
+        setCategories(data["categories"] || []);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setCategories([]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    }
+
     fetchMyEvents();
+    fetchCategories();
   }, []);
+
   return (
     <main id="homeBackground" className="bg-background w-full min-h-screen">
       <NavBar />
@@ -56,22 +85,34 @@ export default function Home() {
 
       <section
         id="Events"
-        className={`flex flex-col justify-center items-center w-full  bg-cover bg-center bg-no-repeat `}
+        className="flex flex-col justify-center items-center w-full bg-cover bg-center bg-no-repeat"
       >
         <div className="w-full">
           <h1 className="flex justify-center items-center m-10 text-4xl font-bold text-foreground">
             Recent Events
           </h1>
         </div>
-        {/* Events*/}
+        {/* Events */}
         <div className="w-full p-10 flex flexbox gap-10 justify-center items-center flex-wrap">
+          {loading && (
+            <div className="w-full flex justify-center py-10">
+              <i className="fa-solid fa-spinner fa-spin text-4xl text-primary"></i>
+            </div>
+          )}
+
+          {!loading && events.length === 0 && (
+            <div className="w-full flex justify-center py-10">
+              <h1 className="text-2xl font-semibold">No Events Available</h1>
+            </div>
+          )}
+
           {!loading &&
             events.map((event) => {
               return (
                 <Event
                   key={event.event_id}
                   title={event.name}
-                  id={event.event_id}
+                  eventId={event.event_id}
                   img={event.banner}
                   priceRange={{
                     minPrice: event.min_price,
@@ -86,20 +127,34 @@ export default function Home() {
         </div>
       </section>
 
-      <section
-        className={`pb-10 flex flex-col justify-center items-center w-full  bg-cover bg-center bg-no-repeat `}
-      >
+      <section className="pb-10 flex flex-col justify-center items-center w-full bg-cover bg-center bg-no-repeat">
         <div className="w-full">
           <h1 className="flex justify-center items-center m-10 text-4xl font-bold text-foreground">
             Categories
           </h1>
         </div>
         <div className="w-full p-10 flex flexbox gap-10 justify-center items-center flex-wrap">
-          <Category title="Concerts" img={SaqyaConcert} />
-          <Category
-            title="Comedy"
-            img="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%2Fid%2FOIP.4DkGUbOui9t5OI62K9aCtwHaEK%3Fpid%3DApi&f=1&ipt=655d029f755b2fca664704ff9156c6bcc84151e9c756e56e1d33aa6ec75b45f0&ipo=images"
-          />
+          {loadingCategories && (
+            <div className="w-full flex justify-center py-10">
+              <i className="fa-solid fa-spinner fa-spin text-4xl text-primary"></i>
+            </div>
+          )}
+
+          {!loadingCategories && categories.length === 0 && (
+            <div className="w-full flex justify-center py-10">
+              <h1 className="text-2xl font-semibold">No Categories Available</h1>
+            </div>
+          )}
+
+          {!loadingCategories &&
+            categories.map((category) => (
+              <Category
+                key={category.category_id}
+                categoryId={category.category_id}
+                title={category.category_name}
+                eventBanners={category.event_banners}
+              />
+            ))}
         </div>
       </section>
       <Footer />
