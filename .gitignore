@@ -22,3 +22,34 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python compiled files
+*.pyc
+*.pyo
+__pycache__/
+*.so
+
+# Python egg files
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+.eggs/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
