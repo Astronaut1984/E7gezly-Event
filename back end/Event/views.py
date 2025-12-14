@@ -226,6 +226,7 @@ def addVenue(request):
     except Exception as e:
         return JsonResponse({"error": f"Failed to create venue: {e}"}, status=400)
 
+@csrf_exempt
 @require_POST  
 def deleteEvent(request):
     try:
@@ -233,11 +234,10 @@ def deleteEvent(request):
         event = data.get("event_id")
         if not event:
             return JsonResponse({"error": "event_id is required"}, status=400)
-        with connection.cursor() as cursor:
-            cursor.execute("""delete from api_event where event_id = %s""", [event])
-            if cursor.rowcount==0:
-                return JsonResponse({"error": "Event not found"}, status=404)
-            return JsonResponse({"success": True, "deleted": event})
+        deleted, _ = Event.objects.filter(event_id=event).delete()
+        if deleted == 0:
+            return JsonResponse({"error": "Event not found"}, status=404)
+        return JsonResponse({"success": True, "deleted": event})
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
     except Exception as e:

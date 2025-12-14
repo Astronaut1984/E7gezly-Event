@@ -9,7 +9,6 @@ export default function OrganizerMyEvents() {
   useEffect(() => {
     async function fetchMyEvents() {
       setLoading(true);
-
       const res = await fetch(
         "http://localhost:8000/event/getorganizerevents/",
         {
@@ -17,16 +16,18 @@ export default function OrganizerMyEvents() {
           credentials: "include",
         }
       );
-
       const data = await res.json();
       console.log(data["organizer_events"]);
-
       setEvents(data["organizer_events"]);
       setLoading(false);
     }
-
     fetchMyEvents();
   }, []);
+
+  // Add this handler to remove deleted event from state
+  const handleEventDelete = (deletedEventId) => {
+    setEvents(events.filter(event => event.event_id !== deletedEventId));
+  };
 
   if (!loading) {
     console.log(events);
@@ -46,7 +47,7 @@ export default function OrganizerMyEvents() {
             <Event
               key={event.event_id}
               title={event.name}
-              id={event.event_id} 
+              eventId={event.event_id} 
               adminOrOrgMode={true}
               img={event.banner}
               priceRange={{
@@ -56,7 +57,8 @@ export default function OrganizerMyEvents() {
               }}
               startDate={event.start_date}
               endDate={event.end_date}
-              />
+              onDelete={handleEventDelete}
+            />
           )
         })}
       </div>
