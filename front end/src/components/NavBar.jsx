@@ -7,18 +7,8 @@ import { useEffect } from "react";
 import { Sun, Moon, Wallet } from "lucide-react";
 import Image from "./../assets/E7gezly Event Logo.svg";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { DialogClose } from "@radix-ui/react-dialog";
+
+import UserWallet from "./Wallet";
 
 export default function NavBar() {
   const dark = useSelector((state) => state.theme.dark);
@@ -63,10 +53,7 @@ export default function NavBar() {
       <nav className="mx-5 max-w-5xl flex items-center gap-6 py-4">
         {user && (
           <div className="ml-5 flex justify-center items-center cursor-pointer">
-            <WalletDialog className="hover:cursor-pointer" wallet={user.wallet}>
-              <Wallet className="text-primary-hover" />
-            </WalletDialog>
-            <h1 className="ml-2">{user.wallet} EGP</h1>
+            <UserWallet />
           </div>
         )}
         {!user && <NavBtn link="/login" title="Login" />}
@@ -118,25 +105,3 @@ export default function NavBar() {
   }
 }
 
-function WalletDialog({ children, className, wallet }) {
-  return (
-    <Dialog>
-      <DialogTrigger className={className}>{children}</DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Wallet Info</DialogTitle>
-        </DialogHeader>
-        Current Balance: {wallet} EGP
-        <div className="flex justify-between items-center gap-5">
-          <Input />
-          <Button>Charge Wallet</Button>
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant={"outline"}>Close</Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}

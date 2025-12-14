@@ -8,5 +8,6 @@ urlpatterns = [
     path("authuser/", views.login_view, name="authuser"), #User login credentials
     path("me/", views.me, name="me"), #User reload
     path("logout/", views.logout, name="logout"),
-    path("editaccountinfo/", views.editAccountInfo, name="editaccountinfo")
+    path("editaccountinfo/", views.editAccountInfo, name="editaccountinfo"),
+    path("editwallet/", views.editWallet, name="editwallet"),
 ]

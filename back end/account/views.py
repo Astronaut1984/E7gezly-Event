@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.db import connection
+from django.db import connection, transaction
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from api.models import User
@@ -122,7 +122,6 @@ def checkUsername(request):
 
 @csrf_exempt
 def editAccountInfo(request):
-    pass
     if request.method == "PUT":
         try:
             data = json.loads(request.body)    
@@ -143,3 +142,35 @@ def editAccountInfo(request):
             return JsonResponse({"error": str(e)}, status=500)
     else:
         return JsonResponse({"error": "Only POST method allowed"}, status=405)
+
+@csrf_exempt
+def editWallet(request):
+    if request.method != "PUT":
+        return JsonResponse({"error": "Only PUT method allowed"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        amount = int(data.get("amount", 0))
+
+        if amount <= 0:
+            return JsonResponse({"error": "Invalid amount"}, status=400)
+
+        username = request.session.get("username")
+        if not username:
+            return JsonResponse({"error": "Not authenticated"}, status=401)
+
+        with transaction.atomic():
+            user = User.objects.select_for_update().get(username=username)
+            user.wallet += amount
+            user.save(update_fields=["wallet"])
+
+        return JsonResponse({"wallet": user.wallet})
+
+    except User.DoesNotExist:
+        return JsonResponse({"error": "User not found"}, status=404)
+
+    except (ValueError, KeyError):
+        return JsonResponse({"error": "Invalid request data"}, status=400)
+
+    except Exception as e:
+        return JsonResponse({"error": f"Unexpected Error: {e}"}, status=500)

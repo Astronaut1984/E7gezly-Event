@@ -169,13 +169,13 @@ export default function Events() {
 
                 <div className="w-full h-full flex justify-center flex-wrap gap-5 pb-5 px-5">
                     {loading && (
-                        <div className="w-full flex justify-center py-20">
+                        <div className="w-full flex justify-center h-67.5 py-20">
                             <i className="fa-solid fa-spinner fa-spin text-4xl text-primary"></i>
                         </div>
                     )}
 
                     {!loading && events.length === 0 && (
-                        <div className="w-full flex justify-center py-20">
+                        <div className="w-full flex justify-center h-67.5 py-20">
                             <h1 className="text-2xl font-semibold">No Events Available</h1>
                         </div>
                     )}
