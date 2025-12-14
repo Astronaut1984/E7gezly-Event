@@ -107,7 +107,7 @@ export default function Home() {
           )}
 
           {!loading &&
-            events.map((event) => {
+            events.slice(0, 3).map((event) => {
               return (
                 <Event
                   key={event.event_id}

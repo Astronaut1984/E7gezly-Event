@@ -30,6 +30,7 @@ import AttendeeEvents from "./pages/dashboards/att-dashboard/AttendeeEvents";
 import AttendeeFriends from "./pages/dashboards/att-dashboard/AttendeeFriends";
 import AttendeeFollowedOrg from "./pages/dashboards/att-dashboard/AttendeeFollowedOrg";
 import AttendeeWishlist from "./pages/dashboards/att-dashboard/AttendeeWishlist";
+import EventPage from "./components/EventPage";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/events" element={<Events />} />
+      <Route path="/events/:id" element={<EventPage />} />
       <Route path="/user" element={<User />} />
       <Route
         path="/admin"

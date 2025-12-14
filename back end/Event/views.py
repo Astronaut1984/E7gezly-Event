@@ -306,3 +306,31 @@ def getCategoriesWithBanners(request):
     
     except Exception as e:
         return JsonResponse({"error": f"Failed to fetch categories: {str(e)}"}, status=500)
+    
+def getEventById(request, event_id):
+    try:
+        event = Event.objects.get(event_id=event_id)
+        
+        # Serialize the event data inline
+        event_data = {
+            'event_id': event.event_id,
+            'name': event.name,
+            'description': event.description,
+            'category': event.category.category_id if event.category else None,
+            'category_name': event.category.category_name if event.category else None,
+            'start_date': event.start_date,
+            'end_date': event.end_date,
+            'owner_first_name': event.owner.first_name,
+            'owner_last_name': event.owner.last_name,
+            'location_name': event.location.name if event.location else None,
+            'banner': request.build_absolute_uri(event.banner.url) if event.banner else None,
+            'performers': [p.name for p in event.performers.all()],
+            'buses': [b.transportation_id for b in event.buses.all()]
+        }
+        
+        return JsonResponse({"event" : event_data})
+    except Event.DoesNotExist:
+        return JsonResponse(
+            {'error': 'Event not found'}, 
+            status=404
+        )

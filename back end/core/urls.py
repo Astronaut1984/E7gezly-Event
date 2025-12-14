@@ -9,6 +9,7 @@ urlpatterns = [
     path('event/', include("Event.urls")),
     path('adminutils/', include("adminUtils.urls")),
     path('attendeeutils', include("attendeeUtils.urls")),
+    path('Record/', include('Record.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

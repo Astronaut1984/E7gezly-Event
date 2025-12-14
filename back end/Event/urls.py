@@ -13,5 +13,6 @@ urlpatterns = [
     path("getavailablebuscapacities/", views.getAvailableBusCapacities, name="getavailablebuscapacities"),
     path("addtickettype/", views.addTicketType, name="addtickettype"),
     path("deleteevent/", views.deleteEvent, name="deleteevent"),
-    path("getcategorieswithbanners/", views.getCategoriesWithBanners, name="getcategorieswithbanners")
+    path("getcategorieswithbanners/", views.getCategoriesWithBanners, name="getcategorieswithbanners"),
+    path("geteventbyid/<int:event_id>/", views.getEventById, name="geteventbyid"),
 ]

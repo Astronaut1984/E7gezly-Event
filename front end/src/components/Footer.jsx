@@ -1,6 +1,6 @@
-export default function Footer() {
+export default function Footer({className}) {
   return (
-    <footer className="w-full h-60 bg-card flex flex-row flex-wrap">
+    <footer className={`w-full h-60 bg-card flex flex-row flex-wrap ${className || ""}`}>
       <div className="h-50 w-1/3 text-primary text-2xl font-bold flex justify-center items-center">
         E7gezly Event
       </div>

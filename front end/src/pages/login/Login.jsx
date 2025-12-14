@@ -3,7 +3,7 @@ import "../../index.css";
 import Input from "../../components/Input";
 import NavBar from "../../components/NavBar";
 import { UserContext } from "../../UserContext.jsx";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 export default function Login() {
   let bgColor = "bg-background";
@@ -14,7 +14,7 @@ export default function Login() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:8000/account/usersindb/") // call Django view
+    fetch("http://localhost:8000/Record/eventsindb/") // call Django view
       .then((res) => res.json())
       .then((data) => {
         console.log(data); // see structure
@@ -133,13 +133,11 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Signup */}
-            <div className="flex flex-col items-center pt-7.5 ">
-              <a href="#" className="text-primary-hover">
-                {" "}
-                Sign Up{" "}
-              </a>
-            </div>
+            <NavLink to="/signup" className="flex flex-col items-center pt-7.5">
+              <div className="text-primary-hover">
+                Sign up
+              </div>
+            </NavLink>
           </form>
         </div>
       </main>

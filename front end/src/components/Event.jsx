@@ -5,7 +5,6 @@ export default function Event({
   title, 
   img, 
   priceRange, 
-  venue, 
   startDate, 
   endDate, 
   adminOrOrgMode, 
@@ -78,7 +77,6 @@ export default function Event({
         }`}</h1>
       </div>
       <div className="w-full flex justify-start px-5 pt-2">
-        <h1 className="text-l">{venue}</h1>
       </div>
       <div className="w-full flex justify-start px-5 pt-2">
         <i className="mt-[7px] fa-solid fa-money-bill pt-px mr-2 text-primary"></i>
@@ -97,7 +95,7 @@ export default function Event({
 
       {!adminOrOrgMode && (
         <NavLink
-          to="/Events"
+          to={`/Events/${eventId}`}
           className="text-primary-foreground bg-primary-hover rounded-lg px-20 py-3 font-semibold my-4"
         >
           Book Now!
