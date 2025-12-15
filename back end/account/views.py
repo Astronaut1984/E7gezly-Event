@@ -180,14 +180,10 @@ def getUserView(request):
     user = User.objects.get(username = username)
 
     return JsonResponse({
-        "authenticated": True,
-        "user": {
-            "username": user.username,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "city": user.city,
-            "country": user.country,
-            "status": user.status,
-            "phone": user.phone,
-            "email": user.email
-        }})
+        "username": user.username,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "city": user.city,
+        "country": user.country,
+        "status": user.status
+    })
