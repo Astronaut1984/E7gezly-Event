@@ -34,6 +34,16 @@ export const adminItems = [
     url: "/admin/performers",
     icon: MicVocal,
   },
+  {
+    title: "Category",
+    url: "/admin/categories",
+    icon: MicVocal,
+  },
+  {
+    title: "Create",
+    url: "/admin/create",
+    icon: MicVocal,
+  },
 ];
 
 export function Admin() {

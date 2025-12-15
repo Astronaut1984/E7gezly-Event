@@ -123,3 +123,43 @@ def resolveReport(request):
         return JsonResponse({"error": "Report not found"}, status=404)
     
     return JsonResponse({"message": f"Report '{report_id}' resolved"})
+@csrf_exempt
+def addCategory(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST only"}, status=405)
+    data = json.loads(request.body)
+    name = data.get("name")
+    if not name:
+        return JsonResponse({"error": "Name required"}, status=400)
+    category = Category.objects.create(category_name=name)
+    return JsonResponse({"message": "Category added", "category_id": category.category_id})
+
+@csrf_exempt
+def deleteCategory(request):
+    if request.method != "DELETE":
+        return JsonResponse({"error": "DELETE only"}, status=405)
+    category_id = json.loads(request.body).get("id")
+    if not category_id:
+        return JsonResponse({"error": "Category ID required"}, status=400)
+
+    deleted, _ = Category.objects.filter(category_id=category_id).delete()
+    if deleted == 0:
+        return JsonResponse({"error": "Category not found"}, status=404)
+
+    return JsonResponse({"message": f"Category '{category_id}' deleted"})
+
+@csrf_exempt
+def updateCategory(request):
+    if request.method != "PUT":
+        return JsonResponse({"error": "PUT only"}, status=405)
+    data = json.loads(request.body)
+    category_id = data.get("id")
+    name = data.get("name")
+    if not category_id or not name:
+        return JsonResponse({"error": "Category ID and name required"}, status=400)
+
+    updated = Category.objects.filter(category_id=category_id).update(category_name=name)
+    if updated == 0:
+        return JsonResponse({"error": "Category not found"}, status=404)
+
+    return JsonResponse({"message": f"Category '{category_id}' updated"})
