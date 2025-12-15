@@ -11,16 +11,18 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useDispatch, useSelector } from "react-redux";
-import { toggleTheme, setTheme } from "@/store/themeSlice";
+import { toggleTheme } from "@/store/themeSlice";
 import { NavLink, useLocation } from "react-router-dom";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext } from "react";
 import { UserContext } from "@/UserContext";
 
 import { Sun, Moon } from "lucide-react";
 
 export function DashboardSideBar({ items }) {
   const dispatch = useDispatch();
-  dispatch(setTheme(useSelector((state) => state.theme.dark)));
+  
+  // FIXED: Don't call dispatch during render!
+  // Just read the state, don't set it here
   const dark = useSelector((state) => state.theme.dark);
 
   let location = useLocation();

@@ -214,3 +214,168 @@ def getFriendsCounts(request):
         "blocked": blocked_count,
         "total_requests": sent_count + received_count
     })
+
+@csrf_exempt
+def getRelationshipStatus(request):
+    """
+    Returns the relationship status between current user and target user
+    Possible returns: none, friends, sent_request, received_request, blocked_by_me, blocked_by_them, following
+    """
+    current_user = request.session.get('username')
+    target_user = json.loads(request.body).get("username")
+    
+    if current_user == target_user:
+        return JsonResponse({"status": "self"})
+    
+    # Check if blocked by me
+    if Friend.objects.filter(attendee1_id=current_user, attendee2_id=target_user, status='B').exists():
+        return JsonResponse({"status": "blocked_by_me"})
+    
+    # Check if blocked by them
+    if Friend.objects.filter(attendee1_id=target_user, attendee2_id=current_user, status='B').exists():
+        return JsonResponse({"status": "blocked_by_them"})
+    
+    # Check if friends
+    if Friend.objects.filter(
+        Q(attendee1_id=current_user, attendee2_id=target_user, status='A') |
+        Q(attendee1_id=target_user, attendee2_id=current_user, status='A')
+    ).exists():
+        return JsonResponse({"status": "friends"})
+    
+    # Check if sent request
+    if Friend.objects.filter(attendee1_id=current_user, attendee2_id=target_user, status='P').exists():
+        return JsonResponse({"status": "sent_request"})
+    
+    # Check if received request
+    if Friend.objects.filter(attendee1_id=target_user, attendee2_id=current_user, status='P').exists():
+        return JsonResponse({"status": "received_request"})
+    
+    # Check if following (current user follows target organizer)
+    if Follow.objects.filter(attendee_id=current_user, organizer_id=target_user, status='A').exists():
+        return JsonResponse({"status": "following"})
+    
+    return JsonResponse({"status": "none"})
+
+@csrf_exempt
+def getUserFriendsWithPrivacy(request):
+    """
+    Returns user's friends list if privacy allows
+    """
+    current_user = request.session.get('username')
+    target_user = json.loads(request.body).get("username")
+    
+    # Get target user's privacy setting
+    user = User.objects.get(username=target_user)
+    privacy = user.privacy_choice
+    
+    # If viewing own profile, check if explicitly showing as public view
+    is_public_view = current_user == target_user
+    
+    if is_public_view:
+        # For public view, treat as if we're not the owner
+        # Privacy "A" (Anyone) - show friends
+        # Privacy "F" (Friends) - don't show (they're not their own friend)
+        # Privacy "P" (Private) - don't show
+        can_view = privacy == 'A'
+    elif privacy == 'A':
+        can_view = True
+    elif privacy == 'F':
+        # Check if friends or following relationship exists
+        can_view = (
+            Friend.objects.filter(
+                Q(attendee1_id=current_user, attendee2_id=target_user, status='A') |
+                Q(attendee1_id=target_user, attendee2_id=current_user, status='A')
+            ).exists() or
+            Follow.objects.filter(
+                Q(attendee_id=current_user, organizer_id=target_user, status='A') |
+                Q(attendee_id=target_user, organizer_id=current_user, status='A')
+            ).exists()
+        )
+    else:  # privacy == 'P'
+        can_view = False
+    
+    if not can_view:
+        return JsonResponse({"can_view": False, "friends": []})
+    
+    # Get friends
+    friends = Friend.objects.filter(
+        Q(attendee1_id=target_user, status='A') | Q(attendee2_id=target_user, status='A')
+    ).values_list('attendee1_id', 'attendee2_id')
+    
+    friend_list = []
+    for f1, f2 in friends:
+        friend_list.append(f2 if f1 == target_user else f1)
+    
+    return JsonResponse({"can_view": True, "friends": friend_list})
+
+@csrf_exempt
+def getUserFollowersWithPrivacy(request):
+    """
+    Returns user's followers list if privacy allows
+    """
+    current_user = request.session.get('username')
+    target_user = json.loads(request.body).get("username")
+    
+    # Get target user's privacy setting
+    user = User.objects.get(username=target_user)
+    privacy = user.privacy_choice
+    
+    # If viewing own profile as public view
+    is_public_view = current_user == target_user
+    
+    if is_public_view:
+        can_view = privacy == 'A'
+    elif privacy == 'A':
+        can_view = True
+    elif privacy == 'F':
+        # Check if friends or following relationship exists
+        can_view = (
+            Friend.objects.filter(
+                Q(attendee1_id=current_user, attendee2_id=target_user, status='A') |
+                Q(attendee1_id=target_user, attendee2_id=current_user, status='A')
+            ).exists() or
+            Follow.objects.filter(
+                Q(attendee_id=current_user, organizer_id=target_user, status='A') |
+                Q(attendee_id=target_user, organizer_id=current_user, status='A')
+            ).exists()
+        )
+    else:  # privacy == 'P'
+        can_view = False
+    
+    if not can_view:
+        return JsonResponse({"can_view": False, "followers": []})
+    
+    # Get followers
+    followers = Follow.objects.filter(
+        organizer_id=target_user,
+        status='A'
+    ).values_list('attendee_id', flat=True)
+    
+    return JsonResponse({"can_view": True, "followers": list(followers)})
+
+@csrf_exempt
+def getUserView(request):
+    username = json.loads(request.body).get("username")
+    current_user = request.session.get('username')
+    
+    # Check if blocked
+    if Friend.objects.filter(
+        Q(attendee1_id=current_user, attendee2_id=username, status='B') |
+        Q(attendee1_id=username, attendee2_id=current_user, status='B')
+    ).exists():
+        return JsonResponse({"error": True, "message": "User not found"}, status=404)
+    
+    try:
+        user = User.objects.get(username=username)
+        return JsonResponse({
+            "error": False,
+            "username": user.username,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "city": user.city,
+            "country": user.country,
+            "status": user.status,
+            "privacy_choice": user.privacy_choice
+        })
+    except User.DoesNotExist:
+        return JsonResponse({"error": True, "message": "User not found"}, status=404)

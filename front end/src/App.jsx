@@ -31,6 +31,8 @@ import AttendeeFriends from "./pages/dashboards/att-dashboard/AttendeeFriends";
 import AttendeeFollowedOrg from "./pages/dashboards/att-dashboard/AttendeeFollowedOrg";
 import AttendeeWishlist from "./pages/dashboards/att-dashboard/AttendeeWishlist";
 import EventPage from "./components/EventPage";
+import UserView from "./pages/UserView";
+
 
 function App() {
   return (
@@ -41,6 +43,7 @@ function App() {
       <Route path="/events" element={<Events />} />
       <Route path="/events/:id" element={<EventPage />} />
       <Route path="/user" element={<User />} />
+      
       <Route
         path="/admin"
         element={
@@ -55,7 +58,9 @@ function App() {
         <Route path="/admin/org" element={<AdminOrg />} />
         <Route path="/admin/reportcase" element={<AdminReportCases />} />
         <Route path="/admin/performers" element={<AdminPerformers />} />
+        <Route path="/admin/user/:username" element={<UserView />} />
       </Route>
+      
       <Route
         path="/org"
         element={
@@ -69,7 +74,9 @@ function App() {
         <Route path="/org/followers" element={<OrganizerFollowers />} />
         <Route path="/org/my-events" element={<OrganizerMyEvents />} />
         <Route path="/org/chat" element={<OrganizerChat />} />
+        <Route path="/org/user/:username" element={<UserView />} />
       </Route>
+      
       <Route path="/att" element={
         <ProtectedRoute role="Attendee">
           <Layout sidebar={<DashboardSideBar items={attItems}/>} />
@@ -80,6 +87,7 @@ function App() {
         <Route path="/att/friends" index element={<AttendeeFriends />}/>
         <Route path="/att/followed-org" index element={<AttendeeFollowedOrg />}/>
         <Route path="/att/wishlist" index element={<AttendeeWishlist />}/>
+        <Route path="/att/user/:username" element={<UserView />} />
       </Route>
     </Routes>
   );
