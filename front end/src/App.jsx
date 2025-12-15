@@ -32,7 +32,6 @@ import AttendeeFollowedOrg from "./pages/dashboards/att-dashboard/AttendeeFollow
 import AttendeeWishlist from "./pages/dashboards/att-dashboard/AttendeeWishlist";
 import EventPage from "./components/EventPage";
 import UserView from "./pages/UserView";
-
 import AttendeeChat from "./pages/dashboards/att-dashboard/AttendeeChat";
 
 function App() {
@@ -53,13 +52,13 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/admin" index element={<Admin />} />
-        <Route path="/admin/venues" element={<AdminVenues />} />
-        <Route path="/admin/events" element={<AdminEvents />} />
-        <Route path="/admin/org" element={<AdminOrg />} />
-        <Route path="/admin/reportcase" element={<AdminReportCases />} />
-        <Route path="/admin/performers" element={<AdminPerformers />} />
-        <Route path="/admin/user/:username" element={<UserView />} />
+        <Route index element={<Admin />} />
+        <Route path="venues" element={<AdminVenues />} />
+        <Route path="events" element={<AdminEvents />} />
+        <Route path="org" element={<AdminOrg />} />
+        <Route path="reportcase" element={<AdminReportCases />} />
+        <Route path="performers" element={<AdminPerformers />} />
+        <Route path="user/:username" element={<UserView />} />
       </Route>
 
       <Route
@@ -70,12 +69,12 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/org" index element={<Organizer />} />
-        <Route path="/org/add-events" element={<OrganizerAddEvents />} />
-        <Route path="/org/followers" element={<OrganizerFollowers />} />
-        <Route path="/org/my-events" element={<OrganizerMyEvents />} />
-        <Route path="/org/chat" element={<OrganizerChat />} />
-        <Route path="/org/user/:username" element={<UserView />} />
+        <Route index element={<Organizer />} />
+        <Route path="add-events" element={<OrganizerAddEvents />} />
+        <Route path="followers" element={<OrganizerFollowers />} />
+        <Route path="my-events" element={<OrganizerMyEvents />} />
+        <Route path="chat" element={<OrganizerChat />} />
+        <Route path="user/:username" element={<UserView />} />
       </Route>
 
       <Route
