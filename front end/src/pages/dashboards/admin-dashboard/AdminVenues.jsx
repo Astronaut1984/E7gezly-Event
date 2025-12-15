@@ -37,8 +37,8 @@ export default function AdminVenues() {
     fetchItems: reloadVenues,
     remove: deleteVenue,
   } = useAdminResource({
-    getUrl: "http://localhost:8000/adminutils/getvenues/",
-    deleteUrl: "http://localhost:8000/adminutils/deletevenue/",
+    getUrl: "http://localhost:8000/adminUtils/getvenues/",
+    deleteUrl: "http://localhost:8000/adminUtils/deletevenue/",
     listKey: "venues",
     deletePayloadKey: "location_id",
   });

@@ -7,8 +7,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('account/', include("account.urls")),
     path('event/', include("Event.urls")),
-    path('adminutils/', include("adminUtils.urls")),
-    path('attendeeutils', include("attendeeUtils.urls")),
+    path('adminUtils/', include("adminUtils.urls")),
+    path('attendeeUtils/', include("attendeeUtils.urls")),
     path('Record/', include('Record.urls')),
 ]
 

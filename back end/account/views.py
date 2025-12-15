@@ -174,3 +174,20 @@ def editWallet(request):
 
     except Exception as e:
         return JsonResponse({"error": f"Unexpected Error: {e}"}, status=500)
+    
+def getUserView(request):
+    username = json.loads(request.body).get("username")
+    user = User.objects.get(username = username)
+
+    return JsonResponse({
+        "authenticated": True,
+        "user": {
+            "username": user.username,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "city": user.city,
+            "country": user.country,
+            "status": user.status,
+            "phone": user.phone,
+            "email": user.email
+        }})

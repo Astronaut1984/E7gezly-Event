@@ -28,8 +28,8 @@ export default function AdminPerformers() {
     fetchItems: reloadPerformers,
     remove: deletePer,
   } = useAdminResource({
-    getUrl: "http://localhost:8000/adminutils/getperformers/",
-    deleteUrl: "http://localhost:8000/adminutils/deleteperformer/",
+    getUrl: "http://localhost:8000/adminUtils/getperformers/",
+    deleteUrl: "http://localhost:8000/adminUtils/deleteperformer/",
     listKey: "performers",
     deletePayloadKey: "id",
   });
@@ -57,7 +57,7 @@ export default function AdminPerformers() {
 
     try {
       const res = await fetch(
-        "http://localhost:8000/adminutils/addperformer/",
+        "http://localhost:8000/adminUtils/addperformer/",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

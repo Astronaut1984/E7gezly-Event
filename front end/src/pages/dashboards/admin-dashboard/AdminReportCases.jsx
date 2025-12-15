@@ -21,14 +21,14 @@ export default function AdminReportCases() {
     loading,
     fetchItems: reloadReportCases,
   } = useAdminResource({
-    getUrl: "http://localhost:8000/adminutils/getreports/",
+    getUrl: "http://localhost:8000/adminUtils/getreports/",
     listKey: "reports",
   });
 
   async function modifyReportCase(report) {
     try {
       const res = await fetch(
-        "http://localhost:8000/adminutils/resolvereport/",
+        "http://localhost:8000/adminUtils/resolvereport/",
         {
           method: "PUT",
           body: JSON.stringify(report),

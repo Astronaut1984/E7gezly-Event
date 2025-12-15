@@ -23,8 +23,8 @@ export default function AdminOrg() {
     fetchItems: reloadOrganizers,
     remove: deleteOrg,
   } = useAdminResource({
-    getUrl: "http://localhost:8000/adminutils/getorganizers/",
-    deleteUrl: "http://localhost:8000/adminutils/deleteorganizer/",
+    getUrl: "http://localhost:8000/adminUtils/getorganizers/",
+    deleteUrl: "http://localhost:8000/adminUtils/deleteorganizer/",
     listKey: "organizers",
     deletePayloadKey: "username",
   });
