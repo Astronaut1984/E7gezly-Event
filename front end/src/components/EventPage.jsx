@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import NavBar from "./NavBar";
 import Footer from "./Footer";
-import { Clock } from "lucide-react";
+import { Clock, MapPin } from "lucide-react";
 import { Button } from "./ui/button";
 
 export default function EventPage() {
@@ -64,7 +64,10 @@ export default function EventPage() {
           {event.end_date && ` → ${event.end_date}`}
         </div>
         {/* VENUE */}
-        <div className="text-lg">📍 {event.location_name}</div>
+        <div className="text-lg flex gap-3 items-center">
+          <MapPin className="text-primary" />
+          {event.location_name}
+        </div>
         {/* DESCRIPTION */}
         <div>
           <h2 className="text-2xl font-semibold mb-2">About this event</h2>
@@ -75,14 +78,14 @@ export default function EventPage() {
         {/* TICKETS */}
         <div>
           <h2 className="text-2xl font-semibold mb-4">Tickets</h2>
-          <div className="flex flex-col w-100 gap-4">
+          <div className="flex flex-col w-full gap-4">
             {
               <div>
-                <div className="flex flex-col w-100 gap-4">
+                <div className="flex w-full gap-4">
                   {event.tickets.map((ticket) => (
                     <div
                       key={ticket.ticket_type_id}
-                      className="relative flex h-30 overflow-hidden rounded-xl bg-card"
+                      className="relative flex h-30 w-100 overflow-hidden rounded-xl bg-card"
                     >
                       {/* Left cut-out */}
                       <div className="absolute left-0 top-1/2 h-6 w-6 -translate-y-1/2 -translate-x-1/2 rounded-full bg-background inset-shadow-sm" />
@@ -139,7 +142,7 @@ export default function EventPage() {
             <div className="flex flex-wrap gap-4">
               {event.performers.map((perf, i) => (
                 <div key={i} className="px-4 py-2 rounded-lg bg-secondary">
-                  {perf.name}
+                  {perf}
                 </div>
               ))}
             </div>
