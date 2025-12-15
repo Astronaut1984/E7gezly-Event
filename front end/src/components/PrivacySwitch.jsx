@@ -21,13 +21,13 @@ export default function PrivacySwitch({ value, onChange, error }) {
         Privacy Settings
       </label>
       
-      <div className="relative bg-sidebar-accent rounded-lg p-1 flex gap-1 h-[50px]">
+      <div className="relative bg-muted/50 dark:bg-sidebar-accent rounded-lg p-1 h-[50px] grid grid-cols-3 gap-1">
         {/* Sliding background indicator */}
         <div
-          className="absolute top-1 bottom-1 bg-primary rounded-md transition-all duration-300 ease-in-out"
+          className="absolute top-1 bottom-1 bg-primary dark:bg-primary rounded-md transition-all duration-300 ease-in-out shadow-sm"
           style={{
-            left: `calc(${selectedIndex * 33.333}% + 0.25rem)`,
-            width: `calc(33.333% - 0.5rem)`,
+            left: selectedIndex === 0 ? '0.25rem' : selectedIndex === 1 ? 'calc(33.333% + 0.25rem)' : 'calc(66.666% + 0.25rem)',
+            width: 'calc(33.333% - 0.333rem)',
           }}
         />
 
@@ -45,10 +45,10 @@ export default function PrivacySwitch({ value, onChange, error }) {
                 e.stopPropagation();
                 handleSelect(option.value);
               }}
-              className={`relative flex-1 flex items-center justify-center gap-2 rounded-md transition-all duration-300 ${
+              className={`relative z-10 flex items-center justify-center gap-2 rounded-md transition-all duration-300 ${
                 isSelected
-                  ? "text-primary-foreground"
-                  : "text-sidebar-foreground hover:text-sidebar-foreground/80"
+                  ? "text-primary-foreground dark:text-primary-foreground"
+                  : "text-muted-foreground dark:text-sidebar-foreground hover:text-foreground dark:hover:text-sidebar-foreground/80"
               }`}
             >
               <Icon className={`w-5 h-5 transition-transform duration-300 ${
