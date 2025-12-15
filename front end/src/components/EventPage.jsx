@@ -54,7 +54,7 @@ export default function EventPage() {
         <p className="text-lg text-muted-foreground">
           Organized by{" "}
           <span className="font-semibold">
-            {event.owner_first_name} {event.owner_last_name}
+            {event.owner_first_name} {event.owner_last_name} 
           </span>
         </p>
         {/* TIME */}

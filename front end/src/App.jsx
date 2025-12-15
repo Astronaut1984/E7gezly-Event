@@ -44,7 +44,7 @@ function App() {
       <Route path="/events" element={<Events />} />
       <Route path="/events/:id" element={<EventPage />} />
       <Route path="/user" element={<User />} />
-      
+
       <Route
         path="/admin"
         element={
@@ -61,7 +61,7 @@ function App() {
         <Route path="/admin/performers" element={<AdminPerformers />} />
         <Route path="/admin/user/:username" element={<UserView />} />
       </Route>
-      
+
       <Route
         path="/org"
         element={
@@ -77,18 +77,15 @@ function App() {
         <Route path="/org/chat" element={<OrganizerChat />} />
         <Route path="/org/user/:username" element={<UserView />} />
       </Route>
-      
-      <Route path="/att" element={
-        <ProtectedRoute role="Attendee">
-          <Layout sidebar={<DashboardSideBar items={attItems}/>} />
-        </ProtectedRoute>
-      }>
-        <Route path="/att" index element={<Attendee />}/>
-        <Route path="/att/my-events" index element={<AttendeeEvents />}/>
-        <Route path="/att/friends" index element={<AttendeeFriends />}/>
-        <Route path="/att/followed-org" index element={<AttendeeFollowedOrg />}/>
-        <Route path="/att/wishlist" index element={<AttendeeWishlist />}/>
-        <Route path="/att/user/:username" element={<UserView />} />
+
+      <Route
+        path="/att"
+        element={
+          <ProtectedRoute role="Attendee">
+            <Layout sidebar={<DashboardSideBar items={attItems} />} />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/att"
         element={
@@ -97,6 +94,16 @@ function App() {
           </ProtectedRoute>
         }
       >
+        <Route path="/att" index element={<Attendee />} />
+        <Route path="/att/my-events" index element={<AttendeeEvents />} />
+        <Route path="/att/friends" index element={<AttendeeFriends />} />
+        <Route
+          path="/att/followed-org"
+          index
+          element={<AttendeeFollowedOrg />}
+        />
+        <Route path="/att/wishlist" index element={<AttendeeWishlist />} />
+        <Route path="/att/user/:username" element={<UserView />} />
         <Route path="/att" index element={<Attendee />} />
         <Route path="/att/my-events" index element={<AttendeeEvents />} />
         <Route path="/att/friends" index element={<AttendeeFriends />} />

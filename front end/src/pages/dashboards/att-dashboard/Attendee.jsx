@@ -1,5 +1,5 @@
 import EditInfoForm from "@/components/EditInfoForm";
-import { Home, Ticket, UsersRound, UserRound, Star } from "lucide-react";
+import { Home, Ticket, UsersRound, UserRound, Star, MessageCircle } from "lucide-react";
 
 export default function Attendee() {
   return (
@@ -35,4 +35,9 @@ export const attItems = [
     url: "/att/wishlist",
     icon: Star,
   },
+  {
+    title: "Chat",
+    url: "/att/chat",
+    icon: MessageCircle,
+  }
 ];
