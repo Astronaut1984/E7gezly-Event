@@ -33,6 +33,7 @@ import AttendeeWishlist from "./pages/dashboards/att-dashboard/AttendeeWishlist"
 import EventPage from "./components/EventPage";
 import UserView from "./pages/UserView";
 import AttendeeChat from "./pages/dashboards/att-dashboard/AttendeeChat";
+import AdminCategory from "./pages/dashboards/admin-dashboard/AdminCategory";
 
 function App() {
   return (
@@ -59,6 +60,7 @@ function App() {
         <Route path="reportcase" element={<AdminReportCases />} />
         <Route path="performers" element={<AdminPerformers />} />
         <Route path="user/:username" element={<UserView />} />
+        <Route path="categories" element={<AdminCategory />} />
       </Route>
 
       <Route
@@ -77,14 +79,6 @@ function App() {
         <Route path="user/:username" element={<UserView />} />
       </Route>
 
-      <Route
-        path="/att"
-        element={
-          <ProtectedRoute role="Attendee">
-            <Layout sidebar={<DashboardSideBar items={attItems} />} />
-          </ProtectedRoute>
-        }
-      />
       <Route
         path="/att"
         element={

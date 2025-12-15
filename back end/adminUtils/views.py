@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.db import connection
-from api.models import User, Performer, Venue, Report
+from api.models import User, Performer, Venue, Report, Category
 from django.db.models import Count
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -163,3 +163,7 @@ def updateCategory(request):
         return JsonResponse({"error": "Category not found"}, status=404)
 
     return JsonResponse({"message": f"Category '{category_id}' updated"})
+
+def getCategories(request):
+    
+    pass
