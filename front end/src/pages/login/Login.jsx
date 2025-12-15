@@ -14,7 +14,7 @@ export default function Login() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:8000/Record/eventsindb/") // call Django view
+    fetch("http://localhost:8000/Record/usersindb/") // call Django view
       .then((res) => res.json())
       .then((data) => {
         console.log(data); // see structure
@@ -134,9 +134,7 @@ export default function Login() {
             </div>
 
             <NavLink to="/signup" className="flex flex-col items-center pt-7.5">
-              <div className="text-primary-hover">
-                Sign up
-              </div>
+              <div className="text-primary-hover">Sign up</div>
             </NavLink>
           </form>
         </div>
