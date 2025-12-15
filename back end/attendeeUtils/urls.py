@@ -10,4 +10,5 @@ urlpatterns = [
     path("getreceivedfriendrequests", views.getReceivedFriendRequests, name="getreceivedfriendrequests"),
     path("getblockedusers", views.getBlockedUsers, name="getblockedusers"),
     path("respondtofriendrequest", views.respondToFriendRequest, name="respondtofriendrequest"),
+    path("getunblockedusers", views.getUnblockedUsers, name="getunblockedusers")
 ]

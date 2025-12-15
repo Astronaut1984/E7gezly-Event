@@ -104,3 +104,37 @@ def addFriend(request):
         )
         return JsonResponse({"sent": True})
     return JsonResponse({"sent": False})
+
+@csrf_exempt
+def getUnblockedUsers(request):
+    username = request.session.get('username')
+    
+
+    blocked_by_me = Friend.objects.filter(
+        attendee1_id=username, 
+        status='B'
+    ).values_list('attendee2_id', flat=True)
+    
+    blocked_by_them = Friend.objects.filter(
+        attendee2_id=username, 
+        status='B'
+    ).values_list('attendee1_id', flat=True)
+    
+    # Combine both blocked lists
+    all_blocked = list(blocked_by_me) + list(blocked_by_them)
+    
+    # Get all users except current user and blocked users
+    with connection.cursor() as cursor:
+        # Using raw SQL for efficiency
+        placeholders = ','.join(['%s'] * len(all_blocked)) if all_blocked else "''"
+        query = f"""
+            SELECT username FROM api_user 
+            WHERE username != %s 
+            AND username NOT IN ({placeholders})
+            ORDER BY username
+        """
+        params = [username] + all_blocked if all_blocked else [username]
+        cursor.execute(query, params)
+        users = [u[0] for u in cursor.fetchall()]
+    
+    return JsonResponse({"unblockedUsers": users})
