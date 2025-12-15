@@ -12,7 +12,12 @@ class User(models.Model):
     city = models.CharField(max_length=255, null=True, blank=True)
     phone = models.CharField(max_length=255, null=True, blank=True)
     status = models.CharField(max_length=255, null=True, blank=True)
-
+    PRIVACY_CHOICES = {
+        "A": "Anyone",
+        "F": "Friend/Follow",
+        "P": "Private"
+    }
+    privacy_choice = models.CharField(max_length=1, choices=PRIVACY_CHOICES, default="F")
     def __str__(self):
         return self.username
 
@@ -30,6 +35,7 @@ class Venue(models.Model):
         return self.name
 
 class Vehicle(models.Model):
+    name=models.CharField(max_length=64)
     transportation_id = models.AutoField(primary_key=True)
     capacity = models.IntegerField(null=True, blank=True)
 

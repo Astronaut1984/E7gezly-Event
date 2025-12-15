@@ -2,6 +2,7 @@ import { UserContext } from "@/UserContext";
 import { useContext, useEffect, useState } from "react";
 import Input from "./Input";
 import InputEdit from "./InputEdit";
+import PrivacySwitch from "./PrivacySwitch";
 
 export default function EditInfoForm() {
   const { user, setUser } = useContext(UserContext);
@@ -17,6 +18,7 @@ export default function EditInfoForm() {
     lastName: user?.last_name || "",
     country: user?.country || "",
     city: user?.city || "",
+    privacyChoice: user?.privacy_choice || "F",
   });
 
   // Store original values to detect changes
@@ -127,12 +129,7 @@ export default function EditInfoForm() {
 
     // Phone validation (optional field)
     if (formData.phone && formData.phone.length > 0) {
-      if (formData.phone.length < 10) {
-        newErrors.phone = {
-          isError: true,
-          message: "Phone number must be at least 10 digits",
-        };
-      } else if (formData.phone.length > 15) {
+      if (formData.phone.length > 15) {
         newErrors.phone = {
           isError: true,
           message: "Phone number must be less than 15 digits",
@@ -226,12 +223,6 @@ export default function EditInfoForm() {
     }
     // Check email availability if changed
     if (emailChanged) {
-      console.log(
-        "Email changed from:",
-        originalData.email,
-        "to:",
-        formData.email
-      );
       try {
         const response = await fetch(
           "http://localhost:8000/account/checkemail/",
@@ -278,24 +269,33 @@ export default function EditInfoForm() {
           credentials: "include",
         }
       );
+      
       if (!res.ok) {
-        console.error("Error updating information");
+        const errorData = await res.json();
+        console.error("Error updating information:", errorData);
         setErrors({
           submit: {
             isError: true,
-            message: "Failed to update profile. Please try again.",
+            message: errorData.error || "Failed to update profile. Please try again.",
           },
         });
         setIsSubmitting(false);
         return;
       }
+      
       // Update was successful
       const data = await res.json();
-      console.log(data);
-      console.log("Profile updated successfully!");
+      console.log("Profile updated successfully!", data);
       setSuccessMessage("Profile updated successfully!");
-      // Optionally update the user context here
-      setUser({ ...user, ...formData });
+      
+      // FIXED: Use useEffect to update context after render completes
+      // Update user context with the new data
+      if (data.user) {
+        // Use setTimeout to ensure state update happens after render
+        setTimeout(() => {
+          setUser(data.user);
+        }, 0);
+      }
     } catch (err) {
       console.error(err);
       setErrors({
@@ -315,7 +315,7 @@ export default function EditInfoForm() {
 
       {/* Success Message */}
       {successMessage && (
-        <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+        <div className="mb-4 p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 rounded-lg">
           <div className="flex items-center">
             <svg
               className="w-5 h-5 mr-2"
@@ -335,7 +335,7 @@ export default function EditInfoForm() {
 
       {/* General Error Message */}
       {errors.submit && (
-        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+        <div className="mb-4 p-4 bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 rounded-lg">
           <div className="flex items-center">
             <svg
               className="w-5 h-5 mr-2"
@@ -382,6 +382,11 @@ export default function EditInfoForm() {
           value={formData.username}
           onChange={handleChange}
           error={errors.username}
+        />
+        <PrivacySwitch
+          value={formData.privacyChoice}
+          onChange={handleChange}
+          error={errors.privacyChoice}
         />
       </div>
       <div className="text-[20px] flex justify-between gap-20">

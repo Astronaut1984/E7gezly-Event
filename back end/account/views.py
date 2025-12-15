@@ -24,10 +24,10 @@ def signup(request):
                 cursor.execute(
                     """
                     INSERT INTO api_user 
-                    (username, password, first_name, last_name, email, status, country, city, phone, wallet)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    (username, password, first_name, last_name, email, status, country, city, phone, wallet, privacy_choice)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """,
-                    [data.get("username"), hashed, data.get("firstName"), data.get("lastName"), data.get("email"), data.get("accountType"), data.get("country"), data.get("city"), data.get("phoneNumber"), 0],
+                    [data.get("username"), hashed, data.get("firstName"), data.get("lastName"), data.get("email"), data.get("accountType"), data.get("country"), data.get("city"), data.get("phoneNumber"), 0, 'F'],
                 )
             return JsonResponse({"message": "User created successfully"})
         except Exception as e:
@@ -37,13 +37,19 @@ def signup(request):
 
 @csrf_exempt
 def checkEmail(request):
-    data = json.loads(request.body)  
-    with connection.cursor() as cursor:
-        cursor.execute(""" SELECT COUNT(*) FROM api_user WHERE email = %s""",[data.get("email")])
-        result = cursor.fetchone()
-        if result[0] == 1:
-            return JsonResponse({"emailExists": True})
-        return JsonResponse({"emailExists": False})
+    if request.method not in ["POST", "PUT"]:
+        return JsonResponse({"error": "Only POST/PUT methods allowed"}, status=405)
+    
+    try:
+        data = json.loads(request.body)  
+        with connection.cursor() as cursor:
+            cursor.execute(""" SELECT COUNT(*) FROM api_user WHERE email = %s""",[data.get("email")])
+            result = cursor.fetchone()
+            if result[0] >= 1:
+                return JsonResponse({"emailExists": True})
+            return JsonResponse({"emailExists": False})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
         
 @csrf_exempt
 def me(request):
@@ -68,6 +74,7 @@ def me(request):
                     "wallet": user.wallet,
                     "phone": user.phone,
                     "email": user.email,
+                    "privacy_choice": user.privacy_choice,
                 }
             }
         )
@@ -105,6 +112,7 @@ def login_view(request):
                     "wallet": user.wallet,
                     "phone": user.phone,
                     "email": user.email,
+                    "privacy_choice": user.privacy_choice,
                     }
                 })
             else:
@@ -115,34 +123,107 @@ def login_view(request):
 
 @csrf_exempt    
 def checkUsername(request):
-    username = json.loads(request.body).get("username")
-    if User.objects.filter(username=username).exists():
-        return JsonResponse({"usernameExists": True})
-    return JsonResponse({"usernameExists": False})
+    if request.method not in ["POST", "PUT"]:
+        return JsonResponse({"error": "Only POST/PUT methods allowed"}, status=405)
+    
+    try:
+        username = json.loads(request.body).get("username")
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({"usernameExists": True})
+        return JsonResponse({"usernameExists": False})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 @csrf_exempt
 def editAccountInfo(request):
     if request.method == "PUT":
         try:
-            data = json.loads(request.body)    
-            user = User.objects.get(username=request.session.get("username"))
+            data = json.loads(request.body)
+            old_username = request.session.get("username")
+            
+            if not old_username:
+                return JsonResponse({"error": "Not authenticated"}, status=401)
+            
+            # Get the current user
+            user = User.objects.get(username=old_username)
+            
             new_username = data.get("username") or user.username
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    """
-                    UPDATE api_user SET
-                    username = %s, first_name = %s, last_name = %s, email = %s, status = %s, country = %s, city = %s, phone = %s
-                    where username = %s
-                    """,
-                    [new_username, data.get("firstName") or user.first_name, data.get("lastName") or user.last_name, data.get("email") or user.email, data.get("accountType") or user.status, data.get("country") or user.country, data.get("city") or user.city, data.get("phone") or user.phone, user.username]
-                )
-            request.session['username'] = new_username
-            return JsonResponse({"message": "User updated successfully"})
+            new_first_name = data.get("firstName") or user.first_name
+            new_last_name = data.get("lastName") or user.last_name
+            new_email = data.get("email") or user.email
+            new_country = data.get("country") or user.country
+            new_city = data.get("city") or user.city
+            new_phone = data.get("phone") or user.phone
+            new_privacy_choice = data.get("privacyChoice") or user.privacy_choice
+            
+            # Check if username changed
+            username_changed = new_username != old_username
+            
+            if username_changed:
+                # Check if new username already exists
+                if User.objects.filter(username=new_username).exists():
+                    return JsonResponse({"error": "Username already exists"}, status=400)
+            
+            # Now that CASCADE is set up, we can safely update using raw SQL
+            # The database will automatically cascade the username change to all foreign keys
+            with transaction.atomic():
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        UPDATE api_user SET
+                        username = %s, 
+                        first_name = %s, 
+                        last_name = %s, 
+                        email = %s, 
+                        country = %s, 
+                        city = %s, 
+                        phone = %s, 
+                        privacy_choice = %s
+                        WHERE username = %s
+                        """,
+                        [
+                            new_username,
+                            new_first_name,
+                            new_last_name,
+                            new_email,
+                            new_country,
+                            new_city,
+                            new_phone,
+                            new_privacy_choice,
+                            old_username
+                        ]
+                    )
+            
+            # Update session with new username if it changed
+            if username_changed:
+                request.session['username'] = new_username
+            
+            # Return updated user data
+            return JsonResponse({
+                "message": "User updated successfully",
+                "user": {
+                    "username": new_username,
+                    "first_name": new_first_name,
+                    "last_name": new_last_name,
+                    "email": new_email,
+                    "country": new_country,
+                    "city": new_city,
+                    "phone": new_phone,
+                    "privacy_choice": new_privacy_choice,
+                    "status": user.status,
+                    "wallet": user.wallet
+                }
+            })
+        except User.DoesNotExist:
+            return JsonResponse({"error": "User not found"}, status=404)
         except Exception as e:
+            print(f"Error in editAccountInfo: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return JsonResponse({"error": str(e)}, status=500)
     else:
-        return JsonResponse({"error": "Only POST method allowed"}, status=405)
-
+        return JsonResponse({"error": "Only PUT method allowed"}, status=405)
+    
 @csrf_exempt
 def editWallet(request):
     if request.method != "PUT":
@@ -174,3 +255,18 @@ def editWallet(request):
 
     except Exception as e:
         return JsonResponse({"error": f"Unexpected Error: {e}"}, status=500)
+    
+@csrf_exempt
+def getUserView(request):
+    username = json.loads(request.body).get("username")
+    user = User.objects.get(username = username)
+
+    return JsonResponse({
+        "username": user.username,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "city": user.city,
+        "country": user.country,
+        "status": user.status,
+        "privacy_choice": user.privacy_choice
+    })

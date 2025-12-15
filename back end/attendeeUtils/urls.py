@@ -10,5 +10,12 @@ urlpatterns = [
     path("getreceivedfriendrequests", views.getReceivedFriendRequests, name="getreceivedfriendrequests"),
     path("getblockedusers", views.getBlockedUsers, name="getblockedusers"),
     path("respondtofriendrequest", views.respondToFriendRequest, name="respondtofriendrequest"),
-    path("getunblockedusers", views.getUnblockedUsers, name="getunblockedusers")
+    path("getunblockedusers", views.getUnblockedUsers, name="getunblockedusers"),
+    path("removefriend", views.removeFriend, name="removefriend"),
+    path("cancelfriendrequests", views.cancelFriendRequest, name="cancelfriendrequests"),
+    path('getfriendscounts', views.getFriendsCounts, name='getfriendscounts'),
+    path('getrelationshipstatus', views.getRelationshipStatus, name='getrelationshipstatus'),
+    path('getuserfriendswithprivacy', views.getUserFriendsWithPrivacy, name='getuserfriendswithprivacy'),
+    path('getuserfollowerswithprivacy', views.getUserFollowersWithPrivacy, name='getuserfollowerswithprivacy'),
+    path('getuserview', views.getUserView, name='getuserview'),
 ]
