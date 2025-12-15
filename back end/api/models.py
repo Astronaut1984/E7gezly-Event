@@ -91,7 +91,7 @@ class HasBus(models.Model):
         ]
 
 class HasPerformer(models.Model):
-    performer = models.ForeignKey(Performer, on_delete=models.RESTRICT, db_column='performer_id')
+    performer = models.ForeignKey(Performer, on_delete=models.CASCADE, db_column='performer_id')
     event = models.ForeignKey(Event, on_delete=models.CASCADE, db_column='Event_Id')
 
     class Meta:
@@ -139,9 +139,14 @@ class LostItem(models.Model):
         constraints = [models.UniqueConstraint(fields=['event', 'lost_id'], name='unique_lost_id_per_event')]
 
 class Message(models.Model):
-    sender_type = models.CharField(max_length=255)
+    SENDER_CHOICES = [
+        ("owner", "Owner"),
+        ("attendee", "Attendee"),
+    ]
+
+    sender_type = models.CharField(max_length=20, choices=SENDER_CHOICES)
     content = models.TextField()
-    message_date = models.DateField(null=True, blank=True)
+    message_date = models.DateTimeField(null=True, blank=True)
     attendee = models.ForeignKey(User, on_delete=models.RESTRICT, to_field='username', db_column='Attendee_Username', related_name='received_messages', null=True, blank=True)
     owner = models.ForeignKey(User, on_delete=models.RESTRICT, to_field='username', db_column='owner_Username', related_name='sent_messages', null=True, blank=True)
 
