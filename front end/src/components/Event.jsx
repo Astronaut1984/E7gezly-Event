@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { Spinner } from "./ui/spinner";
 
 export default function Event({
@@ -24,6 +24,16 @@ export default function Event({
       checkWishlistStatus();
     }
   }, [eventId, adminOrOrgMode]);
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
   const checkWishlistStatus = async () => {
     try {
@@ -138,8 +148,8 @@ export default function Event({
         }}
       ></div>
       <div className="flex justify-between items-center w-full px-5 pt-2">
-        <h1 className="text-2xl">
-          {title.length > 30 ? title.substring(0, 30) + "..." : title}
+        <h1 className="text-2xl" title={title}>
+          {title.length > 25 ? title.substring(0, 25) + "..." : title}
         </h1>
 
         {/* Wishlist icon - only show for attendees */}
@@ -163,8 +173,8 @@ export default function Event({
         )}
       </div>
       <div className="w-full flex justify-start px-5 pt-2">
-        <h1 className="text-l">{`${startDate} ${
-          endDate ? `/ ${endDate}` : ""
+        <h1 className="text-l">{`${formatDate(startDate)} ${
+          endDate ? `/ ${formatDate(endDate)}` : ""
         }`}</h1>
       </div>
       <div className="w-full flex justify-start px-5 pt-2"></div>
@@ -192,7 +202,7 @@ export default function Event({
         </NavLink>
       )}
 
-      {adminOrOrgMode && !allEventsMode && (
+      {adminOrOrgMode && (
         <div className="flex gap-3 my-4">
           <NavLink
             to={`/Events/${eventId}`}
@@ -200,27 +210,30 @@ export default function Event({
           >
             Go to
           </NavLink>
+          {!allEventsMode && (
+            <>
+              <NavLink
+                to={`/org/editevent/${eventId}`}
+                className="text-primary-foreground bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-3 font-semibold transition-colors"
+                title="Edit Event"
+              >
+                <i className="fa-solid fa-pen-to-square"></i>
+              </NavLink>
 
-          <button
-            onClick={() => alert("Edit functionality coming soon!")}
-            className="text-primary-foreground bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-3 font-semibold transition-colors"
-            title="Edit Event"
-          >
-            <i className="fa-solid fa-pen-to-square"></i>
-          </button>
-
-          <button
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="text-primary-foreground bg-destructive-hover rounded-lg px-4 py-3 font-semibold transition-colors"
-            title="Delete Event"
-          >
-            {isDeleting ? (
-              <i className="fa-solid fa-spinner fa-spin"></i>
-            ) : (
-              <i className="fa-solid fa-trash"></i>
-            )}
-          </button>
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="text-primary-foreground bg-destructive-hover rounded-lg px-4 py-3 font-semibold transition-colors"
+                title="Delete Event"
+              >
+                {isDeleting ? (
+                  <i className="fa-solid fa-spinner fa-spin"></i>
+                ) : (
+                  <i className="fa-solid fa-trash"></i>
+                )}
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

@@ -1,9 +1,22 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import NavBar from "./NavBar";
 import Footer from "./Footer";
 import { Clock, MapPin } from "lucide-react";
 import { Button } from "./ui/button";
+import { UserContext } from "@/UserContext";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "./ui/input";
+import { DialogClose } from "@radix-ui/react-dialog";
+import { Label } from "./ui/label";
 
 export default function EventPage() {
   const { id } = useParams();
@@ -17,6 +30,7 @@ export default function EventPage() {
           `http://localhost:8000/event/geteventbyid/${parseInt(id)}/`
         );
         const data = await res.json();
+        console.log(data["event"]);
         setEvent(data["event"]);
       } catch (err) {
         console.error("Failed to fetch event", err);
@@ -54,7 +68,7 @@ export default function EventPage() {
         <p className="text-lg text-muted-foreground">
           Organized by{" "}
           <span className="font-semibold">
-            {event.owner_first_name} {event.owner_last_name} 
+            {event.owner_first_name} {event.owner_last_name}
           </span>
         </p>
         {/* TIME */}
@@ -108,12 +122,14 @@ export default function EventPage() {
 
                       {/* Right section */}
                       <div className="flex w-32 items-center justify-center p-4">
-                        <Button
-                          disabled={ticket.quantity <= 0}
-                          className="w-full hover:cursor-pointer"
-                        >
-                          {ticket.quantity <= 0 ? "Sold Out!" : "Buy Now"}
-                        </Button>
+                        <BuyDialog ticket={ticket}>
+                          <div
+                            disabled={ticket.quantity <= 0}
+                            className="w-full hover:cursor-pointer bg-primary-hover rounded-full py-1 px-2"
+                          >
+                            {ticket.quantity <= 0 ? "Sold Out!" : "Buy Now"}
+                          </div>
+                        </BuyDialog>
                       </div>
                     </div>
                   ))}
@@ -142,7 +158,7 @@ export default function EventPage() {
             <div className="flex flex-wrap gap-4">
               {event.performers.map((perf, i) => (
                 <div key={i} className="px-4 py-2 rounded-lg bg-secondary">
-                  {perf}
+                  {perf.name}
                 </div>
               ))}
             </div>
@@ -151,5 +167,42 @@ export default function EventPage() {
       </div>
       <Footer className="translate-y-20" />
     </>
+  );
+}
+
+function BuyDialog({ children, className, ticket }) {
+  const [value, setValue] = useState(null);
+  const { setUser } = useContext(UserContext);
+  const [open, setOpen] = useState(false);
+
+  console.log("Entered Ticket Dialog");
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger className={className}>{children}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="caret-transparent">Buy Ticket!</DialogTitle>
+        </DialogHeader>
+        <p className="caret-transparent">
+          {ticket.name} Ticket: EGP {ticket.price}
+        </p>
+        <Label htmlFor="discountCodeInput">Enter a Discount</Label>
+        <Input
+          id="discountCodeInput"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="Enter Discount Code"
+        />
+        <DialogFooter>
+          <Button className="select-none caret-transparent">Buy</Button>
+          <DialogClose asChild>
+            <Button className="caret-transparent" variant={"outline"}>
+              Close
+            </Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

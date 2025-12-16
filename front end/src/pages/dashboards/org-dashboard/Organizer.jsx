@@ -8,7 +8,7 @@ export const orgItems = [
     icon: Home,
   },
   {
-    title: "Add Events",
+    title: "Add Event",
     url: "/org/add-events",
     icon: Ticket,
   },

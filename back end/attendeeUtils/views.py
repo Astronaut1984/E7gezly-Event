@@ -2,8 +2,9 @@ from django.shortcuts import render
 from django.db import connection
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from api.models import User, Friend, Follow, Wishlist, Event
-from django.db.models import Q
+from api.models import User, Friend, Follow, Wishlist, Event, TicketType
+from django.db.models import Q, Min, Max
+from django.conf import settings
 import json
 
 @csrf_exempt
@@ -440,33 +441,28 @@ def getWishlistedEvents(request):
         return JsonResponse({'error': 'User does not exist'}, status=403)
     
     # Get events directly through the wishlist relationship
-    events = Event.objects.filter(wishlist__attendee=attendee).select_related(
+    events = list(Event.objects.filter(wishlist__attendee=attendee).select_related(
         'location', 'owner', 'category'
-    )
+    ).values())
     
-    events_data = [{
-        'event_id': event.event_id,
-        'name': event.name,
-        'description': event.description,
-        'start_date': event.start_date.isoformat() if event.start_date else None,
-        'end_date': event.end_date.isoformat() if event.end_date else None,
-        'status': event.status,
-        'banner': request.build_absolute_uri(event.banner.url) if event.banner else None,
-        'category': event.category.category_name if event.category else None,
-        'location': {
-            'name': event.location.name,
-            'city': event.location.city,
-            'country': event.location.country,
-        } if event.location else None,
-        'owner': {
-            'username': event.owner.username,
-            'name': f"{event.owner.first_name} {event.owner.last_name}"
-        } if event.owner else None,
-    } for event in events]
+    for event in events:
+        if event.get('banner'):
+            banner_path = event['banner']
+            event['banner'] = request.build_absolute_uri(settings.MEDIA_URL + banner_path)
+
+        price_range = TicketType.objects.filter(
+            event_id=event['event_id']
+        ).aggregate(
+            min_price=Min('price'),
+            max_price=Max('price')
+        )
+
+        event['min_price'] = price_range['min_price']
+        event['max_price'] = price_range['max_price']    
     
     return JsonResponse({
         "success": True,
-        "wishlisted_events": events_data
+        "wishlisted_events": events
     })
 
 @csrf_exempt
@@ -646,3 +642,48 @@ def getUserFollowersWithPrivacy(request):
     ).values_list('attendee_id', flat=True)
     
     return JsonResponse({"can_view": True, "followers": list(followers)})
+
+@csrf_exempt
+def getUserFollowedOrganizersWithPrivacy(request):
+    """
+    Returns attendee's followed organizers list if privacy allows.
+    Follows same privacy rules as friends.
+    """
+    current_user = request.session.get('username')
+    target_user = json.loads(request.body).get("username")
+    
+    # Get target user's privacy setting
+    user = User.objects.get(username=target_user)
+    privacy = user.privacy_choice
+    
+    # If viewing own profile as public view
+    is_public_view = current_user == target_user
+    
+    if is_public_view:
+        can_view = privacy == 'A'
+    elif privacy == 'A':
+        can_view = True
+    elif privacy == 'F':
+        # Check if friends or following relationship exists
+        can_view = (
+            Friend.objects.filter(
+                Q(attendee1_id=current_user, attendee2_id=target_user, status='A') |
+                Q(attendee1_id=target_user, attendee2_id=current_user, status='A')
+            ).exists() or
+            Follow.objects.filter(
+                Q(attendee_id=current_user, organizer_id=target_user) |
+                Q(attendee_id=target_user, organizer_id=current_user)
+            ).exists()
+        )
+    else:  # privacy == 'P'
+        can_view = False
+    
+    if not can_view:
+        return JsonResponse({"can_view": False, "followed_organizers": []})
+    
+    # Get followed organizers
+    followed_organizers = Follow.objects.filter(
+        attendee_id=target_user
+    ).values_list('organizer_id', flat=True)
+    
+    return JsonResponse({"can_view": True, "followed_organizers": list(followed_organizers)})

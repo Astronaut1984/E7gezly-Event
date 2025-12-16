@@ -310,6 +310,23 @@ def getEventById(request, event_id):
     try:
         event = Event.objects.get(event_id=event_id)
         tickets = list(TicketType.objects.filter(event_id=event_id).values())
+        
+        # Get performers with IDs
+        performers_data = []
+        for has_performer in HasPerformer.objects.filter(event=event):
+            performers_data.append({
+                'performer_id': has_performer.performer.performer_id,
+                'name': has_performer.performer.name
+            })
+        
+        # Get buses with details
+        buses_data = []
+        for has_bus in HasBus.objects.filter(event=event):
+            buses_data.append({
+                'capacity': has_bus.transportation.capacity,
+                'departure_loc': has_bus.departure_loc,
+                'transportation_id': has_bus.transportation.transportation_id
+            })
 
         # Serialize the event data inline
         event_data = {
@@ -322,16 +339,143 @@ def getEventById(request, event_id):
             'end_date': event.end_date,
             'owner_first_name': event.owner.first_name,
             'owner_last_name': event.owner.last_name,
+            'owner_username': event.owner.username,
+            'location_id': event.location.location_id if event.location else None,
             'location_name': event.location.name if event.location else None,
             'banner': request.build_absolute_uri(event.banner.url) if event.banner else None,
-            'performers': [p.name for p in event.performers.all()],
-            'buses': [b.transportation_id for b in event.buses.all()],
+            'performers': performers_data,  # Now includes IDs
+            'buses': buses_data,  # Now includes full data
             'tickets': tickets,
         }
         
-        return JsonResponse({"event" : event_data})
+        return JsonResponse({"event": event_data})
     except Event.DoesNotExist:
         return JsonResponse(
             {'error': 'Event not found'}, 
             status=404
         )
+    
+@csrf_exempt
+@require_POST
+def editEvent(request):
+    try:
+        event_id = request.POST.get("event_id")
+        
+        if not event_id:
+            return JsonResponse({"error": "Event ID is required"}, status=400)
+        
+        # Get the event
+        event = Event.objects.get(pk=event_id)
+        
+        # Check if current user is the owner
+        current_user = request.session.get("username")
+        if event.owner.username != current_user:
+            return JsonResponse({"error": "Unauthorized"}, status=403)
+        
+        # Update basic event fields
+        if request.POST.get("eventName"):
+            event.name = request.POST["eventName"]
+        
+        if request.POST.get("description"):
+            event.description = request.POST["description"]
+        
+        # Update category
+        category_id = request.POST.get("category")
+        if category_id:
+            category_obj = Category.objects.get(pk=category_id)
+            event.category = category_obj
+        
+        # Update location
+        location_id = request.POST.get("location")
+        if location_id:
+            location_obj = Venue.objects.get(pk=location_id)
+            event.location = location_obj
+        
+        # Update dates
+        if request.POST.get("start_date"):
+            event.start_date = request.POST["start_date"]
+        
+        end_date = request.POST.get("end_date")
+        if end_date:
+            event.end_date = end_date if end_date else None
+        
+        # Update banner if new one is provided
+        if request.FILES.get("banner"):
+            # Delete old banner if it's not the fallback
+            if event.banner and event.banner.name != "fallback.png":
+                if os.path.isfile(event.banner.path):
+                    os.remove(event.banner.path)
+            event.banner = request.FILES["banner"]
+        
+        event.save()
+        
+        # Update performers (remove old, add new)
+        if request.POST.get("performers"):
+            HasPerformer.objects.filter(event=event).delete()
+            performer_pks = json.loads(request.POST["performers"])
+            for pk in performer_pks:
+                HasPerformer.objects.create(event=event, performer_id=pk)
+        
+        # Update buses (remove old, add new)
+        if request.POST.get("buses"):
+            HasBus.objects.filter(event=event).delete()
+            bus_data = json.loads(request.POST["buses"])
+            for bus_info in bus_data:
+                # Find vehicle with matching capacity
+                vehicle = Vehicle.objects.filter(capacity=bus_info['capacity']).first()
+                if vehicle:
+                    HasBus.objects.create(
+                        event=event,
+                        transportation=vehicle,
+                        departure_loc=bus_info['departure_loc']
+                    )
+        
+        return JsonResponse({"message": "Event updated successfully", "id": event.event_id})
+    
+    except Event.DoesNotExist:
+        return JsonResponse({"error": "Event not found"}, status=404)
+    except (KeyError, ObjectDoesNotExist) as e:
+        return JsonResponse({"error": f"Missing or invalid data: {e}"}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": f"An unexpected error occurred: {e}"}, status=500)
+    
+@csrf_exempt
+@require_POST
+def editTicketType(request):
+    try:
+        data = json.loads(request.body)
+        ticket_type_id = data.get("ticket_type_id")
+        
+        ticket = TicketType.objects.get(pk=ticket_type_id)
+        
+        # Update fields
+        if data.get("name"):
+            ticket.name = data["name"]
+        if data.get("description"):
+            ticket.description = data["description"]
+        if data.get("price"):
+            ticket.price = int(data["price"])
+        if data.get("quantity"):
+            ticket.quantity = int(data["quantity"])
+        
+        ticket.save()
+        return JsonResponse({"message": "Ticket Type updated", "id": ticket.ticket_type_id})
+    except TicketType.DoesNotExist:
+        return JsonResponse({"error": "Ticket type not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": f"An unexpected error occurred: {e}"}, status=500)
+
+@csrf_exempt
+@require_POST
+def deleteTicketType(request):
+    try:
+        data = json.loads(request.body)
+        ticket_type_id = data.get("ticket_type_id")
+        
+        ticket = TicketType.objects.get(pk=ticket_type_id)
+        ticket.delete()
+        return JsonResponse({"message": "Ticket Type deleted"})
+    except TicketType.DoesNotExist:
+        return JsonResponse({"error": "Ticket type not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": f"An unexpected error occurred: {e}"}, status=500)

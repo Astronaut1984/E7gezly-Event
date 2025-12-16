@@ -3,7 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { UserContext } from "@/UserContext";
 import { Spinner } from "@/components/ui/spinner";
 import UserCard from "@/components/UserCard";
-import { MapPin, Users, UserCheck, UserPlus, UserMinus, UserX } from "lucide-react";
+import Event from "@/components/Event";
+import { MapPin, Users, UserCheck, UserPlus, UserMinus, UserX, Calendar, Star } from "lucide-react";
 
 export default function UserView() {
   const { username } = useParams();
@@ -13,13 +14,18 @@ export default function UserView() {
   const [userData, setUserData] = useState(null);
   const [relationshipStatus, setRelationshipStatus] = useState(null);
   const [friends, setFriends] = useState([]);
+  const [followedOrganizers, setFollowedOrganizers] = useState([]);
   const [followers, setFollowers] = useState([]);
+  const [events, setEvents] = useState([]);
   const [canViewFriends, setCanViewFriends] = useState(false);
+  const [canViewFollowedOrganizers, setCanViewFollowedOrganizers] = useState(false);
   const [canViewFollowers, setCanViewFollowers] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [eventsLoading, setEventsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const API_BASE_URL = "http://localhost:8000/attendeeUtils";
+  const EVENT_API_BASE_URL = "http://localhost:8000/event";
 
   // Determine viewer and target user types
   const isViewerAttendee = currentUser?.status === "Attendee";
@@ -70,8 +76,9 @@ export default function UserView() {
       const relationData = await relationRes.json();
       setRelationshipStatus(relationData.status);
 
-      // Fetch friends if user is Attendee
+      // Fetch friends and followed organizers if user is Attendee
       if (userData.status === "Attendee") {
+        // Fetch friends
         const friendsRes = await fetch(`${API_BASE_URL}/getuserfriendswithprivacy`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -81,6 +88,17 @@ export default function UserView() {
         const friendsData = await friendsRes.json();
         setCanViewFriends(friendsData.can_view);
         setFriends(friendsData.friends || []);
+
+        // Fetch followed organizers
+        const followedRes = await fetch(`${API_BASE_URL}/getuserfollowedorganizerswithprivacy`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username }),
+          credentials: "include",
+        });
+        const followedData = await followedRes.json();
+        setCanViewFollowedOrganizers(followedData.can_view);
+        setFollowedOrganizers(followedData.followed_organizers || []);
       }
 
       // Fetch followers if user is Organizer
@@ -94,12 +112,36 @@ export default function UserView() {
         const followersData = await followersRes.json();
         setCanViewFollowers(followersData.can_view);
         setFollowers(followersData.followers || []);
+
+        // Fetch organizer's events (always visible)
+        await fetchOrganizerEvents(username);
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
       setError("Failed to load user data");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchOrganizerEvents = async (organizerUsername) => {
+    setEventsLoading(true);
+    try {
+      const response = await fetch(`${EVENT_API_BASE_URL}/getevents/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ owner_username: organizerUsername }),
+        credentials: "include",
+      });
+
+      const data = await response.json();
+      if (data.organizer_events) {
+        setEvents(data.organizer_events);
+      }
+    } catch (error) {
+      console.error("Error fetching organizer events:", error);
+    } finally {
+      setEventsLoading(false);
     }
   };
 
@@ -462,6 +504,50 @@ export default function UserView() {
         </div>
       </div>
 
+      {/* Organizer Events Section - Always visible for organizers */}
+      {isTargetOrganizer && (
+        <div className="w-full max-w-4xl bg-card border border-sidebar-border rounded-xl shadow-2xl p-8 mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Calendar className="w-6 h-6 text-sidebar-foreground" />
+            <h2 className="text-2xl font-bold text-sidebar-foreground">
+              Events ({events.length})
+            </h2>
+          </div>
+          
+          {eventsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Spinner />
+            </div>
+          ) : events.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-sidebar-foreground/60">
+                This organizer hasn't created any events yet
+              </p>
+            </div>
+          ) : (
+            <div className="flex gap-5 flex-wrap">
+              {events.map((event) => (
+                <Event
+                  key={event.event_id}
+                  eventId={event.event_id}
+                  title={event.name}
+                  img={event.banner || "/fallback.png"}
+                  priceRange={{
+                    minPrice: event.min_price || 0,
+                    maxPrice: event.max_price || 0,
+                    currency: "EGP",
+                  }}
+                  startDate={event.start_date}
+                  endDate={event.end_date}
+                  allEventsMode={false}
+                  adminOrOrgMode={false}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Friends Section - Only for Attendees */}
       {isTargetAttendee && canViewFriends && friends.length > 0 && (
         <div className="w-full max-w-4xl bg-card border border-sidebar-border rounded-xl shadow-2xl p-8 mb-6">
@@ -476,6 +562,28 @@ export default function UserView() {
               <UserCard
                 key={friend}
                 userId={friend}
+                variant="view"
+                showButtons={false}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Followed Organizers Section - Only for Attendees */}
+      {isTargetAttendee && canViewFollowedOrganizers && followedOrganizers.length > 0 && (
+        <div className="w-full max-w-4xl bg-card border border-sidebar-border rounded-xl shadow-2xl p-8 mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Star className="w-6 h-6 text-sidebar-foreground" />
+            <h2 className="text-2xl font-bold text-sidebar-foreground">
+              Following ({followedOrganizers.length})
+            </h2>
+          </div>
+          <div className="space-y-3">
+            {followedOrganizers.map((organizer) => (
+              <UserCard
+                key={organizer}
+                userId={organizer}
                 variant="view"
                 showButtons={false}
               />
@@ -509,9 +617,17 @@ export default function UserView() {
 
       {/* Privacy Messages */}
       {isTargetAttendee && !canViewFriends && relationshipStatus !== "self" && (
-        <div className="w-full max-w-4xl bg-card border border-sidebar-border rounded-xl shadow-2xl p-8">
+        <div className="w-full max-w-4xl bg-card border border-sidebar-border rounded-xl shadow-2xl p-8 mb-6">
           <p className="text-center text-sidebar-foreground/60">
             This user's friends list is private
+          </p>
+        </div>
+      )}
+
+      {isTargetAttendee && !canViewFollowedOrganizers && relationshipStatus !== "self" && (
+        <div className="w-full max-w-4xl bg-card border border-sidebar-border rounded-xl shadow-2xl p-8 mb-6">
+          <p className="text-center text-sidebar-foreground/60">
+            This user's followed organizers list is private
           </p>
         </div>
       )}

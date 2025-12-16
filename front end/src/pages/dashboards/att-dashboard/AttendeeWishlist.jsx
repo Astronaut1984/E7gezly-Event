@@ -17,7 +17,7 @@ export default function AttendeeWishlist() {
         credentials: "include",
       });
       const data = await res.json();
-
+      console.log(data);
       if (data.success) {
         setWishlistedEvents(data.wishlisted_events);
       } else {
@@ -35,26 +35,6 @@ export default function AttendeeWishlist() {
     setWishlistedEvents((prev) =>
       prev.filter((event) => event.event_id !== eventId)
     );
-  };
-
-  const getPriceRange = (event) => {
-    // You'll need to fetch ticket types to get actual prices
-    // For now, returning placeholder - you may want to add this to your backend response
-    return {
-      currency: "EGP",
-      minPrice: 0,
-      maxPrice: 0,
-    };
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   if (loading) {
@@ -90,9 +70,13 @@ export default function AttendeeWishlist() {
                 eventId={event.event_id}
                 title={event.name}
                 img={event.banner || "/fallback.png"}
-                priceRange={getPriceRange(event)}
-                startDate={formatDate(event.start_date)}
-                endDate={formatDate(event.end_date)}
+                priceRange={{
+                    minPrice: event.min_price,
+                    maxPrice: event.max_price,
+                    currency: "EGP",
+                  }}
+                startDate={event.start_date}
+                endDate={event.end_date}
                 adminOrOrgMode={false}
                 onWishlistRemove={handleWishlistRemove}
               />

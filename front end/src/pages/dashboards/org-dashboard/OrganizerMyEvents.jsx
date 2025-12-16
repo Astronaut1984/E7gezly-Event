@@ -10,10 +10,8 @@ export default function OrganizerMyEvents() {
 
   useEffect(() => {
     async function fetchMyEvents() {
-      // Wait for user to load first
       if (loadingUser) return;
       
-      // If no user is logged in, don't fetch
       if (!user) {
         setLoading(false);
         return;

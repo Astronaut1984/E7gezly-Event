@@ -18,6 +18,7 @@ urlpatterns = [
     path('getrelationshipstatus', views.getRelationshipStatus, name='getrelationshipstatus'),
     path('getuserfriendswithprivacy', views.getUserFriendsWithPrivacy, name='getuserfriendswithprivacy'),
     path('getuserfollowerswithprivacy', views.getUserFollowersWithPrivacy, name='getuserfollowerswithprivacy'),
+    path('getuserfollowedorganizerswithprivacy', views.getUserFollowedOrganizersWithPrivacy, name='getuserfollowedorganizerswithprivacy'),  # NEW
     path('getuserview', views.getUserView, name='getuserview'),
     
     # NEW Follow endpoints
