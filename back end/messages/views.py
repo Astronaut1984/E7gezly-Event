@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.utils.timezone import now
+from django.db.models import Q, Count, Case, When, IntegerField
 
 # Create your views here.
 def getOrgMessages(request):
@@ -42,7 +43,12 @@ def getOrgMessages(request):
                         },
                         'messages': [],
                         'last_message_date': None,
+                        'unread_count': 0,
                     }
+                
+                # Count unread messages from attendee
+                if not message.is_read and message.sender_type == 'attendee':
+                    conversations[attendee_username]['unread_count'] += 1
                 
                 # Add message to this conversation
                 conversations[attendee_username]['messages'].append({
@@ -50,6 +56,7 @@ def getOrgMessages(request):
                     'content': message.content,
                     'message_date': message.message_date.isoformat() if message.message_date else None,
                     'sender_type': message.sender_type,
+                    'is_read': message.is_read,
                 })
                 
                 # Update last message date
@@ -65,15 +72,65 @@ def getOrgMessages(request):
             reverse=True
         )
         
+        # Calculate total unread count
+        total_unread = sum(conv['unread_count'] for conv in conversations_list)
+        
         return JsonResponse({
             'success': True,
             'conversations': conversations_list,
+            'total_unread': total_unread,
         }, status=200)
         
     except Exception as e:
         return JsonResponse({
             'error': f'An error occurred: {str(e)}'
         }, status=500)
+
+@csrf_exempt
+def markMessagesAsRead(request):
+    """Mark messages as read when a conversation is opened"""
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST Requests allowed"})
+    
+    try:
+        user_username = request.session.get('username')
+        
+        if not user_username:
+            return JsonResponse({'error': 'Not authenticated'}, status=401)
+        
+        try:
+            user = User.objects.get(username=user_username)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User does not exist'}, status=403)
+        
+        data = json.loads(request.body)
+        other_user_username = data.get('other_user_username')
+        
+        if not other_user_username:
+            return JsonResponse({'error': 'other_user_username is required'}, status=400)
+        
+        # Mark messages as read based on user type
+        if user.status == 'Organizer':
+            # Mark messages from attendee as read
+            Message.objects.filter(
+                owner=user,
+                attendee__username=other_user_username,
+                sender_type='attendee',
+                is_read=False
+            ).update(is_read=True)
+        else:
+            # Mark messages from organizer as read
+            Message.objects.filter(
+                attendee=user,
+                owner__username=other_user_username,
+                sender_type='owner',
+                is_read=False
+            ).update(is_read=True)
+        
+        return JsonResponse({'success': True}, status=200)
+        
+    except Exception as e:
+        return JsonResponse({"error": f"Unexpected Error: {e}"}, status=500)
     
 @csrf_exempt
 def sendMessage(request):
@@ -126,7 +183,8 @@ def sendMessage(request):
                 content=content,
                 message_date=message_date,
                 attendee=attendee,
-                owner=sender
+                owner=sender,
+                is_read=False  # New message starts as unread
             )
         else:
             # Attendee sending to organizer
@@ -156,7 +214,8 @@ def sendMessage(request):
                 content=content,
                 message_date=message_date,
                 attendee=sender,
-                owner=organizer
+                owner=organizer,
+                is_read=False  # New message starts as unread
             )
         
         message.save()
@@ -167,6 +226,7 @@ def sendMessage(request):
                 "content": message.content,
                 "sender_type": message.sender_type,
                 "message_date": message.message_date.isoformat(),
+                "is_read": message.is_read,
             }
         }, status=201)
         
@@ -209,6 +269,7 @@ def getAttendeeMessages(request):
                 },
                 'messages': [],
                 'last_message_date': None,
+                'unread_count': 0,
             }
         
         # Fetch all messages where this attendee is involved 
@@ -223,12 +284,17 @@ def getAttendeeMessages(request):
             if message.owner:
                 owner_username = message.owner.username
                 
+                # Count unread messages from organizer
+                if not message.is_read and message.sender_type == 'owner':
+                    conversations[owner_username]['unread_count'] += 1
+                
                 # Add message to this conversation
                 conversations[owner_username]['messages'].append({
                     'id': message.id,
                     'content': message.content,
                     'message_date': message.message_date.isoformat() if message.message_date else None,
                     'sender_type': message.sender_type,
+                    'is_read': message.is_read,
                 })
                 
                 # Update last message date
@@ -244,12 +310,62 @@ def getAttendeeMessages(request):
             reverse=True
         )
         
+        # Calculate total unread count
+        total_unread = sum(conv['unread_count'] for conv in conversations_list)
+        
         return JsonResponse({
             'success': True,
             'conversations': conversations_list,
+            'total_unread': total_unread,
         }, status=200)
         
     except Exception as e:
         return JsonResponse({
             'error': f'An error occurred: {str(e)}'
         }, status=500)
+
+@csrf_exempt
+def deleteConversation(request):
+    """Delete all messages in a conversation (attendee only)"""
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST Requests allowed"})
+    
+    try:
+        attendee_username = request.session.get('username')
+        
+        if not attendee_username:
+            return JsonResponse({'error': 'Not authenticated'}, status=401)
+        
+        try:
+            attendee = User.objects.get(username=attendee_username)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User does not exist'}, status=403)
+        
+        # Only attendees can delete conversations
+        if attendee.status == 'Organizer':
+            return JsonResponse({'error': 'Only attendees can delete conversations'}, status=403)
+        
+        data = json.loads(request.body)
+        organizer_username = data.get('organizer_username')
+        
+        if not organizer_username:
+            return JsonResponse({'error': 'organizer_username is required'}, status=400)
+        
+        try:
+            organizer = User.objects.get(username=organizer_username, status='Organizer')
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'Organizer does not exist'}, status=404)
+        
+        # Delete all messages in this conversation
+        deleted_count = Message.objects.filter(
+            attendee=attendee,
+            owner=organizer
+        ).delete()[0]
+        
+        return JsonResponse({
+            'success': True,
+            'deleted_count': deleted_count
+        }, status=200)
+        
+    except Exception as e:
+        return JsonResponse({"error": f"Unexpected Error: {e}"}, status=500)
