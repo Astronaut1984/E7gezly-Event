@@ -6,14 +6,6 @@ export default function Layout({ sidebar }) {
     <SidebarProvider>
       <div>{sidebar}</div>
       <main className="w-full h-screen">
-        {sidebar && (
-          <SidebarTrigger
-            className="fixed"
-            onClick={() => {
-              console.log("sidebar toggled");
-            }}
-          />
-        )}
         <Outlet />
       </main>
     </SidebarProvider>
