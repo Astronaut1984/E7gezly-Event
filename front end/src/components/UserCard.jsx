@@ -14,6 +14,8 @@ export default function UserCard({
   onBlock,
   onUnblock,
   onUnfollow,
+  onFollow,
+  onRemoveFollower,
   showButtons = true,
   clickable = true,
   customButton = null,
@@ -43,6 +45,10 @@ export default function UserCard({
         return "from-red-400 to-red-600";
       case "following":
         return "from-green-400 to-teal-500";
+      case "organizer-view":
+        return "from-indigo-400 to-purple-500";
+      case "follower-removable":
+        return "from-blue-400 to-cyan-500";
       default:
         return "from-blue-400 to-indigo-500";
     }
@@ -73,6 +79,18 @@ export default function UserCard({
               Block
             </button>
           </div>
+        );
+
+      case "organizer-view":
+        return (
+          <button
+            type="button"
+            onClick={() => onFollow(userId)}
+            className="bg-green-500 hover:bg-green-600 text-[14px] text-white flex justify-center items-center px-4 h-10 border-0 cursor-pointer font-semibold rounded-lg transition-colors"
+          >
+            <UserPlus className="w-4 h-4 mr-2" />
+            Follow
+          </button>
         );
 
       case "friend":
@@ -145,6 +163,18 @@ export default function UserCard({
           </button>
         );
 
+      case "follower-removable":
+        return (
+          <button
+            type="button"
+            onClick={() => onRemoveFollower(userId)}
+            className="bg-red-500 hover:bg-red-600 text-[14px] text-white flex justify-center items-center px-4 h-10 border-0 cursor-pointer font-semibold rounded-lg transition-colors"
+          >
+            <UserMinus className="w-4 h-4 mr-2" />
+            Remove
+          </button>
+        );
+
       default:
         return null;
     }
@@ -174,6 +204,18 @@ export default function UserCard({
         return (
           <span className="text-xs bg-green-500/20 text-green-600 dark:text-green-400 px-3 py-1 rounded-full">
             Following
+          </span>
+        );
+      case "organizer-view":
+        return (
+          <span className="text-xs bg-purple-500/20 text-purple-600 dark:text-purple-400 px-3 py-1 rounded-full">
+            Organizer
+          </span>
+        );
+      case "follower-removable":
+        return (
+          <span className="text-xs bg-blue-500/20 text-blue-600 dark:text-blue-400 px-3 py-1 rounded-full">
+            Follower
           </span>
         );
       default:

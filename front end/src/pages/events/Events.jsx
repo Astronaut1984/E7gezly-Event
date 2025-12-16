@@ -3,10 +3,12 @@ import NavBar from "../../components/NavBar";
 import HomePic from "../../assets/home-page-init.jpg";
 import Footer from "../../components/Footer";
 import Modal from "../../components/ModalComponents/Modal";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useSearchParams } from "react-router-dom";
+import { UserContext } from "@/UserContext";
 
 export default function Events() {
+  const {user} = useContext(UserContext);
   const [searchParams, setSearchParams] = useSearchParams();
   const [showModalCategories, setShowModalCategories] = useState(false);
   const [showModalVenues, setShowModalVenues] = useState(false);
@@ -98,7 +100,7 @@ export default function Events() {
         });
 
         const data = await res.json();
-
+        console.log(data)
         setEvents(data["Events"] || []);
       } catch (error) {
         console.error("Error fetching events:", error);
@@ -199,7 +201,8 @@ export default function Events() {
                   minPrice: event.min_price,
                   maxPrice: event.max_price,
                 }}
-                adminOrOrgMode={false}
+                adminOrOrgMode={user['status'] != 'Attendee'}
+                allEventsMode={true}
               />
             ))}
         </div>

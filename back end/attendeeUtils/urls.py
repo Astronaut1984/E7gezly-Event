@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+
 urlpatterns = [
     path("getuserfriends", views.getUserFriends, name="getuserfriends"),
     path("getfollowedorganizers", views.getFollowedOrganizers, name="getfollowedorganizers"),
@@ -18,4 +19,13 @@ urlpatterns = [
     path('getuserfriendswithprivacy', views.getUserFriendsWithPrivacy, name='getuserfriendswithprivacy'),
     path('getuserfollowerswithprivacy', views.getUserFollowersWithPrivacy, name='getuserfollowerswithprivacy'),
     path('getuserview', views.getUserView, name='getuserview'),
+    
+    # NEW Follow endpoints
+    path('followorganizer', views.followOrganizer, name='followorganizer'),
+    path('unfolloworganizer', views.unfollowOrganizer, name='unfolloworganizer'),
+    path('getunblockedorganizers', views.getUnblockedOrganizers, name='getunblockedorganizers'),
+    path('getfollowcounts', views.getFollowCounts, name='getfollowcounts'),
+    path('getfollowercounts', views.getFollowerCounts, name='getfollowercounts'),
+    path('getwishlistedevents', views.getWishlistedEvents, name='getwishlistedevents'),
+    path('togglewishlist', views.toggleWishlist, name='togglewishlist')
 ]

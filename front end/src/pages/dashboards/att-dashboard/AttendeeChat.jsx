@@ -37,12 +37,12 @@ export default function AttendeeChat() {
     }
 
     getMessages();
-    // const intervalId = setInterval(getMessages, 5000);
+    const intervalId = setInterval(getMessages, 5000);
 
-    // return () => {
-    //   isMounted = false;
-    //   clearInterval(intervalId);
-    // };
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
   }, []);
 
   const organizerNames = conversations.flatMap((conv) =>

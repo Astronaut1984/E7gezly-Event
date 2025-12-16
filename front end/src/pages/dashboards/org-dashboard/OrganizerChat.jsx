@@ -82,7 +82,7 @@ export default function ChatPage() {
 
     console.log(reciever);
     console.log(text);
-    const res = await fetch("http://localhost:8000/messages/orgsendmessage/", {
+    const res = await fetch("http://localhost:8000/messages/sendmessage/", {
       method: "POST",
       body: JSON.stringify({
         content: text,

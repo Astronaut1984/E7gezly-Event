@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.db import connection
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from api.models import User, Friend, Follow
+from api.models import User, Friend, Follow, Wishlist, Event
 from django.db.models import Q
 import json
 
@@ -184,24 +184,20 @@ def getUnblockedUsers(request):
 def getFriendsCounts(request):
     username = request.session.get('username')
     
-    # Count friends (accepted relationships)
     friends_count = Friend.objects.filter(
         Q(attendee1_id=username, status='A') | Q(attendee2_id=username, status='A')
     ).count()
-    
-    # Count sent requests
+
     sent_count = Friend.objects.filter(
         attendee1_id=username, 
         status='P'
     ).count()
-    
-    # Count received requests
+
     received_count = Friend.objects.filter(
         attendee2_id=username, 
         status='P'
     ).count()
-    
-    # Count blocked users
+
     blocked_count = Friend.objects.filter(
         attendee1_id=username, 
         status='B'
@@ -219,7 +215,8 @@ def getFriendsCounts(request):
 def getRelationshipStatus(request):
     """
     Returns the relationship status between current user and target user
-    Possible returns: none, friends, sent_request, received_request, blocked_by_me, blocked_by_them, following
+    Possible returns: none, friends, sent_request, received_request, 
+                     blocked_by_me, blocked_by_them, following
     """
     current_user = request.session.get('username')
     target_user = json.loads(request.body).get("username")
@@ -231,7 +228,7 @@ def getRelationshipStatus(request):
     if Friend.objects.filter(attendee1_id=current_user, attendee2_id=target_user, status='B').exists():
         return JsonResponse({"status": "blocked_by_me"})
     
-    # Check if blocked by them
+    # Check if i am blocked
     if Friend.objects.filter(attendee1_id=target_user, attendee2_id=current_user, status='B').exists():
         return JsonResponse({"status": "blocked_by_them"})
     
@@ -242,16 +239,16 @@ def getRelationshipStatus(request):
     ).exists():
         return JsonResponse({"status": "friends"})
     
-    # Check if sent request
+    # Check if sent friend request
     if Friend.objects.filter(attendee1_id=current_user, attendee2_id=target_user, status='P').exists():
         return JsonResponse({"status": "sent_request"})
     
-    # Check if received request
+    # Check if received friend request
     if Friend.objects.filter(attendee1_id=target_user, attendee2_id=current_user, status='P').exists():
         return JsonResponse({"status": "received_request"})
     
-    # Check if following (current user follows target organizer)
-    if Follow.objects.filter(attendee_id=current_user, organizer_id=target_user, status='A').exists():
+    # Check if following (no status field)
+    if Follow.objects.filter(attendee_id=current_user, organizer_id=target_user).exists():
         return JsonResponse({"status": "following"})
     
     return JsonResponse({"status": "none"})
@@ -286,10 +283,7 @@ def getUserFriendsWithPrivacy(request):
                 Q(attendee1_id=current_user, attendee2_id=target_user, status='A') |
                 Q(attendee1_id=target_user, attendee2_id=current_user, status='A')
             ).exists() or
-            Follow.objects.filter(
-                Q(attendee_id=current_user, organizer_id=target_user, status='A') |
-                Q(attendee_id=target_user, organizer_id=current_user, status='A')
-            ).exists()
+            Follow.objects.filter(attendee_id = target_user, organizer_id = current_user).exists()
         )
     else:  # privacy == 'P'
         can_view = False
@@ -334,10 +328,7 @@ def getUserFollowersWithPrivacy(request):
                 Q(attendee1_id=current_user, attendee2_id=target_user, status='A') |
                 Q(attendee1_id=target_user, attendee2_id=current_user, status='A')
             ).exists() or
-            Follow.objects.filter(
-                Q(attendee_id=current_user, organizer_id=target_user, status='A') |
-                Q(attendee_id=target_user, organizer_id=current_user, status='A')
-            ).exists()
+            Follow.objects.filter(attendee_id=current_user, organizer_id=target_user).exists()
         )
     else:  # privacy == 'P'
         can_view = False
@@ -367,6 +358,12 @@ def getUserView(request):
     
     try:
         user = User.objects.get(username=username)
+        
+        # Get follower count if organizer (always visible)
+        follower_count = None
+        if user.status == "Organizer":
+            follower_count = Follow.objects.filter(organizer_id=username).count()
+        
         return JsonResponse({
             "error": False,
             "username": user.username,
@@ -375,7 +372,277 @@ def getUserView(request):
             "city": user.city,
             "country": user.country,
             "status": user.status,
-            "privacy_choice": user.privacy_choice
+            "privacy_choice": user.privacy_choice,
+            "follower_count": follower_count
         })
     except User.DoesNotExist:
         return JsonResponse({"error": True, "message": "User not found"}, status=404)
+    
+@csrf_exempt
+def toggleWishlist(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST requests allowed"}, status=405)
+    
+    try:
+        attendee_username = request.session.get('username')
+        if not attendee_username:
+            return JsonResponse({'error': 'Not authenticated'}, status=401)
+        
+        try:
+            attendee = User.objects.get(username=attendee_username)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User does not exist'}, status=403)
+        
+        data = json.loads(request.body)
+        event_id = data.get('event_id')
+        
+        if not event_id:
+            return JsonResponse({'error': 'event_id is required'}, status=400)
+        
+        try:
+            event = Event.objects.get(event_id=event_id)
+        except Event.DoesNotExist:
+            return JsonResponse({'error': 'Event does not exist'}, status=404)
+        
+        # Check if already in wishlist
+        wishlist_item = Wishlist.objects.filter(attendee=attendee, event=event).first()
+        
+        if wishlist_item:
+            # Remove from wishlist
+            wishlist_item.delete()
+            return JsonResponse({
+                'success': True,
+                'action': 'removed',
+                'message': 'Event removed from wishlist',
+                'in_wishlist': False
+            }, status=200)
+        else:
+            # Add to wishlist
+            Wishlist.objects.create(attendee=attendee, event=event)
+            return JsonResponse({
+                'success': True,
+                'action': 'added',
+                'message': 'Event added to wishlist',
+                'in_wishlist': True
+            }, status=201)
+        
+    except Exception as e:
+        return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+
+def getWishlistedEvents(request):
+    attendee_username = request.session.get('username')
+    if not attendee_username:
+        return JsonResponse({'error': 'Not authenticated'}, status=401)
+    
+    try:
+        attendee = User.objects.get(username=attendee_username)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User does not exist'}, status=403)
+    
+    # Get events directly through the wishlist relationship
+    events = Event.objects.filter(wishlist__attendee=attendee).select_related(
+        'location', 'owner', 'category'
+    )
+    
+    events_data = [{
+        'event_id': event.event_id,
+        'name': event.name,
+        'description': event.description,
+        'start_date': event.start_date.isoformat() if event.start_date else None,
+        'end_date': event.end_date.isoformat() if event.end_date else None,
+        'status': event.status,
+        'banner': request.build_absolute_uri(event.banner.url) if event.banner else None,
+        'category': event.category.category_name if event.category else None,
+        'location': {
+            'name': event.location.name,
+            'city': event.location.city,
+            'country': event.location.country,
+        } if event.location else None,
+        'owner': {
+            'username': event.owner.username,
+            'name': f"{event.owner.first_name} {event.owner.last_name}"
+        } if event.owner else None,
+    } for event in events]
+    
+    return JsonResponse({
+        "success": True,
+        "wishlisted_events": events_data
+    })
+
+@csrf_exempt
+def followOrganizer(request):
+    """
+    Attendee follows an organizer instantly (no status field).
+    """
+    attendee = request.session.get('username')
+    organizer = json.loads(request.body).get("organizer")
+    
+    # Check if organizer exists and is actually an organizer
+    try:
+        org_user = User.objects.get(username=organizer, status='Organizer')
+    except User.DoesNotExist:
+        return JsonResponse({"error": True, "message": "Organizer not found"})
+    
+    # Check if already following
+    if Follow.objects.filter(attendee_id=attendee, organizer_id=organizer).exists():
+        return JsonResponse({"error": True, "message": "Already following"})
+    
+    # Create follow (no status field)
+    Follow.objects.create(
+        attendee_id=attendee,
+        organizer_id=organizer
+    )
+    
+    return JsonResponse({"error": False})
+
+@csrf_exempt
+def unfollowOrganizer(request):
+    """
+    Attendee or Organizer unfollows/removes follower.
+    """
+    current_user = request.session.get('username')
+    data = json.loads(request.body)
+    
+    # Check if request is from attendee (unfollowing) or organizer (removing follower)
+    if "organizer" in data:
+        # Attendee unfollowing organizer
+        organizer = data.get("organizer")
+        try:
+            follow = Follow.objects.get(attendee_id=current_user, organizer_id=organizer)
+            follow.delete()
+            return JsonResponse({"error": False})
+        except Follow.DoesNotExist:
+            return JsonResponse({"error": True})
+    elif "attendee" in data:
+        # Organizer removing follower
+        attendee = data.get("attendee")
+        try:
+            follow = Follow.objects.get(attendee_id=attendee, organizer_id=current_user)
+            follow.delete()
+            return JsonResponse({"error": False})
+        except Follow.DoesNotExist:
+            return JsonResponse({"error": True})
+    
+    return JsonResponse({"error": True, "message": "Invalid request"})
+
+@csrf_exempt
+def getFollowedOrganizers(request):
+    """
+    Get organizers that the attendee follows.
+    """
+    username = request.session.get('username')
+    followed = Follow.objects.filter(
+        attendee_id=username
+    ).values_list('organizer_id', flat=True)
+    
+    return JsonResponse({"followed": list(followed)})
+
+@csrf_exempt
+def getFollowers(request):
+    """
+    Get followers of an organizer.
+    """
+    username = json.loads(request.body).get("username")
+    followers = Follow.objects.filter(
+        organizer_id=username
+    ).values_list('attendee_id', flat=True)
+    
+    return JsonResponse({"followed": list(followers)})
+
+@csrf_exempt
+def getUnblockedOrganizers(request):
+    """
+    Get organizers that the attendee hasn't followed yet.
+    """
+    username = request.session.get('username')
+    
+    # Get already followed organizers
+    followed_organizers = Follow.objects.filter(
+        attendee_id=username
+    ).values_list('organizer_id', flat=True)
+    
+    # Get all organizers except already followed
+    organizers = User.objects.filter(
+        status='Organizer'
+    ).exclude(
+        username=username
+    ).exclude(
+        username__in=followed_organizers
+    ).values_list('username', flat=True).order_by('username')
+    
+    return JsonResponse({"organizers": list(organizers)})
+
+@csrf_exempt
+def getFollowCounts(request):
+    """
+    Get count of organizers the attendee follows.
+    """
+    username = request.session.get('username')
+    
+    following_count = Follow.objects.filter(
+        attendee_id=username
+    ).count()
+    
+    return JsonResponse({
+        "following": following_count
+    })
+
+@csrf_exempt
+def getFollowerCounts(request):
+    """
+    Get count of followers for organizer.
+    """
+    username = request.session.get('username')
+    
+    followers_count = Follow.objects.filter(
+        organizer_id=username
+    ).count()
+    
+    return JsonResponse({
+        "followers": followers_count
+    })
+
+@csrf_exempt
+def getUserFollowersWithPrivacy(request):
+    """
+    Returns organizer's followers list if privacy allows.
+    Note: Follower COUNT is always visible, but list respects privacy.
+    """
+    current_user = request.session.get('username')
+    target_user = json.loads(request.body).get("username")
+    
+    # Get target user's privacy setting
+    user = User.objects.get(username=target_user)
+    privacy = user.privacy_choice
+    
+    # If viewing own profile as public view
+    is_public_view = current_user == target_user
+    
+    if is_public_view:
+        can_view = privacy == 'A'
+    elif privacy == 'A':
+        can_view = True
+    elif privacy == 'F':
+        # Check if friends or following relationship exists
+        can_view = (
+            Friend.objects.filter(
+                Q(attendee1_id=current_user, attendee2_id=target_user, status='A') |
+                Q(attendee1_id=target_user, attendee2_id=current_user, status='A')
+            ).exists() or
+            Follow.objects.filter(
+                Q(attendee_id=current_user, organizer_id=target_user) |
+                Q(attendee_id=target_user, organizer_id=current_user)
+            ).exists()
+        )
+    else:  # privacy == 'P'
+        can_view = False
+    
+    if not can_view:
+        return JsonResponse({"can_view": False, "followers": []})
+    
+    # Get followers
+    followers = Follow.objects.filter(
+        organizer_id=target_user
+    ).values_list('attendee_id', flat=True)
+    
+    return JsonResponse({"can_view": True, "followers": list(followers)})

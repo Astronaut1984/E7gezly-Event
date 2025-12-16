@@ -151,12 +151,6 @@ class Message(models.Model):
     owner = models.ForeignKey(User, on_delete=models.RESTRICT, to_field='username', db_column='owner_Username', related_name='sent_messages', null=True, blank=True)
 
 class Follow(models.Model):
-    STATUS_CHOICES = [
-        ('P', 'Pending'),
-        ('A', 'Active'),
-        ('B', 'Blocked'),
-    ]
-    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
     attendee = models.ForeignKey(User, on_delete=models.RESTRICT, related_name='following')
     organizer = models.ForeignKey(User, on_delete=models.RESTRICT, related_name='followers')
     class Meta:

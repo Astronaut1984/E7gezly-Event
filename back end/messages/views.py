@@ -3,7 +3,7 @@ from api.models import Message, User, Follow
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
-from django.utils.timezone import localtime, now
+from django.utils.timezone import now
 
 # Create your views here.
 def getOrgMessages(request):
@@ -194,10 +194,22 @@ def getAttendeeMessages(request):
         # Get all organizers that this attendee is following with 'Active' status
         active_follows = Follow.objects.filter(
             attendee=attendee, 
-            status='A'
         ).select_related('organizer')
         
         followed_organizer_usernames = [follow.organizer.username for follow in active_follows]
+        
+        # Initialize conversations for all followed organizers
+        conversations = {}
+        for follow in active_follows:
+            organizer = follow.organizer
+            conversations[organizer.username] = {
+                'organizer': {
+                    'username': organizer.username,
+                    'name': f"{organizer.first_name} {organizer.last_name}",
+                },
+                'messages': [],
+                'last_message_date': None,
+            }
         
         # Fetch all messages where this attendee is involved 
         # and the owner is one of the followed organizers
@@ -206,22 +218,10 @@ def getAttendeeMessages(request):
             owner__username__in=followed_organizer_usernames
         ).select_related('owner').order_by('owner', 'message_date')
         
-        # Group messages by organizer
-        conversations = {}
+        # Add messages to conversations
         for message in messages:
             if message.owner:
                 owner_username = message.owner.username
-                
-                # Initialize conversation for this organizer if not exists
-                if owner_username not in conversations:
-                    conversations[owner_username] = {
-                        'organizer': {
-                            'username': message.owner.username,
-                            'name': f"{message.owner.first_name} {message.owner.last_name}",
-                        },
-                        'messages': [],
-                        'last_message_date': None,
-                    }
                 
                 # Add message to this conversation
                 conversations[owner_username]['messages'].append({

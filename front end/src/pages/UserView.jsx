@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { UserContext } from "@/UserContext";
 import { Spinner } from "@/components/ui/spinner";
 import UserCard from "@/components/UserCard";
-import { MapPin, Users, UserCheck, UserPlus, Ban, UserMinus, UserX } from "lucide-react";
+import { MapPin, Users, UserCheck, UserPlus, UserMinus, UserX } from "lucide-react";
 
 export default function UserView() {
   const { username } = useParams();
@@ -20,6 +20,12 @@ export default function UserView() {
   const [error, setError] = useState(null);
 
   const API_BASE_URL = "http://localhost:8000/attendeeUtils";
+
+  // Determine viewer and target user types
+  const isViewerAttendee = currentUser?.status === "Attendee";
+  const isViewerOrganizer = currentUser?.status === "Organizer";
+  const isTargetAttendee = userData?.status === "Attendee";
+  const isTargetOrganizer = userData?.status === "Organizer";
 
   useEffect(() => {
     fetchUserData();
@@ -186,6 +192,7 @@ export default function UserView() {
 
   const handleBlock = async (userId) => {
     try {
+      // Only attendees can block other attendees (friends only)
       const response = await fetch(`${API_BASE_URL}/blockunblockuser`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -201,10 +208,54 @@ export default function UserView() {
     }
   };
 
+  const handleFollow = async (userId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/followorganizer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ organizer: userId }),
+        credentials: "include",
+      });
+      const data = await response.json();
+      if (!data.error) {
+        setRelationshipStatus("following");
+        fetchUserData();
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   const handleUnfollow = async (userId) => {
     try {
-      // TODO: Implement unfollow endpoint
-      console.log("Unfollow:", userId);
+      const response = await fetch(`${API_BASE_URL}/unfolloworganizer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ organizer: userId }),
+        credentials: "include",
+      });
+      const data = await response.json();
+      if (!data.error) {
+        setRelationshipStatus("none");
+        fetchUserData();
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const handleRemoveFollower = async (attendeeId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/unfolloworganizer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ attendee: attendeeId }),
+        credentials: "include",
+      });
+      const data = await response.json();
+      if (!data.error) {
+        fetchUserData();
+      }
     } catch (error) {
       console.error("Error:", error);
     }
@@ -212,87 +263,123 @@ export default function UserView() {
 
   const getActionButtons = () => {
     if (relationshipStatus === "self") return null;
-    if (!userData || userData.status !== "Attendee") return null; // TODO: Handle organizer actions
 
-    switch (relationshipStatus) {
-      case "none":
-        return (
-          <div className="flex gap-2">
+    // ATTENDEE viewing ORGANIZER profile
+    if (isViewerAttendee && isTargetOrganizer) {
+      switch (relationshipStatus) {
+        case "none":
+          return (
             <button
               type="button"
-              onClick={() => handleAddFriend(username)}
-              className="bg-blue-500 hover:bg-blue-600 text-[14px] text-white flex justify-center items-center px-4 h-10 border-0 cursor-pointer font-semibold rounded-lg transition-colors"
-            >
-              <UserPlus className="w-4 h-4 mr-2" />
-              Add Friend
-            </button>
-            <button
-              type="button"
-              onClick={() => handleBlock(username)}
-              className="bg-red-500 hover:bg-red-600 text-[14px] text-white flex justify-center items-center px-4 h-10 border-0 cursor-pointer font-semibold rounded-lg transition-colors"
-            >
-              <Ban className="w-4 h-4 mr-2" />
-              Block
-            </button>
-          </div>
-        );
-      case "friends":
-        return (
-          <button
-            type="button"
-            onClick={() => handleRemoveFriend(username)}
-            className="bg-red-500 hover:bg-red-600 text-[14px] text-white flex justify-center items-center px-4 h-10 border-0 cursor-pointer font-semibold rounded-lg transition-colors"
-          >
-            <UserMinus className="w-4 h-4 mr-2" />
-            Remove Friend
-          </button>
-        );
-      case "sent_request":
-        return (
-          <button
-            type="button"
-            onClick={() => handleCancelRequest(username)}
-            className="bg-red-500 hover:bg-red-600 text-[14px] text-white flex justify-center items-center px-4 h-10 border-0 cursor-pointer font-semibold rounded-lg transition-colors"
-          >
-            <UserX className="w-4 h-4 mr-2" />
-            Cancel Request
-          </button>
-        );
-      case "received_request":
-        return (
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => handleAcceptRequest(username)}
+              onClick={() => handleFollow(username)}
               className="bg-green-500 hover:bg-green-600 text-[14px] text-white flex justify-center items-center px-4 h-10 border-0 cursor-pointer font-semibold rounded-lg transition-colors"
             >
-              <UserCheck className="w-4 h-4 mr-2" />
-              Accept
+              <UserPlus className="w-4 h-4 mr-2" />
+              Follow
             </button>
+          );
+        case "following":
+          return (
             <button
               type="button"
-              onClick={() => handleRejectRequest(username)}
+              onClick={() => handleUnfollow(username)}
               className="bg-red-500 hover:bg-red-600 text-[14px] text-white flex justify-center items-center px-4 h-10 border-0 cursor-pointer font-semibold rounded-lg transition-colors"
             >
               <UserX className="w-4 h-4 mr-2" />
-              Reject
+              Unfollow
             </button>
-          </div>
-        );
-      case "following":
-        return (
-          <button
-            type="button"
-            onClick={() => handleUnfollow(username)}
-            className="bg-red-500 hover:bg-red-600 text-[14px] text-white flex justify-center items-center px-4 h-10 border-0 cursor-pointer font-semibold rounded-lg transition-colors"
-          >
-            <UserX className="w-4 h-4 mr-2" />
-            Unfollow
-          </button>
-        );
-      default:
-        return null;
+          );
+        default:
+          return null;
+      }
     }
+
+    // ATTENDEE viewing ATTENDEE profile
+    if (isViewerAttendee && isTargetAttendee) {
+      switch (relationshipStatus) {
+        case "none":
+          return (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => handleAddFriend(username)}
+                className="bg-blue-500 hover:bg-blue-600 text-[14px] text-white flex justify-center items-center px-4 h-10 border-0 cursor-pointer font-semibold rounded-lg transition-colors"
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                Add Friend
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBlock(username)}
+                className="bg-red-500 hover:bg-red-600 text-[14px] text-white flex justify-center items-center px-4 h-10 border-0 cursor-pointer font-semibold rounded-lg transition-colors"
+              >
+                <UserMinus className="w-4 h-4 mr-2" />
+                Block
+              </button>
+            </div>
+          );
+        case "friends":
+          return (
+            <button
+              type="button"
+              onClick={() => handleRemoveFriend(username)}
+              className="bg-red-500 hover:bg-red-600 text-[14px] text-white flex justify-center items-center px-4 h-10 border-0 cursor-pointer font-semibold rounded-lg transition-colors"
+            >
+              <UserMinus className="w-4 h-4 mr-2" />
+              Remove Friend
+            </button>
+          );
+        case "sent_request":
+          return (
+            <button
+              type="button"
+              onClick={() => handleCancelRequest(username)}
+              className="bg-red-500 hover:bg-red-600 text-[14px] text-white flex justify-center items-center px-4 h-10 border-0 cursor-pointer font-semibold rounded-lg transition-colors"
+            >
+              <UserX className="w-4 h-4 mr-2" />
+              Cancel Request
+            </button>
+          );
+        case "received_request":
+          return (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => handleAcceptRequest(username)}
+                className="bg-green-500 hover:bg-green-600 text-[14px] text-white flex justify-center items-center px-4 h-10 border-0 cursor-pointer font-semibold rounded-lg transition-colors"
+              >
+                <UserCheck className="w-4 h-4 mr-2" />
+                Accept
+              </button>
+              <button
+                type="button"
+                onClick={() => handleRejectRequest(username)}
+                className="bg-red-500 hover:bg-red-600 text-[14px] text-white flex justify-center items-center px-4 h-10 border-0 cursor-pointer font-semibold rounded-lg transition-colors"
+              >
+                <UserX className="w-4 h-4 mr-2" />
+                Reject
+              </button>
+            </div>
+          );
+        default:
+          return null;
+      }
+    }
+
+    // ORGANIZER viewing ATTENDEE profile - no buttons
+    return null;
+  };
+
+  const getFollowerStatusBadge = () => {
+    // Show for organizer viewing attendee who follows them
+    if (isViewerOrganizer && isTargetAttendee && relationshipStatus === "following") {
+      return (
+        <span className="text-xs bg-green-500/20 text-green-600 dark:text-green-400 px-3 py-1 rounded-full">
+          Follows You
+        </span>
+      );
+    }
+    return null;
   };
 
   if (loading) {
@@ -338,15 +425,30 @@ export default function UserView() {
               {userData?.first_name?.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-sidebar-foreground mb-2">
-                {userData?.first_name} {userData?.last_name}
-              </h1>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-3xl font-bold text-sidebar-foreground">
+                  {userData?.first_name} {userData?.last_name}
+                </h1>
+                {getFollowerStatusBadge()}
+              </div>
               <p className="text-sidebar-foreground/60 text-lg mb-1">@{userData?.username}</p>
               <div className="flex items-center gap-4 text-sidebar-foreground/60">
                 {userData?.city && userData?.country && (
                   <div className="flex items-center gap-1">
                     <MapPin className="w-4 h-4" />
                     <span>{userData.city}, {userData.country}</span>
+                  </div>
+                )}
+                {userData?.status && (
+                  <span className="bg-sidebar-accent text-sidebar-accent-foreground px-3 py-1 rounded-full text-sm">
+                    {userData.status}
+                  </span>
+                )}
+                {/* Show follower count for organizers (always visible) */}
+                {isTargetOrganizer && userData?.follower_count !== null && (
+                  <div className="flex items-center gap-1">
+                    <UserCheck className="w-4 h-4" />
+                    <span>{userData.follower_count} Followers</span>
                   </div>
                 )}
               </div>
@@ -360,8 +462,8 @@ export default function UserView() {
         </div>
       </div>
 
-      {/* Friends Section */}
-      {userData?.status === "Attendee" && canViewFriends && friends.length > 0 && (
+      {/* Friends Section - Only for Attendees */}
+      {isTargetAttendee && canViewFriends && friends.length > 0 && (
         <div className="w-full max-w-4xl bg-card border border-sidebar-border rounded-xl shadow-2xl p-8 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <Users className="w-6 h-6 text-sidebar-foreground" />
@@ -382,8 +484,8 @@ export default function UserView() {
         </div>
       )}
 
-      {/* Followers Section */}
-      {userData?.status === "Organizer" && canViewFollowers && followers.length > 0 && (
+      {/* Followers Section - Only for Organizers */}
+      {isTargetOrganizer && canViewFollowers && followers.length > 0 && (
         <div className="w-full max-w-4xl bg-card border border-sidebar-border rounded-xl shadow-2xl p-8">
           <div className="flex items-center gap-2 mb-4">
             <UserCheck className="w-6 h-6 text-sidebar-foreground" />
@@ -396,16 +498,17 @@ export default function UserView() {
               <UserCard
                 key={follower}
                 userId={follower}
-                variant="view"
-                showButtons={false}
+                variant={isViewerOrganizer && relationshipStatus === "self" ? "follower-removable" : "view"}
+                showButtons={isViewerOrganizer && relationshipStatus === "self"}
+                onRemoveFollower={isViewerOrganizer && relationshipStatus === "self" ? handleRemoveFollower : undefined}
               />
             ))}
           </div>
         </div>
       )}
 
-      {/* Privacy Message */}
-      {userData?.status === "Attendee" && !canViewFriends && relationshipStatus !== "self" && (
+      {/* Privacy Messages */}
+      {isTargetAttendee && !canViewFriends && relationshipStatus !== "self" && (
         <div className="w-full max-w-4xl bg-card border border-sidebar-border rounded-xl shadow-2xl p-8">
           <p className="text-center text-sidebar-foreground/60">
             This user's friends list is private
@@ -413,10 +516,10 @@ export default function UserView() {
         </div>
       )}
 
-      {userData?.status === "Organizer" && !canViewFollowers && relationshipStatus !== "self" && (
+      {isTargetOrganizer && !canViewFollowers && relationshipStatus !== "self" && (
         <div className="w-full max-w-4xl bg-card border border-sidebar-border rounded-xl shadow-2xl p-8">
           <p className="text-center text-sidebar-foreground/60">
-            This user's followers list is private
+            This organizer's followers list is private
           </p>
         </div>
       )}
