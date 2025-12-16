@@ -12,23 +12,22 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useDispatch, useSelector } from "react-redux";
-import { setTheme, toggleTheme } from "@/store/themeSlice";
+import { toggleTheme, cycleColorThemes } from "@/store/themeSlice";
 import { NavLink, useLocation } from "react-router-dom";
 import { useContext } from "react";
 import { UserContext } from "@/UserContext";
 import { useOrgUnreadCount } from "@/pages/dashboards/org-dashboard/Organizer";
 import { useAttUnreadCount } from "@/pages/dashboards/att-dashboard/Attendee";
 
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, Palette } from "lucide-react";
 
 export function DashboardSideBar({ items }) {
   const dispatch = useDispatch();
   const { user } = useContext(UserContext);
 
   const { state } = useSidebar();
-  dispatch(setTheme(useSelector((state) => state.theme.dark)));
 
-  const dark = useSelector((state) => state.theme.dark);
+  const { dark, colorTheme } = useSelector((state) => state.theme);
 
   let location = useLocation();
 
@@ -53,17 +52,26 @@ export function DashboardSideBar({ items }) {
               {welcomeMessage}
             </h1>
           )}
-          <button
-            onClick={() => dispatch(toggleTheme())}
-            aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-            className="p-2 rounded-sm bg-sidebar hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 -translate-x-[2.5px]"
-          >
-            {dark ? (
-              <Sun className="text-primary" />
-            ) : (
-              <Moon className="text-primary" />
-            )}
-          </button>
+          <div className="flex">
+            <button
+              onClick={() => dispatch(toggleTheme())}
+              aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+              className="p-2 rounded-sm bg-sidebar hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 -translate-x-[2.5px]"
+            >
+              {dark ? (
+                <Sun className="text-primary" />
+              ) : (
+                <Moon className="text-primary" />
+              )}
+            </button>
+            <button
+              onClick={() => dispatch(cycleColorThemes())}
+              aria-label="Cycle color themes"
+              className="p-2 rounded-sm bg-sidebar hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 -translate-x-[2.5px]"
+            >
+              <Palette className="text-primary" />
+            </button>
+          </div>
         </div>
       </SidebarHeader>
       <SidebarContent>

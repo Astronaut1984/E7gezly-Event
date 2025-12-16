@@ -1,17 +1,16 @@
 import { NavLink } from "react-router-dom";
 import { useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { toggleTheme, setTheme } from "@/store/themeSlice";
+import { toggleTheme, cycleColorThemes } from "@/store/themeSlice";
 import { UserContext } from "@/UserContext";
-import { useEffect } from "react";
-import { Sun, Moon, Wallet } from "lucide-react";
+import { Sun, Moon, Palette, Wallet } from "lucide-react";
 import E7gezlyEventLogo from "./../assets/E7gezly Event Logo.svg";
 
 
 import UserWallet from "./Wallet";
 
 export default function NavBar() {
-  const dark = useSelector((state) => state.theme.dark);
+  const { dark, colorTheme } = useSelector((state) => state.theme);
   // Valid redirect URLs for the user icon
   const validUrls = {
     Administrator: "/admin",
@@ -19,9 +18,6 @@ export default function NavBar() {
     Attendee: "/att",
   };
   const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(setTheme(dark));
-  }, [dark, dispatch]);
 
   const { user, setUser } = useContext(UserContext);
   async function handleLogout() {
@@ -84,6 +80,12 @@ export default function NavBar() {
           ) : (
             <Moon className="text-primary" />
           )}
+        </button>
+        <button
+          onClick={() => dispatch(cycleColorThemes())}
+          className="p-2 rounded hover:bg-gray-200 cursor-pointer dark:hover:bg-gray-700 transition-colors duration-200"
+        >
+          <Palette className="text-primary" />
         </button>
       </nav>
     </div>
