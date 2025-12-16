@@ -1,6 +1,6 @@
 import EditInfoForm from "@/components/EditInfoForm";
 import { UserContext } from "@/UserContext";
-import { MapPin, Home, Ticket, UserRound, Flag, MicVocal } from "lucide-react";
+import { MapPin, Home, Ticket, UserRound, Flag, MicVocal, List } from "lucide-react";
 import { useContext } from "react";
 
 export const adminItems = [
@@ -37,7 +37,7 @@ export const adminItems = [
   {
     title: "Category",
     url: "/admin/categories",
-    icon: MicVocal,
+    icon: List,
   },
   {
     title: "Create",

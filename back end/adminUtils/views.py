@@ -165,5 +165,7 @@ def updateCategory(request):
     return JsonResponse({"message": f"Category '{category_id}' updated"})
 
 def getCategories(request):
-    
-    pass
+    categories = list(
+        Category.objects.all().values("category_id", "category_name")
+    )
+    return JsonResponse({"categories" : categories})
