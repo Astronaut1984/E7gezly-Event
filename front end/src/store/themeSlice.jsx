@@ -9,8 +9,11 @@ const getInitialState = () => {
 
   // Set classes on root element
   document.documentElement.classList.toggle("dark", dark);
-  if(initialColorTheme === "rose"){
-    document.documentElement.classList.toggle("rose", true);
+  colorThemes.forEach(theme => {
+    document.documentElement.classList.remove(theme);
+  });
+  if (initialColorTheme !== 'blue') {
+    document.documentElement.classList.add(initialColorTheme);
   }
 
   return {
@@ -34,20 +37,23 @@ const themeSlice = createSlice({
       state.colorTheme = colorThemes[nextIndex];
       localStorage.setItem("colorTheme", state.colorTheme);
 
-      if (state.colorTheme === 'rose') {
-        document.documentElement.classList.add('rose');
-      } else {
-        document.documentElement.classList.remove('rose');
+      colorThemes.forEach(theme => {
+        document.documentElement.classList.remove(theme);
+      });
+      if (state.colorTheme !== 'blue') {
+        document.documentElement.classList.add(state.colorTheme);
       }
     },
     setColorTheme(state, action) {
       if (colorThemes.includes(action.payload)) {
         state.colorTheme = action.payload;
         localStorage.setItem("colorTheme", state.colorTheme);
-        if (state.colorTheme === 'rose') {
-            document.documentElement.classList.add('rose');
-        } else {
-            document.documentElement.classList.remove('rose');
+        
+        colorThemes.forEach(theme => {
+            document.documentElement.classList.remove(theme);
+        });
+        if (state.colorTheme !== 'blue') {
+            document.documentElement.classList.add(state.colorTheme);
         }
       }
     },

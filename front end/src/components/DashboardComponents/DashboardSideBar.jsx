@@ -10,6 +10,7 @@ import {
   SidebarHeader,
   SidebarFooter,
   useSidebar,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme, cycleColorThemes } from "@/store/themeSlice";
@@ -46,32 +47,13 @@ export function DashboardSideBar({ items }) {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex justify-between">
+        <div className="flex justify-between items-center">
           {!isCollapsed && (
-            <h1 className="truncate flex items-center [data-collaped=true]:hidden">
+            <h1 className="truncate flex items-center">
               {welcomeMessage}
             </h1>
           )}
-          <div className="flex">
-            <button
-              onClick={() => dispatch(toggleTheme())}
-              aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-              className="p-2 rounded-sm bg-sidebar hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 -translate-x-[2.5px]"
-            >
-              {dark ? (
-                <Sun className="text-primary" />
-              ) : (
-                <Moon className="text-primary" />
-              )}
-            </button>
-            <button
-              onClick={() => dispatch(cycleColorThemes())}
-              aria-label="Cycle color themes"
-              className="p-2 rounded-sm bg-sidebar hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 -translate-x-[2.5px]"
-            >
-              <Palette className="text-primary" />
-            </button>
-          </div>
+          <SidebarTrigger className="size-10" />
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -100,7 +82,27 @@ export function DashboardSideBar({ items }) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="flex justify-center items-center mb-2 overflow-hidden whitespace-nowrap">
+      <SidebarFooter className="flex flex-col justify-center items-center mb-2 overflow-hidden whitespace-nowrap">
+        <div className="flex gap-2 mb-2">
+            <button
+              onClick={() => dispatch(toggleTheme())}
+              aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+              className="p-2 rounded-sm bg-sidebar hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
+            >
+              {dark ? (
+                <Sun className="text-primary" />
+              ) : (
+                <Moon className="text-primary" />
+              )}
+            </button>
+            <button
+              onClick={() => dispatch(cycleColorThemes())}
+              aria-label="Cycle color themes"
+              className="p-2 rounded-sm bg-sidebar hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
+            >
+              <Palette className="text-primary" />
+            </button>
+        </div>
         <NavLink
           to="/"
           className={`bg-primary-hover py-2 px-5 rounded-xl text-sidebar-accent-foreground ${
