@@ -145,7 +145,7 @@ def sendMessage(request):
             
             # Verify attendee is following the organizer
             try:
-                follow = Follow.objects.get(attendee=sender, organizer=organizer, status='A')
+                follow = Follow.objects.get(attendee=sender, organizer=organizer)
             except Follow.DoesNotExist:
                 return JsonResponse({
                     'error': 'You must be following this organizer to send messages'

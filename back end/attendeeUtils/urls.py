@@ -28,5 +28,6 @@ urlpatterns = [
     path('getfollowcounts', views.getFollowCounts, name='getfollowcounts'),
     path('getfollowercounts', views.getFollowerCounts, name='getfollowercounts'),
     path('getwishlistedevents', views.getWishlistedEvents, name='getwishlistedevents'),
-    path('togglewishlist', views.toggleWishlist, name='togglewishlist')
+    path('togglewishlist', views.toggleWishlist, name='togglewishlist'),
+    path('gettickets', views.getTickets, name='gettickets')
 ]

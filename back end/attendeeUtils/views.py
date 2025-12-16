@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.db import connection
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from api.models import User, Friend, Follow, Wishlist, Event, TicketType
+from api.models import User, Friend, Follow, Wishlist, Event, TicketType, Ticket
 from django.db.models import Q, Min, Max
 from django.conf import settings
 import json
@@ -687,3 +687,30 @@ def getUserFollowedOrganizersWithPrivacy(request):
     ).values_list('organizer_id', flat=True)
     
     return JsonResponse({"can_view": True, "followed_organizers": list(followed_organizers)})
+
+def getTickets(request):
+    attendee = request.session.get('username')
+
+    if not attendee:
+        return JsonResponse({'error' : 'No User Found'})
+
+    ticket_objects = list(Ticket.objects.filter(attendee = attendee))
+    tickets = []
+
+    for ticket in ticket_objects:
+        ticket_type = ticket.ticket_type
+        ticket_quantity = ticket.quantity
+        ticket_name = ticket_type.name
+        ticket_desc = ticket_type.description
+        event = ticket_type.event
+        event_name = event.name
+        event_id = event.event_id
+        tickets.append({
+            'ticket_name': ticket_name,
+            'ticket_desc': ticket_desc,
+            'ticket_quantity': ticket_quantity,
+            'event_name': event_name,
+            'event_id': event_id,
+        })
+    
+    return JsonResponse({'tickets': tickets})

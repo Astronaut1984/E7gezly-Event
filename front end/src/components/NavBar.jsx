@@ -5,7 +5,7 @@ import { toggleTheme, setTheme } from "@/store/themeSlice";
 import { UserContext } from "@/UserContext";
 import { useEffect } from "react";
 import { Sun, Moon, Wallet } from "lucide-react";
-import Image from "./../assets/E7gezly Event Logo.svg";
+import E7gezlyEventLogo from "./../assets/E7gezly Event Logo.svg";
 
 
 import UserWallet from "./Wallet";
@@ -39,7 +39,7 @@ export default function NavBar() {
   return (
     <div className="z-10 fixed w-full bg-card text-primary items-center flex justify-between p-1 select-none">
       <NavLink to="/" className="ml-5 flex justify-center items-center">
-        <img src={Image} className="w-12 mr-2" />
+        <img src={E7gezlyEventLogo} className="w-12 mr-2" />
         <h1 className="text-2xl font-bold">E7gezly Event</h1>
       </NavLink>
       <nav

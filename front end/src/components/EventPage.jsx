@@ -17,6 +17,8 @@ import {
 import { Input } from "./ui/input";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Label } from "./ui/label";
+import { Spinner } from "./ui/spinner";
+import AlertMessage from "./AlertMessage";
 
 export default function EventPage() {
   const { id } = useParams();
@@ -43,7 +45,11 @@ export default function EventPage() {
   }, [id]);
 
   if (loading) {
-    return <p className="text-center mt-10">Loading event...</p>;
+    return (
+      <div className="flex justify-center items-center w-full h-screen">
+        <Spinner />
+      </div>
+    );
   }
 
   if (!event) {
@@ -65,11 +71,12 @@ export default function EventPage() {
         {/* EVENT NAME */}
         <h1 className="text-4xl font-bold">{event.name}</h1>
         {/* ORGANIZER */}
-        <p className="text-lg text-muted-foreground">
+        <p className="text-lg text-muted-foreground bg-card max-w-max py-3 px-5 rounded-3xl">
           Organized by{" "}
           <span className="font-semibold">
-            {event.owner_first_name} {event.owner_last_name}
+            {event.owner_first_name} {event.owner_last_name}{" "}
           </span>
+          <p className="text-foreground-muted">@ {event.owner_username}</p>
         </p>
         {/* TIME */}
         <div className="text-lg flex gap-3 items-center">
@@ -125,7 +132,7 @@ export default function EventPage() {
                         <BuyDialog ticket={ticket}>
                           <div
                             disabled={ticket.quantity <= 0}
-                            className="w-full hover:cursor-pointer bg-primary-hover rounded-full py-1 px-2"
+                            className="w-full hover:cursor-pointer bg-primary-hover text-primary-foreground rounded-full py-1 px-2"
                           >
                             {ticket.quantity <= 0 ? "Sold Out!" : "Buy Now"}
                           </div>
@@ -157,7 +164,10 @@ export default function EventPage() {
             <h2 className="text-2xl font-semibold mb-4">Performers</h2>
             <div className="flex flex-wrap gap-4">
               {event.performers.map((perf, i) => (
-                <div key={i} className="px-4 py-2 rounded-lg bg-secondary">
+                <div
+                  key={i}
+                  className="px-4 py-2 rounded-lg bg-primary text-secondary-foreground"
+                >
                   {perf.name}
                 </div>
               ))}
@@ -171,12 +181,53 @@ export default function EventPage() {
 }
 
 function BuyDialog({ children, className, ticket }) {
-  const [value, setValue] = useState(null);
-  const { setUser } = useContext(UserContext);
+  const [discountCode, setDiscountCode] = useState("");
   const [open, setOpen] = useState(false);
+  const [alert, setAlert] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  console.log("Entered Ticket Dialog");
+  async function buyTicket() {
+    setLoading(true);
+    setAlert(null);
 
+    try {
+      const res = await fetch("http://localhost:8000/event/buyticket/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          ticket_type_id: ticket.ticket_type_id,
+          quantity: 1,
+          discount_code: discountCode,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.invalid_code) {
+        setAlert(data.invalid_code);
+        return;
+      }
+
+      if (data.error) {
+        setAlert(data.error);
+        return;
+      }
+
+      if (data.success) {
+        setAlert(
+          `Success! Purchased ${data.purchase_details.quantity} ticket(s) for ${data.purchase_details.final_price} EGP. Remaining balance: ${data.purchase_details.remaining_wallet_balance} EGP`
+        );
+      }
+    } catch (err) {
+      setAlert("An error occurred while purchasing the ticket");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger className={className}>{children}</DialogTrigger>
@@ -190,12 +241,15 @@ function BuyDialog({ children, className, ticket }) {
         <Label htmlFor="discountCodeInput">Enter a Discount</Label>
         <Input
           id="discountCodeInput"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
+          value={discountCode}
+          onChange={(e) => setDiscountCode(e.target.value)}
           placeholder="Enter Discount Code"
         />
+        <AlertMessage alert={alert} onClose={() => setAlert(null)} />
         <DialogFooter>
-          <Button className="select-none caret-transparent">Buy</Button>
+          <Button className="select-none caret-transparent" onClick={buyTicket}>
+            Buy
+          </Button>
           <DialogClose asChild>
             <Button className="caret-transparent" variant={"outline"}>
               Close

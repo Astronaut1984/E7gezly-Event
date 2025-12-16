@@ -17,5 +17,6 @@ urlpatterns = [
     path("getcategorieswithbanners/", views.getCategoriesWithBanners, name="getcategorieswithbanners"),
     path("geteventbyid/<int:event_id>/", views.getEventById, name="geteventbyid"),
     path("edittickettype/", views.editTicketType, name="edittickettype"),
-    path("deletetickettype/", views.deleteTicketType, name="deletetickettype")
+    path("deletetickettype/", views.deleteTicketType, name="deletetickettype"),
+    path("buyticket/", views.buyTicket, name="buyticket"),
 ]

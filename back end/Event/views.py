@@ -3,12 +3,14 @@ from django.shortcuts import render
 from django.db import connection
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from api.models import Event, User, Venue, TicketType, Category, Performer, Vehicle, HasPerformer, HasBus
+from api.models import Event, User, Venue, TicketType, Category, Performer, Vehicle, HasPerformer, HasBus, Discount, Ticket
 import json
 from django.db.models import ObjectDoesNotExist
 from django.conf import settings
 from django.db.models import Min, Max
 from django.views.decorators.http import require_POST
+from django.utils import timezone
+import os
 
 @csrf_exempt
 @require_POST
@@ -51,6 +53,24 @@ def addEvent(request):
             bus_pks = json.loads(request.POST["buses"])
             for pk in bus_pks:
                 HasBus.objects.create(event=event, transportation_id=pk)
+
+        # Handle discounts
+        if request.POST.get("discounts"):
+            discounts_data = json.loads(request.POST["discounts"])
+            for discount_data in discounts_data:
+                try:
+                    Discount.objects.create(
+                        event=event,
+                        discount_id=discount_data['discount_id'],
+                        percentage=int(discount_data['percentage']),
+                        max_value=int(discount_data['max_value']) if discount_data.get('max_value') else None,
+                        quantity=int(discount_data['quantity']),
+                        start_date=discount_data['start_date'],
+                        end_date=discount_data['end_date']
+                    )
+                except Exception as e:
+                    # Log but don't fail the entire event creation
+                    print(f"Failed to create discount {discount_data.get('discount_id')}: {e}")
 
         return JsonResponse({"message": "Event created", "id": event.event_id})
 
@@ -479,3 +499,151 @@ def deleteTicketType(request):
         return JsonResponse({"error": "Ticket type not found"}, status=404)
     except Exception as e:
         return JsonResponse({"error": f"An unexpected error occurred: {e}"}, status=500)
+    
+@csrf_exempt
+@require_POST
+def buyTicket(request):
+    try:
+        # Get authenticated user
+        attendee_username = request.session.get('username')
+        if not attendee_username:
+            return JsonResponse({'error': 'Not authenticated'}, status=401)
+        
+        try:
+            attendee = User.objects.get(username=attendee_username)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User does not exist'}, status=403)
+        
+        # Parse request data
+        data = json.loads(request.body)
+        ticket_type_id = data.get('ticket_type_id')
+        quantity = data.get('quantity', 1)
+        discount_code = data.get('discount_code', '').strip().upper()
+        
+        if not ticket_type_id:
+            return JsonResponse({'error': 'ticket_type_id is required'}, status=400)
+        
+        # Validate quantity
+        try:
+            quantity = int(quantity)
+            if quantity <= 0:
+                return JsonResponse({'error': 'Quantity must be greater than 0'}, status=400)
+        except (ValueError, TypeError):
+            return JsonResponse({'error': 'Invalid quantity'}, status=400)
+        
+        # Get ticket type
+        try:
+            ticket_type = TicketType.objects.select_related('event').get(ticket_type_id=ticket_type_id)
+        except TicketType.DoesNotExist:
+            return JsonResponse({'error': 'Ticket type not found'}, status=404)
+        
+        # Check if tickets are available
+        if ticket_type.quantity < quantity:
+            return JsonResponse({
+                'error': f'Only {ticket_type.quantity} tickets available'
+            }, status=400)
+        
+        # Calculate price
+        base_price = ticket_type.price * quantity
+        final_price = base_price
+        discount_applied = None
+        
+        # Apply discount if provided
+        if discount_code:
+            try:
+                discount = Discount.objects.get(
+                    event=ticket_type.event,
+                    discount_id=discount_code
+                )
+                
+                # Validate discount
+                today = timezone.now().date()
+                
+                if discount.start_date > today:
+                    return JsonResponse({
+                        'invalid_code': f'Discount code not yet valid. Starts on {discount.start_date}'
+                    }, status=400)
+                
+                if discount.end_date < today:
+                    return JsonResponse({
+                        'invalid_code': 'Discount code has expired'
+                    }, status=400)
+                
+                if quantity > discount.quantity:
+                    return JsonResponse({
+                        'invalid_code': 'Discount code has been fully redeemed'
+                    }, status=400)
+                
+                # Calculate discount
+                discount_amount = (base_price * discount.percentage) / 100
+                
+                # Apply max value cap if exists
+                if discount.max_value and discount_amount > discount.max_value:
+                    discount_amount = discount.max_value
+                
+                final_price = base_price - discount_amount
+                discount_applied = {
+                    'code': discount_code,
+                    'percentage': discount.percentage,
+                    'amount': discount_amount
+                }
+                
+                # Increment usage count
+                discount.quantity -= 1
+                discount.save()
+                
+            except Discount.DoesNotExist:
+                return JsonResponse({
+                    'invalid_code': 'Invalid discount code'
+                }, status=400)
+        
+        # Check wallet balance
+        if attendee.wallet < final_price:
+            return JsonResponse({
+                'error': f'Insufficient wallet balance. You need {final_price} EGP but have {attendee.wallet} EGP'
+            }, status=400)
+        
+        # Check if user already has this ticket type
+        existing_ticket = Ticket.objects.filter(
+            attendee=attendee,
+            ticket_type=ticket_type
+        ).first()
+        
+        if existing_ticket:
+            # Update existing ticket quantity
+            existing_ticket.quantity += quantity
+            existing_ticket.save()
+        else:
+            # Create new ticket
+            Ticket.objects.create(
+                attendee=attendee,
+                ticket_type=ticket_type,
+                quantity=quantity
+            )
+        
+        # Deduct from wallet
+        attendee.wallet -= final_price
+        attendee.save()
+        
+        # Decrease ticket type quantity
+        ticket_type.quantity -= quantity
+        ticket_type.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Ticket purchased successfully',
+            'purchase_details': {
+                'ticket_type': ticket_type.name,
+                'quantity': quantity,
+                'base_price': base_price,
+                'final_price': final_price,
+                'discount_applied': discount_applied,
+                'remaining_wallet_balance': attendee.wallet,
+                'remaining_tickets': ticket_type.quantity
+            }
+        }, status=200)
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': f'An unexpected error occurred: {str(e)}'
+        }, status=500)

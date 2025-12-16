@@ -27,9 +27,9 @@ export default function AttendeeChat() {
             );
             if (updatedConvo) {
               setCurrentConvo(updatedConvo);
+              console.log(updatedConvo);
             }
           }
-          console.log(conversations);
         }
       } catch (error) {
         console.error("Failed to fetch messages:", error);
@@ -98,7 +98,6 @@ export default function AttendeeChat() {
       });
 
       const data = await res.json();
-      console.log(data);
     } catch (error) {
       console.error("Failed to send message:", error);
     }

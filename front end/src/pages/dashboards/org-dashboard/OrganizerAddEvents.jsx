@@ -59,7 +59,7 @@ export default function OrganizerAddEvents() {
     loadingSetter,
     dataKey,
     method = "GET",
-    bodyData = null,
+    bodyData = null
   ) => {
     loadingSetter(true);
     console.log(`Fetching ${dataKey} (${method}) from API: ${url}`);
@@ -294,12 +294,14 @@ export default function OrganizerAddEvents() {
 
     formDataToSend.append("banner", imageFile);
 
+    // Append basic event data
     Object.entries(formData).forEach(([key, value]) => {
-      if (key !== "performers" && key !== "buses") {
+      if (!["performers", "buses", "tickets", "discounts"].includes(key)) {
         formDataToSend.append(key, value);
       }
     });
 
+    // Append performers
     formDataToSend.append(
       "performers",
       JSON.stringify(
@@ -307,6 +309,7 @@ export default function OrganizerAddEvents() {
       )
     );
 
+    // Append buses
     formDataToSend.append(
       "buses",
       JSON.stringify(
@@ -317,40 +320,70 @@ export default function OrganizerAddEvents() {
       )
     );
 
+    // Append discounts
+    formDataToSend.append(
+      "discounts",
+      JSON.stringify(
+        formData.discounts.map((d) => ({
+          discount_id: d.DiscountID,
+          percentage: parseInt(d.DiscountPercentage),
+          max_value: d.DiscountMaximumValue
+            ? parseInt(d.DiscountMaximumValue)
+            : null,
+          quantity: parseInt(d.DiscountQuantity),
+          start_date: d.DiscountStartDate,
+          end_date: d.DiscountEndDate,
+        }))
+      )
+    );
+
     for (let [key, value] of formDataToSend.entries()) {
       console.log(key, value);
     }
-    const eventRes = await fetch("http://localhost:8000/event/addevent/", {
-      method: "POST",
-      body: formDataToSend,
-      credentials: "include",
-    });
 
-    const eventdata = await eventRes.json();
-    const eventId = eventdata["id"];
-    console.log(eventId)
+    try {
+      const eventRes = await fetch("http://localhost:8000/event/addevent/", {
+        method: "POST",
+        body: formDataToSend,
+        credentials: "include",
+      });
 
-    for (let ticket of formData.tickets) {
-      const ticketContent = {
-        event: eventId,
-        name: ticket.TicketTypeName,
-        description: ticket.TicketDescription,
-        price: parseInt(ticket.TicketPrice),
-        quantity: parseInt(ticket.TicketQuantity),
-      };
-      const ticketRes = await fetch(
-        "http://localhost:8000/event/addtickettype/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(ticketContent),
-        }
-      );
+      const eventdata = await eventRes.json();
 
-      const ticketData = await ticketRes.json();
-      console.log(ticketData);
+      if (!eventRes.ok) {
+        alert(`Error creating event: ${eventdata.error}`);
+        return;
+      }
+
+      const eventId = eventdata["id"];
+      console.log("Event created with ID:", eventId);
+
+      // Add ticket types
+      for (let ticket of formData.tickets) {
+        const ticketContent = {
+          event: eventId,
+          name: ticket.TicketTypeName,
+          description: ticket.TicketDescription,
+          price: parseInt(ticket.TicketPrice),
+          quantity: parseInt(ticket.TicketQuantity),
+        };
+
+        const ticketRes = await fetch(
+          "http://localhost:8000/event/addtickettype/",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(ticketContent),
+          }
+        );
+
+        const ticketData = await ticketRes.json();
+        console.log("Ticket added:", ticketData);
+      }
+    } catch (error) {
+      console.error("Error submitting event:", error);
     }
   }
   const minDate = getMinDateTime();

@@ -26,7 +26,7 @@ import OrganizerChat from "./pages/dashboards/org-dashboard/OrganizerChat";
 import AdminPerformers from "./pages/dashboards/admin-dashboard/AdminPerformers";
 import { attItems } from "./pages/dashboards/att-dashboard/Attendee";
 import Attendee from "./pages/dashboards/att-dashboard/Attendee";
-import AttendeeEvents from "./pages/dashboards/att-dashboard/AttendeeEvents";
+import AttendeeEvents from "./pages/dashboards/att-dashboard/AttendeeTickets";
 import AttendeeFriends from "./pages/dashboards/att-dashboard/AttendeeFriends";
 import AttendeeFollowedOrg from "./pages/dashboards/att-dashboard/AttendeeFollowedOrg";
 import AttendeeWishlist from "./pages/dashboards/att-dashboard/AttendeeWishlist";
@@ -35,6 +35,7 @@ import UserView from "./pages/UserView";
 import AttendeeChat from "./pages/dashboards/att-dashboard/AttendeeChat";
 import AdminCategory from "./pages/dashboards/admin-dashboard/AdminCategory";
 import OrganizerEditEvent from "./pages/dashboards/org-dashboard/OrganizerEditEvent";
+import AttendeeTickets from "./pages/dashboards/att-dashboard/AttendeeTickets";
 
 function App() {
   return (
@@ -76,7 +77,10 @@ function App() {
         <Route path="add-events" element={<OrganizerAddEvents />} />
         <Route path="followers" element={<OrganizerFollowers />} />
         <Route path="my-events" element={<OrganizerMyEvents />} />
-        <Route path="/org/editevent/:eventId" element={<OrganizerEditEvent />} />
+        <Route
+          path="/org/editevent/:eventId"
+          element={<OrganizerEditEvent />}
+        />
         <Route path="chat" element={<OrganizerChat />} />
         <Route path="user/:username" element={<UserView />} />
       </Route>
@@ -90,7 +94,7 @@ function App() {
         }
       >
         <Route path="/att" index element={<Attendee />} />
-        <Route path="/att/my-events" index element={<AttendeeEvents />} />
+        <Route path="/att/my-tickets" index element={<AttendeeTickets />} />
         <Route path="/att/friends" index element={<AttendeeFriends />} />
         <Route
           path="/att/followed-org"

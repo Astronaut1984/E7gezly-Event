@@ -16,8 +16,8 @@ export const attItems = [
     icon: Home,
   },
   {
-    title: "My Events",
-    url: "/att/my-events",
+    title: "My Tickets",
+    url: "/att/my-tickets",
     icon: Ticket,
   },
   {

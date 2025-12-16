@@ -17,6 +17,7 @@ export default function ChatPage() {
           }
         );
         const data = await res.json();
+        console.log(data['conversations']);
         if (isMounted) {
           setConversations(data["conversations"]);
           // Add any new messages to the current Convo's messages if available
@@ -28,7 +29,6 @@ export default function ChatPage() {
               setCurrentConvo(updatedConvo);
             }
           }
-          console.log(conversations);
         }
       } catch (error) {
         console.error("Failed to fetch messages:", error);
@@ -80,8 +80,6 @@ export default function ChatPage() {
 
     setText(""); // Clear input
 
-    console.log(reciever);
-    console.log(text);
     const res = await fetch("http://localhost:8000/messages/sendmessage/", {
       method: "POST",
       body: JSON.stringify({
@@ -92,7 +90,6 @@ export default function ChatPage() {
     });
 
     const data = await res.json();
-    console.log(data);
   }
 
   function formatDateTime(timestamp) {

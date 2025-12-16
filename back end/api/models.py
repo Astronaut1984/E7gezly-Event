@@ -102,11 +102,19 @@ class HasPerformer(models.Model):
 class Discount(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, db_column='Event_Id')
     discount_id = models.CharField(max_length=25)
-
+    percentage = models.IntegerField()  # 0-100
+    max_value = models.IntegerField(null=True, blank=True)  # Maximum discount amount
+    quantity = models.IntegerField()  
+    start_date = models.DateField()
+    end_date = models.DateField(null=True)
+    
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['event', 'discount_id'], name='unique_discount_per_event')
         ]
+    
+    def __str__(self):
+        return f"{self.discount_id} - {self.percentage}% off"
 
 class TicketType(models.Model):
     ticket_type_id = models.AutoField(primary_key=True)

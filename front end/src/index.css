@@ -6,6 +6,7 @@
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.2161 0.0061 56.0434);
+  --foreground-muted: oklch(45.892% 0.00502 55.946);
   --card: oklch(0.9862 0.0068 247.8939);
   --card-foreground: oklch(0.2161 0.0061 56.0434);
   --card-foreground-muted: oklch(87.413% 0.06479 248.612);
@@ -68,6 +69,7 @@
 .dark {
   --background: oklch(0.2161 0.0061 56.0434);
   --foreground: oklch(1 0 0);
+  --foreground-muted: oklch(79.149% 0.0079 16.698);
   --card: oklch(0.2661 0.0074 285.8885);
   --card-foreground: oklch(1 0 0);
   --card-foreground-muted: oklch(94.028% 0.04162 215.551);
@@ -128,6 +130,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-card-foreground-muted: var(--card-foreground-muted);
