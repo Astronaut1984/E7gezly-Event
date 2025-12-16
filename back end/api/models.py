@@ -155,9 +155,10 @@ class Message(models.Model):
     sender_type = models.CharField(max_length=20, choices=SENDER_CHOICES)
     content = models.TextField()
     message_date = models.DateTimeField(null=True, blank=True)
+    is_read = models.BooleanField(default=False)  # NEW FIELD
     attendee = models.ForeignKey(User, on_delete=models.RESTRICT, to_field='username', db_column='Attendee_Username', related_name='received_messages', null=True, blank=True)
     owner = models.ForeignKey(User, on_delete=models.RESTRICT, to_field='username', db_column='owner_Username', related_name='sent_messages', null=True, blank=True)
-
+    
 class Follow(models.Model):
     attendee = models.ForeignKey(User, on_delete=models.RESTRICT, related_name='following')
     organizer = models.ForeignKey(User, on_delete=models.RESTRICT, related_name='followers')

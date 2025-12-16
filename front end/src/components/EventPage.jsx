@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import NavBar from "./NavBar";
 import Footer from "./Footer";
 import { Clock, MapPin } from "lucide-react";
@@ -22,6 +22,8 @@ import AlertMessage from "./AlertMessage";
 
 export default function EventPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useContext(UserContext);
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -43,6 +45,20 @@ export default function EventPage() {
 
     fetchEvent();
   }, [id]);
+
+  const handleOrganizerClick = () => {
+    // Determine the route based on user role
+    if (user?.status === "Administrator") {
+      navigate(`/admin/user/${event.owner_username}`);
+    } else if (user?.status === "Organizer") {
+      navigate(`/org/user/${event.owner_username}`);
+    } else if (user?.status === "Attendee") {
+      navigate(`/att/user/${event.owner_username}`);
+    } else {
+      // If not logged in, redirect to login or stay on page
+      navigate("/login");
+    }
+  };
 
   if (loading) {
     return (
@@ -71,13 +87,16 @@ export default function EventPage() {
         {/* EVENT NAME */}
         <h1 className="text-4xl font-bold">{event.name}</h1>
         {/* ORGANIZER */}
-        <p className="text-lg text-muted-foreground bg-card max-w-max py-3 px-5 rounded-3xl">
+        <button
+          onClick={handleOrganizerClick}
+          className="text-lg text-muted-foreground bg-card max-w-max py-3 px-5 rounded-3xl hover:bg-accent transition-colors cursor-pointer"
+        >
           Organized by{" "}
           <span className="font-semibold">
             {event.owner_first_name} {event.owner_last_name}{" "}
           </span>
           <p className="text-foreground-muted">@ {event.owner_username}</p>
-        </p>
+        </button>
         {/* TIME */}
         <div className="text-lg flex gap-3 items-center">
           <Clock className="text-primary" />
