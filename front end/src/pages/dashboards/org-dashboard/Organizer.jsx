@@ -1,4 +1,4 @@
-import { Home, Ticket, UserRoundCheck, MessageCircle } from "lucide-react";
+import { Home, Ticket, UserRoundCheck, MessageCircle, Bot } from "lucide-react";
 import EditInfoForm from "@/components/EditInfoForm";
 import { useState, useEffect } from "react";
 
@@ -55,6 +55,11 @@ export const orgItems = [
     url: "/org/chat",
     icon: MessageCircle,
     badge: true, // Flag to show this item has a badge
+  },
+  {
+    title: "AI Assistant",
+    url: "/ai-chat",
+    icon: Bot,
   },
 ];
 

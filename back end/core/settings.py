@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'Event',
     'adminUtils',
     'attendeeUtils',
+    'ai_assistant',
 ]
 
 MIDDLEWARE = [

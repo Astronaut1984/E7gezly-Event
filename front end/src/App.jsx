@@ -38,10 +38,12 @@ import UserView from "./pages/UserView";
 import AttendeeChat from "./pages/dashboards/att-dashboard/AttendeeChat";
 import OrganizerEditEvent from "./pages/dashboards/org-dashboard/OrganizerEditEvent";
 import AttendeeTickets from "./pages/dashboards/att-dashboard/AttendeeTickets";
+import AIChat from './pages/AIChat';
 
 function App() {
   return (
     <Routes>
+      <Route path="/ai-chat" element={<AIChat />} />
       <Route path="/" index element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
