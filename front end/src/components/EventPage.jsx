@@ -201,6 +201,7 @@ export default function EventPage() {
 
 function BuyDialog({ children, className, ticket }) {
   const [discountCode, setDiscountCode] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const [open, setOpen] = useState(false);
   const [alert, setAlert] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -218,7 +219,7 @@ function BuyDialog({ children, className, ticket }) {
         credentials: "include",
         body: JSON.stringify({
           ticket_type_id: ticket.ticket_type_id,
-          quantity: 1,
+          quantity: quantity,
           discount_code: discountCode,
         }),
       });
@@ -257,13 +258,24 @@ function BuyDialog({ children, className, ticket }) {
         <p className="caret-transparent">
           {ticket.name} Ticket: EGP {ticket.price}
         </p>
-        <Label htmlFor="discountCodeInput">Enter a Discount</Label>
-        <Input
-          id="discountCodeInput"
-          value={discountCode}
-          onChange={(e) => setDiscountCode(e.target.value)}
-          placeholder="Enter Discount Code"
-        />
+        <div className="flex flex-col gap-5">
+          <Label htmlFor="discountCodeInput">Enter a Discount</Label>
+          <Input
+            id="discountCodeInput"
+            value={discountCode}
+            onChange={(e) => setDiscountCode(e.target.value)}
+            placeholder="Enter Discount Code"
+          />
+          <Label htmlFor="quantityInput">How Many Tickets ?</Label>
+          <Input
+            id="quantityInput"
+            value={quantity}
+            type="number"
+            className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            onChange={(e) => setQuantity(e.target.value)}
+            placeholder="Enter Quantity"
+          />
+        </div>
         <AlertMessage alert={alert} onClose={() => setAlert(null)} />
         <DialogFooter>
           <Button className="select-none caret-transparent" onClick={buyTicket}>

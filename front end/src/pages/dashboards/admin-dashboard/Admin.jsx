@@ -63,7 +63,7 @@ export const adminItems = [
   },
   {
     title: "AI Assistant",
-    url: "/ai-chat",
+    url: "/admin/ai-chat",
     icon: Bot,
   },
 ];

@@ -71,7 +71,7 @@ export const attItems = [
   },
   {
     title: "AI Assistant",
-    url: "/ai-chat",
+    url: "/att/ai-chat",
     icon: Bot,
   }
 ];

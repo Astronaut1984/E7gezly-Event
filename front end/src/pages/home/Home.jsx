@@ -79,7 +79,7 @@ export default function Home() {
           <h1 className="text-white text-5xl font-bold">Events Made Simple</h1>
           <Link
             to="/Events"
-            className="transform hover:scale-110 transition duration-700 ease-in-out text-white text-3xl bg-blue-400 px-10 py-6 rounded-4xl hover:bg-blue-600"
+            className="transform hover:scale-110 transition duration-700 ease-in-out text-primary-foreground text-3xl bg-primary-hover px-10 py-6 rounded-4xl"
           >
             View Events
           </Link>

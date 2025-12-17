@@ -47,13 +47,15 @@ export function DashboardSideBar({ items }) {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex justify-between items-center">
+        <div
+          className={`flex justify-${
+            isCollapsed ? "center" : "between"
+          } items-center`}
+        >
           {!isCollapsed && (
-            <h1 className="truncate flex items-center">
-              {welcomeMessage}
-            </h1>
+            <h1 className="truncate flex items-center">{welcomeMessage}</h1>
           )}
-          <SidebarTrigger className="size-10" />
+          <SidebarTrigger className="size-10 hover:text-primary cursor-pointer" />
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -83,25 +85,29 @@ export function DashboardSideBar({ items }) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="flex flex-col justify-center items-center mb-2 overflow-hidden whitespace-nowrap">
-        <div className={isCollapsed ? "flex flex-col gap-2 mb-2" : "flex gap-2 mb-2"}>
-            <button
-              onClick={() => dispatch(toggleTheme())}
-              aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-              className="p-2 rounded-sm bg-sidebar hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
-            >
-              {dark ? (
-                <Sun className="text-primary" />
-              ) : (
-                <Moon className="text-primary" />
-              )}
-            </button>
-            <button
-              onClick={() => dispatch(cycleColorThemes())}
-              aria-label="Cycle color themes"
-              className="p-2 rounded-sm bg-sidebar hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
-            >
-              <Palette className="text-primary" />
-            </button>
+        <div
+          className={
+            isCollapsed ? "flex flex-col gap-2 mb-2" : "flex gap-2 mb-2"
+          }
+        >
+          <button
+            onClick={() => dispatch(toggleTheme())}
+            aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+            className="p-2 rounded-sm bg-sidebar hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
+          >
+            {dark ? (
+              <Sun className="text-primary" />
+            ) : (
+              <Moon className="text-primary" />
+            )}
+          </button>
+          <button
+            onClick={() => dispatch(cycleColorThemes())}
+            aria-label="Cycle color themes"
+            className="p-2 rounded-sm bg-sidebar hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
+          >
+            <Palette className="text-primary" />
+          </button>
         </div>
         <NavLink
           to="/"

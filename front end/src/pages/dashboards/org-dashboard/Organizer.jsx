@@ -58,7 +58,7 @@ export const orgItems = [
   },
   {
     title: "AI Assistant",
-    url: "/ai-chat",
+    url: "/org/ai-chat",
     icon: Bot,
   },
 ];

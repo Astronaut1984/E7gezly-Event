@@ -1,5 +1,16 @@
 import { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function AttendeeChat() {
   const [conversations, setConversations] = useState([]);
@@ -236,13 +247,15 @@ export default function AttendeeChat() {
             <h3 className="font-semibold text-lg">
               {currentConvo.organizer.name}
             </h3>
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 rounded-md transition-colors border border-green-200 dark:border-green-800"
+            <Alert
+              orgName={currentConvo?.organizer.name}
+              handleDelete={handleDeleteConversation}
             >
-              <Trash2 className="h-4 w-4" />
-              Mark as Resolved
-            </button>
+              <button className="flex items-center gap-2 px-3 py-2 text-sm text-primary-hover hover:bg-green-50 dark:hover:bg-green-950/30 rounded-md transition-colors border border-primary">
+                <Trash2 className="h-4 w-4" />
+                Mark as Resolved
+              </button>
+            </Alert>
           </div>
 
           {/* Messages */}
@@ -292,36 +305,34 @@ export default function AttendeeChat() {
           </h2>
         </div>
       )}
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card p-6 rounded-lg shadow-lg max-w-md w-full mx-4 border border-border">
-            <h3 className="text-lg font-semibold mb-2">Mark as Resolved?</h3>
-            <p className="text-muted-foreground mb-6">
-              This will delete all messages with{" "}
-              <span className="font-medium text-foreground">
-                {currentConvo?.organizer.name}
-              </span>
-              . This action cannot be undone.
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 border border-border rounded-md hover:bg-accent transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteConversation}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors font-medium"
-              >
-                Mark as Resolved
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
+  );
+}
+
+function Alert({ children, orgName, handleDelete }) {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            This will delete all messages with {orgName}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel className="hover:cursor-pointer">
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction className="hover:cursor-pointer">
+            <div className="hover:cursor-pointer" onClick={handleDelete}>
+              Delete
+            </div>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

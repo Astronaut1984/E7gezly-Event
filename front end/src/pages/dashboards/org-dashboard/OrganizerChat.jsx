@@ -24,7 +24,8 @@ export default function ChatPage() {
           // Add any new messages to the current Convo's messages if available
           if (currentConvo) {
             const updatedConvo = data["conversations"].find(
-              (conv) => conv.attendee.username === currentConvo.attendee.username
+              (conv) =>
+                conv.attendee.username === currentConvo.attendee.username
             );
             if (updatedConvo) {
               setCurrentConvo(updatedConvo);

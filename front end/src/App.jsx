@@ -43,7 +43,6 @@ import AIChat from './pages/AIChat';
 function App() {
   return (
     <Routes>
-      <Route path="/ai-chat" element={<AIChat />} />
       <Route path="/" index element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
@@ -68,6 +67,7 @@ function App() {
         <Route path="/admin/category" element={<AdminCategory />} />
         <Route path="/admin/bus" element={<AdminBus />} />
         <Route path="/admin/create" element={<AdminCreate />} />
+        <Route path="/admin/ai-chat" element={<AIChat />} />
       </Route>
 
       <Route
@@ -88,6 +88,7 @@ function App() {
         />
         <Route path="chat" element={<OrganizerChat />} />
         <Route path="user/:username" element={<UserView />} />
+        <Route path="/org/ai-chat" element={<AIChat />} />
       </Route>
       <Route
         path="/att"
@@ -117,6 +118,7 @@ function App() {
         />
         <Route path="/att/wishlist" index element={<AttendeeWishlist />} />
         <Route path="/att/chat" element={<AttendeeChat />} />
+        <Route path="/att/ai-chat" element={<AIChat />} />
       </Route>
     </Routes>
   );
