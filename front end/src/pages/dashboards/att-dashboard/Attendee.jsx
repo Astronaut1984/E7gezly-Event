@@ -1,5 +1,5 @@
 import EditInfoForm from "@/components/EditInfoForm";
-import { Home, Ticket, UsersRound, UserRound, Star, MessageCircle } from "lucide-react";
+import { Home, Ticket, UsersRound, UserRound, Star, MessageCircle, Bot } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export function useAttUnreadCount() {
@@ -68,5 +68,10 @@ export const attItems = [
     url: "/att/chat",
     icon: MessageCircle,
     badge: true, // Flag to show this item has a badge
+  },
+  {
+    title: "AI Assistant",
+    url: "/ai-chat",
+    icon: Bot,
   }
 ];

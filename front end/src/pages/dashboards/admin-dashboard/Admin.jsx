@@ -11,6 +11,7 @@ import {
   BusFront,
   SquareStack,
   UserPlus,
+  Bot,
 } from "lucide-react";
 import { useContext } from "react";
 
@@ -59,6 +60,11 @@ export const adminItems = [
     title: "Create",
     url: "/admin/create",
     icon: UserPlus,
+  },
+  {
+    title: "AI Assistant",
+    url: "/ai-chat",
+    icon: Bot,
   },
 ];
 

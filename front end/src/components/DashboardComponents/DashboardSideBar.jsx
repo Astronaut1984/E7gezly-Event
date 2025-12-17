@@ -83,7 +83,7 @@ export function DashboardSideBar({ items }) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="flex flex-col justify-center items-center mb-2 overflow-hidden whitespace-nowrap">
-        <div className="flex gap-2 mb-2">
+        <div className={isCollapsed ? "flex flex-col gap-2 mb-2" : "flex gap-2 mb-2"}>
             <button
               onClick={() => dispatch(toggleTheme())}
               aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
