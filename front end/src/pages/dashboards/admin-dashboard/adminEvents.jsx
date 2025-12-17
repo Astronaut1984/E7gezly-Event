@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 // Removed Organizer import as it's not relevant for events
 
 export default function AdminEvents() {
+  const [eventCount, setEventCount] = useState(0);
   const {
     items: events,
     loading,
@@ -32,6 +33,10 @@ export default function AdminEvents() {
 
   useEffect(() => {
     reloadEvents();
+    fetch("http://localhost:8000/Record/eventsindb/")
+      .then((res) => res.json())
+      .then((data) => setEventCount(data.count))
+      .catch((err) => console.error(err));
   }, [reloadEvents]);
 
   const filteredevents =
@@ -56,6 +61,9 @@ export default function AdminEvents() {
   return (
     <main className="flex justify-center items-center flex-col gap-5 w-full">
       <h1 className="text-3xl font-bold">Events</h1> {/* Updated heading */}
+      <div className="text-center mb-4 text-primary">
+        <i> Number of Events: {eventCount}</i>
+      </div>
       <div className="flex w-100 justify-center items-center">
         <Input
           placeholder="Search events..." // Updated placeholder

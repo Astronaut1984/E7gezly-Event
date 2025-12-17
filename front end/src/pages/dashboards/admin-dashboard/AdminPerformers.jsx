@@ -18,8 +18,8 @@ import {
 import { Trash, Pencil, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MessageAlertDialog from "@/components/MessageAlertDialog";
-
 export default function AdminPerformers() {
+  const [performerCount, setPerformerCount] = useState(0);
   const FIELD_CONATIANER_CLASSNAME =
     "text-[20px] flex justify-between gap-20 items-center";
 
@@ -93,6 +93,10 @@ export default function AdminPerformers() {
 
   useEffect(() => {
     reloadPerformers();
+    fetch("http://localhost:8000/Record/performersindb/")
+      .then((res) => res.json())
+      .then((data) => setPerformerCount(data.count))
+      .catch((err) => console.error(err));
   }, [reloadPerformers]);
 
   const handleEditToggle = useCallback((id) => {
@@ -118,6 +122,9 @@ export default function AdminPerformers() {
   return (
     <div className="flex flex-col justify-center items-center text-[30px] font-bold w-full px-32">
       <h1>Performers</h1>
+      <div className="text-center mb-4 text-primary">
+        <i> Number of Performers: {performerCount}</i>
+      </div>
       <div className="flex flex-col flex-wrap w-full px-10 shadow-2xl text-[30px] font-bold py-5 rounded-xl bg-card mt-3 mb-5">
         <h1 className="text-xl mb-3">Add a Performer</h1>
 

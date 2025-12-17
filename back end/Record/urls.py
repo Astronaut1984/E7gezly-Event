@@ -7,5 +7,9 @@ urlpatterns = [
     path("mostfollowedorg/",views.mostFollowedOrganizers,name="mostfollowedorg"),
     path("categoryindb/",views.countCategories,name="categoryindb"),
     path("organizersindb/", views.countOrganizers, name="organizersindb"),
-    path("attendeesindb/", views.countAttendees, name="attendeesindb")
+    path("attendeesindb/", views.countAttendees, name="attendeesindb"),
+    path("performersindb/",views.countPerformers,name="performersindb"),
+    path("venuesindb/", views.countVenues, name="venuesindb"),
+    path("eventsindb/", views.countEvents, name="eventsindb"),
+    path("busesindb/", views.countBuses, name="busesindb")
 ]

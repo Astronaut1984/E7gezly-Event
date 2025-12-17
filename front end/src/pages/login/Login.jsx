@@ -4,6 +4,7 @@ import Input from "../../components/Input";
 import NavBar from "../../components/NavBar";
 import { UserContext } from "../../UserContext.jsx";
 import { NavLink, useNavigate } from "react-router-dom";
+import { Italic } from "lucide-react";
 
 export default function Login() {
   let bgColor = "bg-background";
@@ -73,7 +74,7 @@ export default function Login() {
         <div className="w-[400px] bg-card rounded-[10px] p-[65px] shadow">
           {/* Display backend data */}
           <div className="text-center mb-4 text-primary">
-            Users in DB: {userCount}
+            <i> Users in DB: {userCount}</i>
           </div>
 
           <form className="w-full">

@@ -7,20 +7,24 @@ import json
 
 @csrf_exempt
 def countUsers(request):
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT count_user()")
-            result = cursor.fetchone()  
-        return JsonResponse({
-            'success': True,
-            'count': result[0] if result else 0
-        })
+    with connection.cursor() as cursor:
+        cursor.execute("CALL count_user(NULL)")
+        result = cursor.fetchone()  
+    return JsonResponse({
+        'success': True,
+        'count': result[0] if result else 0
+    })
+
 
 @csrf_exempt
 def countOrganizers(request):
     with connection.cursor() as cursor:
-        cursor.execute("SELECT COUNT(*) FROM api_user where status='Organizer'")
-        result = cursor.fetchone()
-    return JsonResponse({"count": result[0]})
+        cursor.execute("CALL count_organizer(NULL)")
+        result = cursor.fetchone()  
+    return JsonResponse({
+        'success': True,
+        'count': result[0] if result else 0
+    })
 
 @csrf_exempt
 def countAttendees(request):
@@ -32,17 +36,54 @@ def countAttendees(request):
 @csrf_exempt
 def countCategories(request):
     with connection.cursor() as cursor:
-        cursor.execute("SELECT COUNT(*) FROM api_category")
-        result = cursor.fetchone()
-    return JsonResponse({"count": result[0]})
+        cursor.execute("CALL count_category(NULL)")
+        result = cursor.fetchone()  
+    return JsonResponse({
+        'success': True,
+        'count': result[0] if result else 0
+    })
 
 
 @csrf_exempt
 def countEvents(request):
     with connection.cursor() as cursor:
-        cursor.execute("SELECT COUNT(*) FROM api_event")
-        result = cursor.fetchone()
-    return JsonResponse({"count": result[0]})
+        cursor.execute("CALL count_event(NULL)")
+        result = cursor.fetchone()  
+    return JsonResponse({
+        'success': True,
+        'count': result[0] if result else 0
+    })
+
+@csrf_exempt
+def countBuses(request):
+    with connection.cursor() as cursor:
+        cursor.execute("CALL count_bus(NULL)")
+        result = cursor.fetchone()  
+    return JsonResponse({
+        'success': True,
+        'count': result[0] if result else 0
+    })
+
+
+@csrf_exempt
+def countVenues(request):
+    with connection.cursor() as cursor:
+        cursor.execute("CALL count_venue(NULL)")
+        result = cursor.fetchone()  
+    return JsonResponse({
+        'success': True,
+        'count': result[0] if result else 0
+    })
+
+@csrf_exempt
+def countPerformers(request):
+    with connection.cursor() as cursor:
+        cursor.execute("CALL count_performer(NULL)")
+        result = cursor.fetchone()  
+    return JsonResponse({
+        'success': True,
+        'count': result[0] if result else 0
+    })
 
 @csrf_exempt
 def countEventsOfCategory(request):
@@ -82,7 +123,7 @@ def countEventsOfCategory(request):
 @csrf_exempt
 def mostFollowedOrganizers(request):
     with connection.cursor() as cursor:
-        cursor.execute("SELECT organizer_id, COUNT(*) AS follower_count FROM api_Follow where organizer=username GROUP BY organizer_id ORDER BY follower_count DESC LIMIT 10")
+        cursor.execute("SELECT T2.organizer_id, COUNT(T2.attendee_id) AS follower_count FROM api_user AS T1 JOIN api_follow AS T2 ON T1.username = T2.organizer_id WHERE T1.status = 'Organizer' GROUP BY T2.organizer_id ORDER BY follower_count DESC LIMIT 10")
         results = cursor.fetchall()
     top_organizers = []
     for organizer_id, count in results:

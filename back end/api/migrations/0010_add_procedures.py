@@ -2,7 +2,6 @@
 
 from django.db import migrations
 
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -17,7 +16,7 @@ class Migration(migrations.Migration):
             LANGUAGE plpgsql
             AS $$
             BEGIN
-                SELECT COUNT(*) INTO total FROM "api_user";
+                SELECT COUNT(*) INTO total FROM api_user;
             END;
             $$;
 
@@ -26,7 +25,16 @@ class Migration(migrations.Migration):
             LANGUAGE plpgsql
             AS $$
             BEGIN
-                SELECT COUNT(DISTINCT owner_username) INTO total FROM api_event;
+                SELECT COUNT(*) INTO total FROM api_user where status='Organizer';
+            END;
+            $$;
+
+            -- category COUNT
+            CREATE OR REPLACE PROCEDURE count_category(OUT total INT)
+            LANGUAGE plpgsql
+            AS $$
+            BEGIN
+                SELECT COUNT(*) INTO total FROM api_category;
             END;
             $$;
 
@@ -132,4 +140,3 @@ class Migration(migrations.Migration):
             """
         )
     ]
-
