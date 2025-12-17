@@ -164,13 +164,13 @@ export async function validateForm3(formData) {
 export function validateAddVenue(formData) {
   const errors = {};
 
-  if (!formData.venueName?.trim()) {
-    errors.venueName = {
+  if (!formData.name?.trim()) {
+    errors.name = {
       isError: true,
       message: "Enter the venue name",
     };
   } else {
-    delete errors.venueName;
+    delete errors.name;
   }
 
   if (!formData.country?.trim()) {
@@ -185,28 +185,28 @@ export function validateAddVenue(formData) {
   if (!formData.city?.trim()) {
     errors.city = {
       isError: true,
-      message: "Enter the city",
+message: "Enter the city",
     };
   } else {
     delete errors.city;
   }
 
-  if (!formData.venueType?.trim()) {
-    errors.venueType = {
+  if (!formData.type?.trim()) {
+    errors.type = {
       isError: true,
       message: "Enter the venue type",
     };
   } else {
-    delete errors.venueType;
+    delete errors.type;
   }
 
-  if (!formData.description?.trim()) {
-    errors.description = {
+  if (!formData.details?.trim()) {
+    errors.details = {
       isError: true,
       message: "Enter a description",
     };
   } else {
-    delete errors.description;
+    delete errors.details;
   }
 
   if (!formData.capacity?.trim() || isNaN(formData.capacity)) {

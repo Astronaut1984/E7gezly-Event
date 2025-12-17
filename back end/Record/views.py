@@ -5,13 +5,15 @@ from django.views.decorators.csrf import csrf_exempt
 from api.models import User
 import json
 
-# Create your views here.
 @csrf_exempt
 def countUsers(request):
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT COUNT(*) FROM api_user")
-        result = cursor.fetchone()
-    return JsonResponse({"count": result[0]})
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT count_user()")
+            result = cursor.fetchone()  
+        return JsonResponse({
+            'success': True,
+            'count': result[0] if result else 0
+        })
 
 @csrf_exempt
 def countOrganizers(request):

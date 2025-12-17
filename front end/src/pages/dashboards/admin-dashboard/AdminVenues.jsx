@@ -1,6 +1,7 @@
+import { useState, useEffect, useCallback } from "react";
+import { Trash, Pencil, Check } from "lucide-react";
+
 import Input from "@/components/Input";
-import { useState, useEffect, useCallback } from "react"; // Added useCallback
-import { Trash, Pencil, Check } from "lucide-react"; // Added Pencil and Check
 import { Spinner } from "@/components/ui/spinner";
 import {
   AlertDialog,
@@ -16,20 +17,20 @@ import {
 import { validateAddVenue } from "@/pages/sign up/validations";
 import useAdminResource from "@/hooks/useAdminResource";
 import { Input as Search } from "@/components/ui/input";
-import { Button } from "@/components/ui/button"; // Import Button component
-import MessageAlertDialog from "@/components/MessageAlertDialog"; // Import MessageAlertDialog
+import { Button } from "@/components/ui/button";
+import MessageAlertDialog from "@/components/MessageAlertDialog";
 
 export default function AdminVenues() {
-  const FIELD_CONATIANER_CLASSNAME =
+  const FIELD_CONTAINER_CLASSNAME =
     "text-[20px] flex justify-between gap-20 items-center";
   let [errors, setErrors] = useState({});
 
   const [formData, setFormData] = useState({
-    venueName: "",
+    name: "",
     country: "",
     city: "",
-    venueType: "",
-    description: "",
+    type: "",
+    details: "",
     capacity: "",
   });
 
@@ -46,9 +47,8 @@ export default function AdminVenues() {
   });
 
   const [search, setSearch] = useState("");
-  const [editingVenueId, setEditingVenueId] = useState(null); // New state for tracking editing venue
+  const [editingVenueId, setEditingVenueId] = useState(null);
 
-  // State for generic message alert dialog
   const [showAlert, setShowAlert] = useState(false);
   const [alertTitle, setAlertTitle] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
@@ -67,7 +67,6 @@ export default function AdminVenues() {
   };
 
   const handleSubmit = async () => {
-    // validation: check empty fields
     let formErrors = validateAddVenue(formData);
     if (Object.keys(formErrors).length !== 0) {
       setErrors(formErrors);
@@ -75,37 +74,43 @@ export default function AdminVenues() {
     }
 
     const payload = {
-      ...formData,
+      name: formData.name,
+      country: formData.country,
+      city: formData.city,
+      type: formData.type,
+      details: formData.details,
       capacity: Number(formData.capacity),
     };
 
     try {
       const res = await fetch("http://localhost:8000/adminUtils/addvenues/", {
-        // Changed endpoint to adminUtils/addvenues
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("Failed to add venue");
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to add venue");
+      }
 
       showAlertMessage("Success", "Venue added successfully!");
       setErrors({});
       setFormData({
-        venueName: "",
+        name: "",
         country: "",
         city: "",
-        venueType: "",
-        description: "",
+        type: "",
+        details: "",
         capacity: "",
       });
-      // refresh list if available
+
       try {
         await reloadVenues();
       } catch (e) {}
     } catch (err) {
       console.error(err);
-      showAlertMessage("Error", "Error adding venue");
+      showAlertMessage("Error", err.message || "Error adding venue");
     }
   };
 
@@ -120,7 +125,7 @@ export default function AdminVenues() {
   const filteredVenues =
     !loading &&
     venues.filter((v) =>
-      `${v.venueName || v.name || ""} ${v.city || ""} ${v.country || ""}`
+      `${v.name || ""} ${v.city || ""} ${v.country || ""}`
         .toLowerCase()
         .includes(search.toLowerCase())
     );
@@ -138,15 +143,15 @@ export default function AdminVenues() {
       <h1>Venues</h1>
       <div className="flex flex-col flex-wrap w-full px-10 shadow-2xl py-5 rounded-xl bg-card mt-3">
         <h1 className="text-xl">Add a Venue</h1>
-        <div className={FIELD_CONATIANER_CLASSNAME}>
+        <div className={FIELD_CONTAINER_CLASSNAME}>
           <Input
             title="Venue Name"
-            name="venueName"
+            name="name"
             type="text"
             placeholder="Ex: Arkan Plaza"
             onChange={handleChange}
-            value={formData.venueName}
-            error={errors.venueName}
+            value={formData.name}
+            error={errors.name}
           />
           <Input
             title="Country"
@@ -158,7 +163,7 @@ export default function AdminVenues() {
             error={errors.country}
           />
         </div>
-        <div className={FIELD_CONATIANER_CLASSNAME}>
+        <div className={FIELD_CONTAINER_CLASSNAME}>
           <Input
             title="City"
             name="city"
@@ -172,24 +177,24 @@ export default function AdminVenues() {
             title="Venue Type"
             type="text"
             placeholder="Ex: Outdoors/Indoors ...etc."
-            name="venueType"
-            value={formData.venueType}
+            name="type"
+            value={formData.type}
             onChange={handleChange}
-            error={errors.venueType}
+            error={errors.type}
           />
         </div>
-        <div className={FIELD_CONATIANER_CLASSNAME}>
+        <div className={FIELD_CONTAINER_CLASSNAME}>
           <Input
             title="Description"
             type="text"
             placeholder={`Arkan is one of West Cairo's primary commercial and social destination. It is a pedestria...`}
             onChange={handleChange}
-            value={formData.description}
-            name="description"
-            error={errors.description}
+            value={formData.details}
+            name="details"
+            error={errors.details}
           />
         </div>
-        <div className={FIELD_CONATIANER_CLASSNAME}>
+        <div className={FIELD_CONTAINER_CLASSNAME}>
           <Input
             title="Capacity"
             type="text"
@@ -199,7 +204,7 @@ export default function AdminVenues() {
             value={formData.capacity}
             error={errors.capacity}
             onChange={(e) => {
-              const newValue = e.target.value.replace(/[^0-9]/g, ""); // keep only digits
+              const newValue = e.target.value.replace(/[^0-9]/g, "");
               setFormData({ ...formData, capacity: newValue });
             }}
           />
@@ -236,7 +241,6 @@ export default function AdminVenues() {
           <p className="text-center w-full">No Venues found</p>
         )}
 
-        {/* Render the currently edited venue first, if any */}
         {editedVenue && (
           <div className="w-full flex justify-center py-5">
             <VenueCard
@@ -245,13 +249,12 @@ export default function AdminVenues() {
               onDelete={() => deleteVenue(editedVenue.location_id)}
               onUpdate={reloadVenues}
               showAlertMessage={showAlertMessage}
-              onEditToggle={handleEditToggle} // Pass the toggle function
-              isBeingEditedByParent={true} // Indicate it's the main edited item
+              onEditToggle={handleEditToggle}
+              isBeingEditedByParent={true}
             />
           </div>
         )}
 
-        {/* Render other venues */}
         <div
           className={`w-full flex justify-start flex-wrap gap-5 py-5 ${
             editingVenueId ? "mt-10 border-t-2 border-accent pt-10" : ""
@@ -262,19 +265,19 @@ export default function AdminVenues() {
               const id = venue.location_id ?? venue.id ?? venue._id;
               return (
                 <VenueCard
-                  key={id || venue.venueName}
+                  key={id || venue.name}
                   venue={venue}
                   onDelete={() => deleteVenue(id)}
                   onUpdate={reloadVenues}
                   showAlertMessage={showAlertMessage}
-                  onEditToggle={handleEditToggle} // Pass the toggle function
-                  isBeingEditedByParent={false} // Indicate it's not the main edited item
+                  onEditToggle={handleEditToggle}
+                  isBeingEditedByParent={false}
                 />
               );
             })}
         </div>
       </main>
-      {/* Generic Message Alert Dialog */}
+
       <MessageAlertDialog
         title={alertTitle}
         message={alertMessage}
@@ -289,52 +292,40 @@ function VenueCard({
   venue,
   onDelete,
   onUpdate,
-  showAlertMessage, // New prop
-  onEditToggle, // New prop
-  isBeingEditedByParent, // New prop
+  showAlertMessage,
+  onEditToggle,
+  isBeingEditedByParent,
 }) {
   const [editMode, setEditMode] = useState(false);
-  const [editedVenueName, setEditedVenueName] = useState(
-    venue.venueName ?? venue.name ?? ""
-  );
+  const [editedName, setEditedName] = useState(venue.name ?? "");
   const [editedCountry, setEditedCountry] = useState(venue.country ?? "");
   const [editedCity, setEditedCity] = useState(venue.city ?? "");
-  const [editedVenueType, setEditedVenueType] = useState(venue.type ?? "");
-  const [editedDescription, setEditedDescription] = useState(
-    venue.details ?? ""
-  );
+  const [editedType, setEditedType] = useState(venue.type ?? "");
+  const [editedDetails, setEditedDetails] = useState(venue.details ?? "");
   const [editedCapacity, setEditedCapacity] = useState(venue.capacity ?? "");
 
   useEffect(() => {
-    // If this card is *not* the one being edited by the parent, but it's in its own local edit mode,
-    // it means another card was put into edit mode or editing was cancelled for this card.
-    // So, this card should revert to view mode.
     if (!isBeingEditedByParent && editMode) {
       setEditMode(false);
-      // Reset edited values to original
-      setEditedVenueName(venue.venueName ?? venue.name ?? "");
+      setEditedName(venue.name ?? "");
       setEditedCountry(venue.country ?? "");
       setEditedCity(venue.city ?? "");
-      setEditedVenueType(venue.type ?? "");
-      setEditedDescription(venue.details ?? "");
+      setEditedType(venue.type ?? "");
+      setEditedDetails(venue.details ?? "");
       setEditedCapacity(venue.capacity ?? "");
-    }
-    // If this card *is* the one being edited by the parent, ensure its local edit mode is on.
-    // This handles cases where the parent's editingVenueId is set to this card's ID.
-    else if (isBeingEditedByParent && !editMode) {
+    } else if (isBeingEditedByParent && !editMode) {
       setEditMode(true);
-      // Initialize with current values
-      setEditedVenueName(venue.venueName ?? venue.name ?? "");
+      setEditedName(venue.name ?? "");
       setEditedCountry(venue.country ?? "");
       setEditedCity(venue.city ?? "");
-      setEditedVenueType(venue.type ?? "");
-      setEditedDescription(venue.details ?? "");
+      setEditedType(venue.type ?? "");
+      setEditedDetails(venue.details ?? "");
       setEditedCapacity(venue.capacity ?? "");
     }
   }, [isBeingEditedByParent, editMode, venue]);
 
   const handleUpdate = async () => {
-    if (!editedVenueName || !editedCountry || !editedCity || !editedCapacity) {
+    if (!editedName || !editedCountry || !editedCity || !editedCapacity) {
       showAlertMessage(
         "Error",
         "Venue Name, Country, City, and Capacity cannot be empty."
@@ -347,19 +338,19 @@ function VenueCard({
     }
     try {
       const response = await fetch(
-        "http://localhost:8000/adminUtils/updatevenues/", // Update API endpoint
+        "http://localhost:8000/adminUtils/updatevenues/",
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            location_id: venue.location_id, // Use actual ID
-            name: editedVenueName,
+            location_id: venue.location_id,
+            name: editedName,
             country: editedCountry,
             city: editedCity,
-            type: editedVenueType,
-            details: editedDescription,
+            type: editedType,
+            details: editedDetails,
             capacity: Number(editedCapacity),
           }),
         }
@@ -368,8 +359,8 @@ function VenueCard({
       if (response.ok) {
         showAlertMessage("Success", data.message);
         setEditMode(false);
-        onEditToggle(null); // Clear editing state in parent
-        onUpdate(); // Refresh the list
+        onEditToggle(null);
+        onUpdate();
       } else {
         showAlertMessage("Error", data.error || "Failed to update venue.");
       }
@@ -381,20 +372,16 @@ function VenueCard({
 
   const handleCancelEdit = () => {
     setEditMode(false);
-    onEditToggle(null); // Clear editing state in parent
-    // Reset to original values
-    setEditedVenueName(venue.venueName ?? venue.name ?? "");
+    onEditToggle(null);
+    setEditedName(venue.name ?? "");
     setEditedCountry(venue.country ?? "");
     setEditedCity(venue.city ?? "");
-    setEditedVenueType(venue.type ?? "");
-    setEditedDescription(venue.details ?? "");
+    setEditedType(venue.type ?? "");
+    setEditedDetails(venue.details ?? "");
     setEditedCapacity(venue.capacity ?? "");
   };
 
-  const name = venue.venueName ?? venue.name ?? "Unnamed Venue";
-  const city = venue.city ?? "";
-  const country = venue.country ?? "";
-  const capacity = venue.capacity ?? "";
+  const name = venue.name ?? "Unnamed Venue";
 
   return (
     <div
@@ -408,18 +395,18 @@ function VenueCard({
             <div className="flex flex-1 gap-3">
               <Input
                 title="Venue Name"
-                name="venueName"
+                name="name"
                 type="text"
-                value={editedVenueName}
-                onChange={(e) => setEditedVenueName(e.target.value)}
+                value={editedName}
+                onChange={(e) => setEditedName(e.target.value)}
               />
 
               <Input
                 title="Venue Type"
-                name="venueType"
+                name="type"
                 type="text"
-                value={editedVenueType}
-                onChange={(e) => setEditedVenueType(e.target.value)}
+                value={editedType}
+                onChange={(e) => setEditedType(e.target.value)}
               />
               <Input
                 title="Capacity"
@@ -450,10 +437,10 @@ function VenueCard({
             </div>
             <Input
               title="Description"
-              name="description"
+              name="details"
               type="text"
-              value={editedDescription}
-              onChange={(e) => setEditedDescription(e.target.value)}
+              value={editedDetails}
+              onChange={(e) => setEditedDetails(e.target.value)}
             />
 
             <div className="flex gap-2 justify-end mt-2">
@@ -483,12 +470,12 @@ function VenueCard({
             title="Edit Venue"
             onClick={() => {
               setEditMode(true);
-              onEditToggle(venue.location_id); // Inform parent about editing
-              setEditedVenueName(venue.venueName ?? venue.name ?? "");
+              onEditToggle(venue.location_id);
+              setEditedName(venue.name ?? "");
               setEditedCountry(venue.country ?? "");
               setEditedCity(venue.city ?? "");
-              setEditedVenueType(venue.type ?? "");
-              setEditedDescription(venue.details ?? "");
+              setEditedType(venue.type ?? "");
+              setEditedDetails(venue.details ?? "");
               setEditedCapacity(venue.capacity ?? "");
             }}
             className="w-12 h-12 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex justify-center items-center hover:cursor-pointer"

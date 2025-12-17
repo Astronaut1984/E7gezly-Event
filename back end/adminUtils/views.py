@@ -1,4 +1,3 @@
-from rest_framework import generics
 from api.models import User, Performer, Venue, Report, Category, Vehicle, Event
 from django.shortcuts import render
 from django.http import JsonResponse
