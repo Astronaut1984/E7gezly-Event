@@ -36,7 +36,6 @@ import AttendeeWishlist from "./pages/dashboards/att-dashboard/AttendeeWishlist"
 import EventPage from "./components/EventPage";
 import UserView from "./pages/UserView";
 import AttendeeChat from "./pages/dashboards/att-dashboard/AttendeeChat";
-import AdminCategory from "./pages/dashboards/admin-dashboard/AdminCategory";
 import OrganizerEditEvent from "./pages/dashboards/org-dashboard/OrganizerEditEvent";
 import AttendeeTickets from "./pages/dashboards/att-dashboard/AttendeeTickets";
 
