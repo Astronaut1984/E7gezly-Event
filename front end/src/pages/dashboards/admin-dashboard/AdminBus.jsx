@@ -17,8 +17,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 // import { Organizer } from "../org-dashboard/Organizer"; // Removed unused import
-
 export default function AdminBus() {
+  const [busCount, setBusCount] = useState(0);
   const {
     items: vehicles,
     loading,
@@ -46,6 +46,10 @@ export default function AdminBus() {
 
   useEffect(() => {
     reloadVehicles();
+    fetch("http://localhost:8000/Record/busesindb/")
+      .then((res) => res.json())
+      .then((data) => setBusCount(data.count))
+      .catch((err) => console.error(err));
   }, [reloadVehicles]);
 
   const addVehicle = async () => {
@@ -104,6 +108,9 @@ export default function AdminBus() {
       <h1 className="text-3xl font-bold mt-10 flex items-center gap-2">
         <BusFront /> Vehicles
       </h1>
+      <div className="text-center mb-4 text-primary">
+        <i> Number of Buses: {busCount}</i>
+      </div>
       {/* Add Vehicle Section */}
       <div className="flex flex-col flex-wrap w-200 px-10 shadow-2xl text-[30px] font-bold py-5 rounded-xl bg-card mt-3 mb-5">
         <h1 className="text-xl font-bold mb-5 flex items-center gap-2">

@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Organizer } from "../org-dashboard/Organizer";
 
 export default function AdminOrg() {
+  const [userCount, setUserCount] = useState(0);
   const {
     items: organizers,
     loading,
@@ -29,6 +30,15 @@ export default function AdminOrg() {
     deletePayloadKey: "username",
   });
   const [search, setSearch] = useState(""); // for the search input
+  useEffect(() => {
+    fetch("http://localhost:8000/Record/organizersindb/") // call Django view
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data); // see structure
+        setUserCount(data.count); // extract the value
+      })
+      .catch((err) => console.error(err));
+  }, []);
 
   useEffect(() => {
     reloadOrganizers();
@@ -53,6 +63,10 @@ export default function AdminOrg() {
   return (
     <main className="flex justify-center items-center flex-col gap-5 w-full">
       <h1 className="text-3xl font-bold">Organizers</h1>
+      {/* Display backend data */}
+      <div className="text-center mb-4 text-primary">
+        <i> Number of Organizers: {userCount}</i>
+      </div>
       <div className="flex w-100 justify-center items-center">
         <Input
           placeholder="Search..."

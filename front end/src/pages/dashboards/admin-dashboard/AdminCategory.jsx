@@ -17,8 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button"; // Import Button component
 import MessageAlertDialog from "@/components/MessageAlertDialog"; // Import MessageAlertDialog
 // import { Organizer } from "../org-dashboard/Organizer"; // Removed unused import
-
 export default function AdminCategory() {
+  const [categoryCount, setCategoryCount] = useState(0);
   const {
     items: categories,
     loading,
@@ -46,6 +46,10 @@ export default function AdminCategory() {
 
   useEffect(() => {
     reloadCategories();
+    fetch("http://localhost:8000/Record/categoryindb/")
+      .then((res) => res.json())
+      .then((data) => setCategoryCount(data.count))
+      .catch((err) => console.error(err));
   }, [reloadCategories]);
 
   const addCategory = async () => {
@@ -97,6 +101,9 @@ export default function AdminCategory() {
       <h1 className="text-3xl font-bold mt-10 flex items-center gap-2">
         <SquareStack /> Categories
       </h1>
+      <div className="text-center mb-4 text-primary">
+        <i> Number of Categories: {categoryCount}</i>
+      </div>
       {/* Add Category Section */}
       <div className="flex w-100 justify-center items-center gap-2">
         <Input

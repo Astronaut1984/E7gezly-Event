@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import MessageAlertDialog from "@/components/MessageAlertDialog";
 
 export default function AdminVenues() {
+  const [venueCount, setVenueCount] = useState(0);
   const FIELD_CONTAINER_CLASSNAME =
     "text-[20px] flex justify-between gap-20 items-center";
   let [errors, setErrors] = useState({});
@@ -116,6 +117,10 @@ export default function AdminVenues() {
 
   useEffect(() => {
     reloadVenues();
+    fetch("http://localhost:8000/Record/venuesindb/")
+      .then((res) => res.json())
+      .then((data) => setVenueCount(data.count))
+      .catch((err) => console.error(err));
   }, [reloadVenues]);
 
   const handleEditToggle = useCallback((id) => {
@@ -141,6 +146,9 @@ export default function AdminVenues() {
   return (
     <div className="flex flex-col justify-center items-center w-full px-32 text-[30px] font-bold">
       <h1>Venues</h1>
+      <div className="text-center mb-4 text-primary">
+        <i> Number of Venues: {venueCount}</i>
+      </div>
       <div className="flex flex-col flex-wrap w-full px-10 shadow-2xl py-5 rounded-xl bg-card mt-3">
         <h1 className="text-xl">Add a Venue</h1>
         <div className={FIELD_CONTAINER_CLASSNAME}>
