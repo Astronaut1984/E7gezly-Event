@@ -80,7 +80,8 @@ export default function AdminVenues() {
     };
 
     try {
-      const res = await fetch("http://localhost:8000/adminUtils/addvenues/", { // Changed endpoint to adminUtils/addvenues
+      const res = await fetch("http://localhost:8000/adminUtils/addvenues/", {
+        // Changed endpoint to adminUtils/addvenues
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -115,7 +116,6 @@ export default function AdminVenues() {
   const handleEditToggle = useCallback((id) => {
     setEditingVenueId(id);
   }, []);
-
 
   const filteredVenues =
     !loading &&
@@ -252,7 +252,11 @@ export default function AdminVenues() {
         )}
 
         {/* Render other venues */}
-        <div className={`w-full flex justify-start flex-wrap gap-5 py-5 ${editingVenueId ? 'mt-10 border-t-2 border-accent pt-10' : ''}`}>
+        <div
+          className={`w-full flex justify-start flex-wrap gap-5 py-5 ${
+            editingVenueId ? "mt-10 border-t-2 border-accent pt-10" : ""
+          }`}
+        >
           {!loading &&
             otherVenues.map((venue) => {
               const id = venue.location_id ?? venue.id ?? venue._id;
@@ -290,11 +294,15 @@ function VenueCard({
   isBeingEditedByParent, // New prop
 }) {
   const [editMode, setEditMode] = useState(false);
-  const [editedVenueName, setEditedVenueName] = useState(venue.venueName ?? venue.name ?? "");
+  const [editedVenueName, setEditedVenueName] = useState(
+    venue.venueName ?? venue.name ?? ""
+  );
   const [editedCountry, setEditedCountry] = useState(venue.country ?? "");
   const [editedCity, setEditedCity] = useState(venue.city ?? "");
   const [editedVenueType, setEditedVenueType] = useState(venue.type ?? "");
-  const [editedDescription, setEditedDescription] = useState(venue.details ?? "");
+  const [editedDescription, setEditedDescription] = useState(
+    venue.details ?? ""
+  );
   const [editedCapacity, setEditedCapacity] = useState(venue.capacity ?? "");
 
   useEffect(() => {
@@ -325,10 +333,12 @@ function VenueCard({
     }
   }, [isBeingEditedByParent, editMode, venue]);
 
-
   const handleUpdate = async () => {
     if (!editedVenueName || !editedCountry || !editedCity || !editedCapacity) {
-      showAlertMessage("Error", "Venue Name, Country, City, and Capacity cannot be empty.");
+      showAlertMessage(
+        "Error",
+        "Venue Name, Country, City, and Capacity cannot be empty."
+      );
       return;
     }
     if (isNaN(editedCapacity) || Number(editedCapacity) <= 0) {
@@ -387,38 +397,57 @@ function VenueCard({
   const capacity = venue.capacity ?? "";
 
   return (
-    <div className={`relative max-w-max px-10 py-5 text-[20px] bg-card rounded-xl shadow mx-5 ${isBeingEditedByParent ? 'w-full' : ''}`}>
+    <div
+      className={`relative max-w-max px-10 py-5 text-[20px] bg-card rounded-xl shadow mx-5 ${
+        isBeingEditedByParent ? "w-full" : ""
+      }`}
+    >
       <div className="flex-grow flex flex-col items-center justify-center">
         {editMode ? (
           <div className="flex flex-col gap-2 w-full">
-            <Input
-              title="Venue Name"
-              name="venueName"
-              type="text"
-              value={editedVenueName}
-              onChange={(e) => setEditedVenueName(e.target.value)}
-            />
-            <Input
-              title="Country"
-              name="country"
-              type="text"
-              value={editedCountry}
-              onChange={(e) => setEditedCountry(e.target.value)}
-            />
-            <Input
-              title="City"
-              name="city"
-              type="text"
-              value={editedCity}
-              onChange={(e) => setEditedCity(e.target.value)}
-            />
-            <Input
-              title="Venue Type"
-              name="venueType"
-              type="text"
-              value={editedVenueType}
-              onChange={(e) => setEditedVenueType(e.target.value)}
-            />
+            <div className="flex flex-1 gap-3">
+              <Input
+                title="Venue Name"
+                name="venueName"
+                type="text"
+                value={editedVenueName}
+                onChange={(e) => setEditedVenueName(e.target.value)}
+              />
+
+              <Input
+                title="Venue Type"
+                name="venueType"
+                type="text"
+                value={editedVenueType}
+                onChange={(e) => setEditedVenueType(e.target.value)}
+              />
+              <Input
+                title="Capacity"
+                name="capacity"
+                type="text"
+                value={editedCapacity}
+                onChange={(e) => {
+                  const newValue = e.target.value.replace(/[^0-9]/g, "");
+                  setEditedCapacity(newValue);
+                }}
+              />
+            </div>
+            <div className="flex flex-1 gap-3">
+              <Input
+                title="Country"
+                name="country"
+                type="text"
+                value={editedCountry}
+                onChange={(e) => setEditedCountry(e.target.value)}
+              />
+              <Input
+                title="City"
+                name="city"
+                type="text"
+                value={editedCity}
+                onChange={(e) => setEditedCity(e.target.value)}
+              />
+            </div>
             <Input
               title="Description"
               name="description"
@@ -426,18 +455,12 @@ function VenueCard({
               value={editedDescription}
               onChange={(e) => setEditedDescription(e.target.value)}
             />
-            <Input
-              title="Capacity"
-              name="capacity"
-              type="text"
-              value={editedCapacity}
-              onChange={(e) => {
-                const newValue = e.target.value.replace(/[^0-9]/g, "");
-                setEditedCapacity(newValue);
-              }}
-            />
+
             <div className="flex gap-2 justify-end mt-2">
-              <Button onClick={handleUpdate} className="flex items-center gap-2">
+              <Button
+                onClick={handleUpdate}
+                className="flex items-center gap-2"
+              >
                 <Check className="h-4 w-4" /> Save
               </Button>
               <Button variant="outline" onClick={handleCancelEdit}>
