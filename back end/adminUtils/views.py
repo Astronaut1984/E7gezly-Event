@@ -1,12 +1,13 @@
+from rest_framework import generics
+from api.models import User, Performer, Venue, Report, Category, Vehicle, Event
 from django.shortcuts import render
 from django.http import JsonResponse
-from django.db import connection
-from api.models import User, Performer, Venue, Report
 from django.db.models import Count
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Count, Q
 from django.http import JsonResponse
+import hashlib
 
 # Create your views here.
 @csrf_exempt
@@ -38,6 +39,38 @@ def deleteOrganizer(request):
         return JsonResponse({"error": "Organizer not found"}, status=404)
 
     return JsonResponse({"message": f"Organizer '{username}' deleted"})
+
+# Create your views here.
+@csrf_exempt
+def getEvents(request):
+    events = list(
+        Event.objects.select_related("owner").all().values(
+            "event_id", 
+            "name", 
+            "owner__first_name", 
+            "owner__last_name"
+        )
+    )
+    for event in events:
+        event["owner_name"] = f"{event.pop('owner__first_name')} {event.pop('owner__last_name')}"
+
+    return JsonResponse({"events": events})
+
+
+@csrf_exempt
+def deleteEvents(request):
+    if request.method != "DELETE":
+        return JsonResponse({"error": "DELETE only"}, status=405)
+    event_id = json.loads(request.body).get("event_id")
+    if not event_id:
+        return JsonResponse({"error": "Event ID required"}, status=400)
+
+    deleted, _ = Event.objects.filter(event_id=event_id).delete()
+    if deleted == 0:
+        return JsonResponse({"error": "Event not found"}, status=404)
+
+    return JsonResponse({"message": f"Event '{event_id}' deleted"})
+
 
 @csrf_exempt
 def getPerformers(request):
@@ -72,12 +105,131 @@ def deletePerformer(request):
 
     return JsonResponse({"message": f"Performer '{performer_id}' deleted"})
 
+@csrf_exempt
+def updatePerformer(request):
+    if request.method != "PUT":
+        return JsonResponse({"error": "PUT only"}, status=405)
+    data = json.loads(request.body)
+    performer_id = data.get("performer_id")
+    name = data.get("name")
+    bio = data.get("bio")
+
+    if not performer_id:
+        return JsonResponse({"error": "Performer ID required"}, status=400)
+    if not name:
+        return JsonResponse({"error": "New performer name required"}, status=400)
+
+    try:
+        performer = Performer.objects.get(performer_id=performer_id)
+        performer.name = name
+        performer.bio = bio
+        performer.save()
+        return JsonResponse({
+            "message": f"Performer '{performer_id}' updated to '{name}'",
+            "performer_id": performer.performer_id,
+            "name": performer.name,
+            "bio": performer.bio
+        })
+    except Performer.DoesNotExist:
+        return JsonResponse({"error": "Performer not found"}, status=404)
+
 def getVenues(request):
     venues = list(
         Venue.objects.all().values("location_id", "name", "details", "capacity", "city", "country", "type")
     )
     return JsonResponse({"venues": venues})
 
+@csrf_exempt
+def addVenues(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST only"}, status=405)
+    data = json.loads(request.body)
+    name = data.get("name")
+    country = data.get("country")
+    city = data.get("city")
+    details = data.get("details")
+    type = data.get("type")
+    capacity = data.get("capacity")
+
+    if not name:
+        return JsonResponse({"error": "Venue name required"}, status=400)
+    
+    try:
+        capacity = int(capacity)
+        if capacity <= 0:
+            return JsonResponse({"error": "Capacity should be greater than 0"}, status=400)
+    except (ValueError, TypeError):
+        return JsonResponse({"error": "Capacity should be a valid number"}, status=400)
+    
+    if Venue.objects.filter(name=name).exists():
+        return JsonResponse({"error": "Venue with this name already exists"}, status=400)
+
+    venue = Venue.objects.create(
+        name=name,
+        country=country,
+        city=city,
+        details=details,
+        type=type,
+        capacity=capacity
+    )
+    return JsonResponse({
+        "message": "Venue added",
+        "location_id": venue.location_id,
+        "name": venue.name,
+        "country": venue.country,
+        "city": venue.city,
+        "details": venue.details,
+        "type": venue.type,
+        "capacity": venue.capacity
+    })
+
+
+@csrf_exempt
+def updateVenues(request):
+    if request.method != "PUT":
+        return JsonResponse({"error": "PUT only"}, status=405)
+    data = json.loads(request.body)
+    location_id = data.get("location_id")
+    name = data.get("name")
+    country = data.get("country")
+    city = data.get("city")
+    details = data.get("details")
+    type = data.get("type")
+    capacity = data.get("capacity")
+
+    if not location_id:
+        return JsonResponse({"error": "Venue ID required"}, status=400)
+    try:
+        capacity = int(capacity)
+        if capacity <= 0:
+            return JsonResponse({"error": "Capacity should be greater than 0"}, status=400)
+    except (ValueError, TypeError):
+        return JsonResponse({"error": "Capacity should be a valid number"}, status=400)
+    if not name:
+        return JsonResponse({"error": "New venue name required"}, status=400)
+
+    try:
+        venue = Venue.objects.get(location_id=location_id)
+        venue.name = name
+        venue.country = country
+        venue.city = city
+        venue.details = details
+        venue.type = type
+        venue.capacity = capacity
+        venue.save()
+        return JsonResponse({
+            "message": f"Venue '{location_id}' updated",
+            "location_id": venue.location_id,
+            "name": venue.name,
+            "country": venue.country,
+            "city": venue.city,
+            "details": venue.details,
+            "type": venue.type,
+            "capacity": venue.capacity
+        })
+    except Venue.DoesNotExist:
+        return JsonResponse({"error": "Venue not found"}, status=404)
+    
 @csrf_exempt
 def deleteVenue(request):
     if request.method != "DELETE":
@@ -123,22 +275,19 @@ def resolveReport(request):
         return JsonResponse({"error": "Report not found"}, status=404)
     
     return JsonResponse({"message": f"Report '{report_id}' resolved"})
-@csrf_exempt
-def addCategory(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST only"}, status=405)
-    data = json.loads(request.body)
-    name = data.get("name")
-    if not name:
-        return JsonResponse({"error": "Name required"}, status=400)
-    category = Category.objects.create(category_name=name)
-    return JsonResponse({"message": "Category added", "category_id": category.category_id})
 
 @csrf_exempt
-def deleteCategory(request):
+def getCategories(request):
+    categories = list(
+        Category.objects.all().values("category_id", "category_name")
+    )
+    return JsonResponse({"categories": categories})
+
+@csrf_exempt
+def deleteCategories(request):
     if request.method != "DELETE":
         return JsonResponse({"error": "DELETE only"}, status=405)
-    category_id = json.loads(request.body).get("id")
+    category_id = json.loads(request.body).get("category_id")
     if not category_id:
         return JsonResponse({"error": "Category ID required"}, status=400)
 
@@ -149,17 +298,147 @@ def deleteCategory(request):
     return JsonResponse({"message": f"Category '{category_id}' deleted"})
 
 @csrf_exempt
-def updateCategory(request):
+def addCategories(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST only"}, status=405)
+    data = json.loads(request.body)
+    category_name = data.get("category_name")
+    if not category_name:
+        return JsonResponse({"error": "Category name required"}, status=400)
+    
+    # Check if category with the same name already exists
+    if Category.objects.filter(category_name=category_name).exists():
+        return JsonResponse({"error": "Category with this name already exists"}, status=400)
+
+    category = Category.objects.create(category_name=category_name)
+    return JsonResponse({"message": "Category added", "category_id": category.category_id, "category_name": category.category_name})
+
+
+@csrf_exempt
+def updateCategories(request):
+    if request.method != "PUT": # Changed to PUT for updating
+        return JsonResponse({"error": "PUT only"}, status=405)
+    data = json.loads(request.body)
+    category_id = data.get("category_id")
+    category_name = data.get("category_name")
+
+    if not category_id:
+        return JsonResponse({"error": "Category ID required"}, status=400)
+    if not category_name:
+        return JsonResponse({"error": "New category name required"}, status=400)
+
+    try:
+        category = Category.objects.get(category_id=category_id)
+        category.category_name = category_name
+        category.save()
+        return JsonResponse({"message": f"Category '{category_id}' updated to '{category_name}'"})
+    except Category.DoesNotExist:
+        return JsonResponse({"error": "Category not found"}, status=404)
+    
+
+@csrf_exempt
+def getVehicle(request):
+    Vehicles = list(
+        Vehicle.objects.all().values("transportation_id", "name", "capacity")
+    )
+    return JsonResponse({"Vehicles": Vehicles})
+
+@csrf_exempt
+def deleteVehicle(request):
+    if request.method != "DELETE":
+        return JsonResponse({"error": "DELETE only"}, status=405)
+    transportation_id = json.loads(request.body).get("transportation_id")
+    if not transportation_id:
+        return JsonResponse({"error": "Vehicle ID required"}, status=400)
+
+    deleted, _ = Vehicle.objects.filter(transportation_id=transportation_id).delete()
+    if deleted == 0:
+        return JsonResponse({"error": "Vehicle not found"}, status=404)
+
+    return JsonResponse({"message": f"Vehicle '{transportation_id}' deleted"})
+
+@csrf_exempt
+def addVehicle(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST only"}, status=405)
+    data = json.loads(request.body)
+    name = data.get("name")
+    capacity = data.get("capacity")
+    if not name:
+        return JsonResponse({"error": "Vehicle name required"}, status=400)
+    try:
+        capacity = int(capacity)
+        if capacity <= 0:
+            return JsonResponse({"error": "Capacity should be greater than 0"}, status=400)
+    except (ValueError, TypeError):
+        return JsonResponse({"error": "Capacity should be a valid number"}, status=400)
+    # Check if vehicle with the same name already exists
+    if Vehicle.objects.filter(name=name).exists():
+        return JsonResponse({"error": "Vehicle with this name already exists"}, status=400)
+
+    vehicle = Vehicle.objects.create(name=name, capacity=capacity)
+    return JsonResponse({"message": "Vehicle added", "transportation_id": vehicle.transportation_id, "name": vehicle.name, "capacity": vehicle.capacity})
+
+
+@csrf_exempt
+def updateVehicle(request):
     if request.method != "PUT":
         return JsonResponse({"error": "PUT only"}, status=405)
     data = json.loads(request.body)
-    category_id = data.get("id")
+    transportation_id = data.get("transportation_id")
     name = data.get("name")
-    if not category_id or not name:
-        return JsonResponse({"error": "Category ID and name required"}, status=400)
+    capacity = data.get("capacity")
 
-    updated = Category.objects.filter(category_id=category_id).update(category_name=name)
-    if updated == 0:
-        return JsonResponse({"error": "Category not found"}, status=404)
+    if not transportation_id:
+        return JsonResponse({"error": "Vehicle ID required"}, status=400)
+    if not name:
+        return JsonResponse({"error": "New vehicle name required"}, status=400)
+    try:
+        capacity = int(capacity)
+        if capacity <= 0:
+            return JsonResponse({"error": "Capacity should be greater than 0"}, status=400)
+    except (ValueError, TypeError):
+        return JsonResponse({"error": "Capacity should be a valid number"}, status=400)
+    try:
+        vehicle = Vehicle.objects.get(transportation_id=transportation_id)
+        vehicle.name = name
+        vehicle.capacity = capacity # Update capacity
+        vehicle.save()
+        return JsonResponse({"message": f"Vehicle '{transportation_id}' updated to '{name}' with capacity '{capacity}'"})
+    except Vehicle.DoesNotExist:
+        return JsonResponse({"error": "Vehicle not found"}, status=404)
+    
 
-    return JsonResponse({"message": f"Category '{category_id}' updated"})
+@csrf_exempt
+def createAdmin(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            required_fields = ["username", "password", "firstName", "lastName", "email", "country", "city", "phoneNumber"]
+            if not all(data.get(field) for field in required_fields):
+                return JsonResponse({"error": "All fields are required"}, status=400)
+
+            # WARNING: Using unsalted SHA256 for password hashing is INSECURE.
+            # This is done as per user request, but it is strongly recommended
+            # to migrate to a salted, adaptive hashing algorithm like bcrypt,
+            # scrypt, or PBKDF2 (which Django's make_password uses by default).
+            # This implementation is vulnerable to rainbow table attacks.
+            hashed_password = hashlib.sha256(data.get("password").encode()).hexdigest()
+            
+            user = User.objects.create(
+                username=data.get("username"),
+                password=hashed_password,
+                first_name=data.get("firstName"),
+                last_name=data.get("lastName"),
+                email=data.get("email"),
+                status="Administrator",
+                country=data.get("country"),
+                city=data.get("city"),
+                phone=data.get("phoneNumber"),
+                wallet=0
+            )
+            return JsonResponse({"message": "Admin created successfully"})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    else:
+        return JsonResponse({"error": "Only POST method allowed"}, status=405)

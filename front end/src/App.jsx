@@ -14,6 +14,9 @@ import ProtectedRoute from "./components/ProtectedAdminRoute";
 import AdminVenues from "./pages/dashboards/admin-dashboard/adminVenues";
 import AdminReportCases from "./pages/dashboards/admin-dashboard/AdminReportCases";
 import AdminOrg from "./pages/dashboards/admin-dashboard/adminOrg";
+import AdminCategory from "./pages/dashboards/admin-dashboard/AdminCategory";
+import AdminBus from "./pages/dashboards/admin-dashboard/AdminBus";
+import AdminCreate from "./pages/dashboards/admin-dashboard/AdminCreate";
 import { DashboardSideBar } from "./components/DashboardComponents/DashboardSideBar";
 import {
   Organizer,
@@ -24,8 +27,8 @@ import OrganizerMyEvents from "./pages/dashboards/org-dashboard/OrganizerMyEvent
 import OrganizerFollowers from "./pages/dashboards/org-dashboard/OrganizerFollowers";
 import OrganizerChat from "./pages/dashboards/org-dashboard/OrganizerChat";
 import AdminPerformers from "./pages/dashboards/admin-dashboard/AdminPerformers";
-import { attItems} from "./pages/dashboards/att-dashboard/Attendee";
-import  Attendee from "./pages/dashboards/att-dashboard/Attendee";
+import { attItems } from "./pages/dashboards/att-dashboard/Attendee";
+import Attendee from "./pages/dashboards/att-dashboard/Attendee";
 import AttendeeEvents from "./pages/dashboards/att-dashboard/AttendeeEvents";
 import AttendeeFriends from "./pages/dashboards/att-dashboard/AttendeeFriends";
 import AttendeeFollowedOrg from "./pages/dashboards/att-dashboard/AttendeeFollowedOrg";
@@ -55,6 +58,9 @@ function App() {
         <Route path="/admin/org" element={<AdminOrg />} />
         <Route path="/admin/reportcase" element={<AdminReportCases />} />
         <Route path="/admin/performers" element={<AdminPerformers />} />
+        <Route path="/admin/category" element={<AdminCategory />} />
+        <Route path="/admin/bus" element={<AdminBus />} />
+        <Route path="/admin/create" element={<AdminCreate />} />
       </Route>
       <Route
         path="/org"
@@ -70,16 +76,23 @@ function App() {
         <Route path="/org/my-events" element={<OrganizerMyEvents />} />
         <Route path="/org/chat" element={<OrganizerChat />} />
       </Route>
-      <Route path="/att" element={
-        <ProtectedRoute role="Attendee">
-          <Layout sidebar={<DashboardSideBar items={attItems}/>} />
-        </ProtectedRoute>
-      }>
-        <Route path="/att" index element={<Attendee />}/>
-        <Route path="/att/my-events" index element={<AttendeeEvents />}/>
-        <Route path="/att/friends" index element={<AttendeeFriends />}/>
-        <Route path="/att/followed-org" index element={<AttendeeFollowedOrg />}/>
-        <Route path="/att/wishlist" index element={<AttendeeWishlist />}/>
+      <Route
+        path="/att"
+        element={
+          <ProtectedRoute role="Attendee">
+            <Layout sidebar={<DashboardSideBar items={attItems} />} />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/att" index element={<Attendee />} />
+        <Route path="/att/my-events" index element={<AttendeeEvents />} />
+        <Route path="/att/friends" index element={<AttendeeFriends />} />
+        <Route
+          path="/att/followed-org"
+          index
+          element={<AttendeeFollowedOrg />}
+        />
+        <Route path="/att/wishlist" index element={<AttendeeWishlist />} />
       </Route>
     </Routes>
   );

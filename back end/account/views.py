@@ -34,6 +34,33 @@ def signup(request):
             return JsonResponse({"error": str(e)}, status=500)
     else:
         return JsonResponse({"error": "Only POST method allowed"}, status=405)
+    
+@csrf_exempt
+def updatePassword(request):
+    if request.method == "PUT":
+        try:
+            data = json.loads(request.body)
+            username = request.session.get("username")
+            if not username:
+                return JsonResponse({"error": "Not authenticated"}, status=401)
+            user = User.objects.get(username=username)
+            old_password = data.get("old_password")
+            new_password = data.get("new_password")
+            if not old_password or not new_password:
+                return JsonResponse({"error": "Old password and new password are required"}, status=400)
+            hashed_old_password = hashlib.sha256(old_password.encode()).hexdigest()
+            if hashed_old_password != user.password:
+                return JsonResponse({"error": "Incorrect old password"}, status=400)
+            hashed_new_password = hashlib.sha256(new_password.encode()).hexdigest()
+            user.password = hashed_new_password
+            user.save(update_fields=["password"])
+            return JsonResponse({"message": "Password updated successfully"})
+        except User.DoesNotExist:
+            return JsonResponse({"error": "User not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    else:
+        return JsonResponse({"error": "Only PUT method allowed"}, status=405)
 
 @csrf_exempt
 def checkEmail(request):

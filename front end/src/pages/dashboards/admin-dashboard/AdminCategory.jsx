@@ -1,4 +1,4 @@
-import { Ban, Trash } from "lucide-react";
+import { Ban, Trash, Pencil, Plus, SquareStack } from "lucide-react"; // Import Pencil, Plus and SquareStack icon
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,32 +14,74 @@ import { useEffect, useState } from "react";
 import useAdminResource from "@/hooks/useAdminResource";
 import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
-import { Organizer } from "../org-dashboard/Organizer";
+import { Button } from "@/components/ui/button"; // Import Button component
+import MessageAlertDialog from "@/components/MessageAlertDialog"; // Import MessageAlertDialog
+// import { Organizer } from "../org-dashboard/Organizer"; // Removed unused import
 
 export default function AdminCategory() {
   const {
-    items: organizers,
+    items: categories,
     loading,
-    fetchItems: reloadOrganizers,
-    remove: deleteOrg,
+    fetchItems: reloadCategories,
+    remove: deleteCategory,
   } = useAdminResource({
-    getUrl: "http://localhost:8000/adminUtils/getorganizers/",
-    deleteUrl: "http://localhost:8000/adminUtils/deleteorganizer/",
-    listKey: "organizers",
-    deletePayloadKey: "username",
+    getUrl: "http://localhost:8000/adminUtils/getcategories/",
+    deleteUrl: "http://localhost:8000/adminUtils/deletecategories/",
+    listKey: "categories",
+    deletePayloadKey: "category_id",
   });
   const [search, setSearch] = useState(""); // for the search input
+  const [newCategoryName, setNewCategoryName] = useState(""); // for new category input
+
+  // State for generic message alert dialog
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+
+  const showAlertMessage = (title, message) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setShowAlert(true);
+  };
 
   useEffect(() => {
-    reloadOrganizers();
-  }, [reloadOrganizers]);
+    reloadCategories();
+  }, [reloadCategories]);
 
-  const filteredOrganizers =
+  const addCategory = async () => {
+    if (!newCategoryName) {
+      showAlertMessage("Error", "Category name cannot be empty.");
+      return;
+    }
+    try {
+      const response = await fetch(
+        "http://localhost:8000/adminUtils/addcategories/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ category_name: newCategoryName }),
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        showAlertMessage("Success", data.message);
+        setNewCategoryName(""); // Clear input
+        reloadCategories(); // Refresh the list
+      } else {
+        showAlertMessage("Error", data.error || "Failed to add category.");
+      }
+    } catch (error) {
+      console.error("Error adding category:", error);
+      showAlertMessage("Error", "Error adding category.");
+    }
+  };
+
+  const filteredCategories =
     !loading &&
-    organizers.filter((o) =>
-      `${o.username} ${o.first_name} ${o.last_name}`
-        .toLowerCase()
-        .includes(search.toLowerCase())
+    categories.filter((category) =>
+      `${category.category_name}`.toLowerCase().includes(search.toLowerCase())
     );
 
   if (loading) {
@@ -52,55 +94,153 @@ export default function AdminCategory() {
 
   return (
     <main className="flex justify-center items-center flex-col gap-5 w-full">
-      <h1 className="text-3xl font-bold">Organizers</h1>
-      <div className="flex w-100 justify-center items-center">
+      <h1 className="text-3xl font-bold mt-10 flex items-center gap-2">
+        <SquareStack /> Categories
+      </h1>
+      {/* Add Category Section */}
+      <div className="flex w-100 justify-center items-center gap-2">
+        <Input
+          placeholder="New Category Name"
+          value={newCategoryName}
+          onChange={(e) => setNewCategoryName(e.target.value)}
+        />
+        <Button onClick={addCategory} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" /> Add Category
+        </Button>
+      </div>
+      {/* Search Section */}
+      <div className="flex w-100 justify-center items-center mt-10">
         <Input
           placeholder="Search..."
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
       <div className="w-full flex justify-start flex-wrap gap-5 py-5">
-        {filteredOrganizers.length === 0 ? (
-          <p className="text-center w-full">No organizers found</p>
+        {filteredCategories.length === 0 ? (
+          <p className="text-center w-full">No categories found</p>
         ) : (
-          filteredOrganizers.map((org) => {
+          filteredCategories.map((category) => {
             return (
-              <OrgCard
-                orgName={`${org["first_name"]} ${org["last_name"]}`}
-                key={org["username"]}
-                reportCount={org["report_count"]}
-                username={org["username"]}
-                onDelete={() => deleteOrg(org["username"])}
+              <CategoryCard
+                categoryName={category["category_name"]}
+                key={category["category_id"]}
+                categoryId={category["category_id"]}
+                onDelete={() => deleteCategory(category["category_id"])}
+                reloadCategories={reloadCategories} // Pass reloadCategories to CategoryCard
+                showAlertMessage={showAlertMessage} // Pass showAlertMessage to CategoryCard
               />
             );
           })
         )}
       </div>
+      {/* Generic Message Alert Dialog */}
+      <MessageAlertDialog
+        title={alertTitle}
+        message={alertMessage}
+        open={showAlert}
+        onClose={() => setShowAlert(false)}
+      />
     </main>
   );
 }
 
-function OrgCard({ orgName, reportCount, username, onDelete }) {
+function CategoryCard({
+  categoryName,
+  categoryId,
+  onDelete,
+  reloadCategories,
+  showAlertMessage,
+}) {
+  const [editMode, setEditMode] = useState(false);
+  const [editedCategoryName, setEditedCategoryName] = useState(categoryName);
+
+  const handleUpdate = async () => {
+    if (!editedCategoryName) {
+      showAlertMessage("Error", "Category name cannot be empty.");
+      return;
+    }
+    try {
+      const response = await fetch(
+        "http://localhost:8000/adminUtils/updatecategories/",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            category_id: categoryId,
+            category_name: editedCategoryName,
+          }),
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        showAlertMessage("Success", data.message);
+        setEditMode(false);
+        reloadCategories(); // Refresh the list
+      } else {
+        showAlertMessage("Error", data.error || "Failed to update category.");
+      }
+    } catch (error) {
+      console.error("Error updating category:", error);
+      showAlertMessage("Error", "Error updating category.");
+    }
+  };
+
   return (
     <>
-      <div className="relative max-w-max pl-3 pr-8 py-5 bg-card rounded-xl shadow mx-5">
-        <p>Organizer Name: {orgName}</p>
-        <p>Report Cases: {reportCount}</p>
-        <Alert orgName={orgName} username={username} onDelete={onDelete}>
-          <div
-            title="delete from database"
-            className="absolute bottom-0 right-0 -mb-4 -mr-6
-           w-12 h-12 rounded-full destructive-on-hover text-destructive-foreground flex justify-center items-center hover:cursor-pointer"
+      <div className="relative w-128 h-24 p-5 bg-card rounded-xl shadow mx-5 flex flex-col justify-between">
+        <div className="flex-grow flex flex-col items-center justify-center">
+          {" "}
+          {/* New wrapper for centering */}
+          {editMode ? (
+            <div className="flex items-center gap-2">
+              <Input
+                value={editedCategoryName}
+                onChange={(e) => setEditedCategoryName(e.target.value)}
+              />
+              <Button onClick={handleUpdate}>Save</Button>
+              <Button variant="outline" onClick={() => setEditMode(false)}>
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <p className="text-lg font-bold">{categoryName}</p>
+          )}
+        </div>
+        <div
+          className="absolute bottom-0 right-0 -mb-4 -mr-6
+           flex justify-end items-center gap-2" // Combined positioning and flex for buttons
+        >
+          <Button
+            title="Edit Category"
+            onClick={() => {
+              setEditMode(true);
+              setEditedCategoryName(categoryName); // Initialize with current category name
+            }}
+            className="w-12 h-12 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex justify-center items-center hover:cursor-pointer"
           >
-            <Trash />
-          </div>
-        </Alert>
+            <Pencil />
+          </Button>
+          <Alert
+            categoryName={categoryName}
+            categoryId={categoryId}
+            onDelete={onDelete}
+          >
+            <Button
+              title="Delete from database"
+              className="w-12 h-12 rounded-full bg-red-500 hover:bg-red-600 text-white flex justify-center items-center hover:cursor-pointer"
+            >
+              <Trash />
+            </Button>
+          </Alert>
+        </div>
       </div>
     </>
   );
 }
 
-function Alert({ children, orgName, username, onDelete }) {
+function Alert({ children, categoryName, categoryId, onDelete }) {
   async function handleDelete() {
     try {
       if (onDelete) await onDelete();
@@ -117,7 +257,7 @@ function Alert({ children, orgName, username, onDelete }) {
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete "
-            {orgName}" and remove them from the database
+            {categoryName}" and remove it from the database
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -310,7 +310,7 @@ export default function EditInfoForm() {
   }
 
   return (
-    <div className="flex flex-col w-250 flex-wrap px-32 shadow-2xl py-5 rounded-xl bg-card mt-3">
+    <div className="flex flex-col w-250 flex-wrap px-32 shadow-2xl py-5 rounded-xl bg-card mt-3 justify-center justifiy-between">
       <h1 className="text-xl mb-4">Change Account Info</h1>
 
       {/* Success Message */}
@@ -438,10 +438,7 @@ export default function EditInfoForm() {
           >
             {isSubmitting ? (
               <div className="flex items-center">
-                <svg
-                  className="animate-spin h-5 w-5 mr-2"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
                   <circle
                     className="opacity-25"
                     cx="12"

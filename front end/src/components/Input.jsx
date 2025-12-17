@@ -29,13 +29,13 @@ export default function Input({
       </span>
       <input
         className={`${
-          error && "placeholder-destructive"
-        } peer text-[16px] text-card-foreground leading-[1.2] block w-full h-[45px] bg-transparent px-[7px]  border-0 outline-none`}
+          error ? "border-destructive border-b-2" : "border-b-2 border-[#d9d9d9] peer-focus:border-primary"
+        } peer text-[16px] text-card-foreground leading-[1.2] block w-full h-[45px] bg-transparent px-[7px] outline-none transition-colors duration-300`}
         type={showPassword ? "text" : type}
-        placeholder={error ? error.message : placeholder}
+        placeholder={placeholder}
         {...props}
       />
-      <span className="absolute block w-full h-full top-0 left-0 pointer-events-none border-b-2 border-[#d9d9d9] peer-focus:border-primary transition-colors duration-300"></span>
+      {error && <p className="text-destructive text-sm mt-1">{error.message}</p>}
       {type == "password" && (
         <i
           onClick={toggleShowPassword}

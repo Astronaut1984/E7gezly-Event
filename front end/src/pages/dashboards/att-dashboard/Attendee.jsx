@@ -3,7 +3,7 @@ import { Home, Ticket, UsersRound, UserRound, Star } from "lucide-react";
 
 export default function Attendee() {
   return (
-    <main className="w-full flex justify-center">
+    <main className="w-full flex flex-col items-center justify-center">
       <EditInfoForm />
     </main>
   );

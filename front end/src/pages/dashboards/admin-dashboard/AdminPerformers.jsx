@@ -1,6 +1,6 @@
 import Input from "@/components/Input";
 import { validateAddPerformer } from "@/pages/sign up/validations";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react"; // Added useCallback
 import useAdminResource from "@/hooks/useAdminResource";
 import { Spinner } from "@/components/ui/spinner";
 import { Input as Search } from "@/components/ui/input";
@@ -15,7 +15,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Trash } from "lucide-react";
+import { Trash, Pencil, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import MessageAlertDialog from "@/components/MessageAlertDialog";
 
 export default function AdminPerformers() {
   const FIELD_CONATIANER_CLASSNAME =
@@ -33,12 +35,24 @@ export default function AdminPerformers() {
     listKey: "performers",
     deletePayloadKey: "id",
   });
-  const [search, setSearch] = useState(""); // for the search input
+  const [search, setSearch] = useState("");
+  const [editingPerformerId, setEditingPerformerId] = useState(null); // New state for tracking editing performer
 
   const [formData, setFormData] = useState({
     name: "",
     bio: "",
   });
+
+  // State for generic message alert dialog
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+
+  const showAlertMessage = (title, message) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setShowAlert(true);
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -67,13 +81,13 @@ export default function AdminPerformers() {
 
       if (!res.ok) throw new Error("Failed to add performer");
 
-      alert("Performer added successfully!");
+      showAlertMessage("Success", "Performer added successfully!");
       setErrors({});
-      setFormData({ name: "", bio: "", id: "" });
+      setFormData({ name: "", bio: "" });
       await reloadPerformers();
     } catch (err) {
       console.error(err);
-      alert("Error adding performer");
+      showAlertMessage("Error", "Error adding performer");
     }
   };
 
@@ -81,11 +95,23 @@ export default function AdminPerformers() {
     reloadPerformers();
   }, [reloadPerformers]);
 
+  const handleEditToggle = useCallback((id) => {
+    setEditingPerformerId(id);
+  }, []);
+
   const filteredPerformers =
     !loading &&
-    performers.filter((o) =>
-      `${o.name}`.toLowerCase().includes(search.toLowerCase())
+    performers.filter((per) =>
+      `${per.name} ${per.bio}`.toLowerCase().includes(search.toLowerCase())
     );
+
+  const editedPerformer = editingPerformerId
+    ? filteredPerformers.find((per) => per.performer_id === editingPerformerId)
+    : null;
+
+  const otherPerformers = editingPerformerId
+    ? filteredPerformers.filter((per) => per.performer_id !== editingPerformerId)
+    : filteredPerformers;
 
   return (
     <div className="flex flex-col justify-center items-center text-[30px] font-bold w-full px-32">
@@ -137,52 +163,204 @@ export default function AdminPerformers() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="w-full flex justify-start flex-wrap gap-5 py-5">
-          {!loading && filteredPerformers.length === 0 && (
-            <p className="text-center w-full">No Performers found</p>
-          )}
+
+        {loading && (
+          <div className="w-full flex justify-center flex-wrap gap-5 pb-5">
+            <Spinner />
+          </div>
+        )}
+
+        {!loading && filteredPerformers.length === 0 && (
+          <p className="text-center w-full">No Performers found</p>
+        )}
+
+        {/* Render the currently edited performer first, if any */}
+        {editedPerformer && (
+          <div className="w-full flex justify-center py-5">
+            <PerformerCard
+              performerName={editedPerformer.name}
+              performerBio={editedPerformer.bio}
+              key={editedPerformer.performer_id}
+              id={editedPerformer.performer_id}
+              onUpdate={reloadPerformers}
+              onDelete={() => deletePer(editedPerformer.performer_id)}
+              showAlertMessage={showAlertMessage}
+              onEditToggle={handleEditToggle} // Pass the toggle function
+              isBeingEditedByParent={true} // Indicate it's the main edited item
+            />
+          </div>
+        )}
+
+        {/* Render other performers */}
+        <div className={`w-full flex justify-start flex-wrap gap-5 py-5 ${editingPerformerId ? 'mt-10 border-t-2 border-accent pt-10' : ''}`}>
           {!loading &&
-            filteredPerformers.map((per) => {
-              return (
-                <PerformerCard
-                  performerName={per.name}
-                  key={per.performer_id}
-                  reportCount={0}
-                  id={per.performer_id}
-                  onUpdate={() => reloadPerformers()}
-                  onDelete={() => deletePer(per.performer_id)}
-                />
-              );
-            })}
-          {loading && (
-            <div className="w-full flex justify-center flex-wrap gap-5 pb-5">
-              <Spinner />
-            </div>
-          )}
+            otherPerformers.map((per) => (
+              <PerformerCard
+                performerName={per.name}
+                performerBio={per.bio}
+                key={per.performer_id}
+                id={per.performer_id}
+                onUpdate={reloadPerformers}
+                onDelete={() => deletePer(per.performer_id)}
+                showAlertMessage={showAlertMessage}
+                onEditToggle={handleEditToggle} // Pass the toggle function
+                isBeingEditedByParent={false} // Indicate it's not the main edited item
+              />
+            ))}
         </div>
       </main>
+      {/* Generic Message Alert Dialog */}
+      <MessageAlertDialog
+        title={alertTitle}
+        message={alertMessage}
+        open={showAlert}
+        onClose={() => setShowAlert(false)}
+      />
     </div>
   );
 }
 
-function PerformerCard({ performerName, id, onUpdate, onDelete }) {
+function PerformerCard({
+  performerName,
+  performerBio,
+  id,
+  onUpdate,
+  onDelete,
+  showAlertMessage,
+  onEditToggle, // New prop
+  isBeingEditedByParent, // New prop
+}) {
+  const [editMode, setEditMode] = useState(false);
+  const [editedPerformerName, setEditedPerformerName] = useState(performerName);
+  const [editedBio, setEditedBio] = useState(performerBio);
+
+  useEffect(() => {
+    // If this card is *not* the one being edited by the parent, but it's in its own local edit mode,
+    // it means another card was put into edit mode or editing was cancelled for this card.
+    // So, this card should revert to view mode.
+    if (!isBeingEditedByParent && editMode) {
+      setEditMode(false);
+      setEditedPerformerName(performerName); // Reset to original values
+      setEditedBio(performerBio);
+    }
+    // If this card *is* the one being edited by the parent, ensure its local edit mode is on.
+    // This handles cases where the parent's editingPerformerId is set to this card's ID.
+    else if (isBeingEditedByParent && !editMode) {
+      setEditMode(true);
+      setEditedPerformerName(performerName); // Initialize with current values
+      setEditedBio(performerBio);
+    }
+  }, [isBeingEditedByParent, editMode, performerName, performerBio]);
+
+
+  const handleUpdate = async () => {
+    if (!editedPerformerName) {
+      showAlertMessage("Error", "Performer name cannot be empty.");
+      return;
+    }
+    try {
+      const response = await fetch(
+        "http://localhost:8000/adminUtils/updateperformer/",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            performer_id: id,
+            name: editedPerformerName,
+            bio: editedBio,
+          }),
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        showAlertMessage("Success", data.message);
+        setEditMode(false);
+        onEditToggle(null); // Clear editing state in parent
+        onUpdate();
+      } else {
+        showAlertMessage("Error", data.error || "Failed to update performer.");
+      }
+    } catch (error) {
+      console.error("Error updating performer:", error);
+      showAlertMessage("Error", "Error updating performer.");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditMode(false);
+    onEditToggle(null); // Clear editing state in parent
+    setEditedPerformerName(performerName); // Reset to original values
+    setEditedBio(performerBio);
+  };
+
   return (
-    <div className="relative max-w-max pl-3 pr-8 py-5 bg-card rounded-xl shadow mx-5 text">
-      <p>Performer Name: {performerName}</p>
-      <Alert
-        performerName={performerName}
-        onUpdate={onUpdate}
-        id={id}
-        onDelete={onDelete}
+    <div className={`relative max-w-max pl-3 pr-8 py-5 bg-card rounded-xl shadow mx-5 text ${isBeingEditedByParent ? 'w-full' : ''}`}>
+      <div className="flex-grow flex flex-col items-center justify-center">
+        {editMode ? (
+          <div className="flex flex-col gap-2 w-full">
+            <Input
+              title="Performer Name"
+              name="name"
+              type="text"
+              value={editedPerformerName}
+              onChange={(e) => setEditedPerformerName(e.target.value)}
+            />
+            <Input
+              title="Bio"
+              name="bio"
+              type="text"
+              value={editedBio}
+              onChange={(e) => setEditedBio(e.target.value)}
+            />
+            <div className="flex gap-2 justify-end mt-2">
+              <Button onClick={handleUpdate} className="flex items-center gap-2">
+                <Check className="h-4 w-4" /> Save
+              </Button>
+              <Button variant="outline" onClick={handleCancelEdit}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <p className="text-lg font-bold">Performer Name: {performerName}</p>
+          </>
+        )}
+      </div>
+      <div
+        className="absolute bottom-0 right-0 -mb-4 -mr-6
+                     flex justify-end items-center gap-2"
       >
-        <div
-          title="delete from database"
-          className="absolute bottom-0 right-0 -mb-4 -mr-6
-                     w-12 h-12 rounded-full destructive-on-hover text-destructive-foreground flex justify-center items-center hover:cursor-pointer"
+        {!editMode && (
+          <Button
+            title="Edit Performer"
+            onClick={() => {
+              setEditMode(true);
+              onEditToggle(id); // Inform parent about editing
+              setEditedPerformerName(performerName);
+              setEditedBio(performerBio);
+            }}
+            className="w-12 h-12 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex justify-center items-center hover:cursor-pointer"
+          >
+            <Pencil />
+          </Button>
+        )}
+        <Alert
+          performerName={performerName}
+          id={id}
+          onUpdate={onUpdate}
+          onDelete={onDelete}
         >
-          <Trash />
-        </div>
-      </Alert>
+          <Button
+            title="delete from database"
+            className="w-12 h-12 rounded-full bg-red-500 hover:bg-red-600 text-white flex justify-center items-center hover:cursor-pointer"
+          >
+            <Trash />
+          </Button>
+        </Alert>
+      </div>
     </div>
   );
 }

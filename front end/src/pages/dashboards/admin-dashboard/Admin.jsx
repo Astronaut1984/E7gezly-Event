@@ -1,6 +1,17 @@
 import EditInfoForm from "@/components/EditInfoForm";
+import EditPasswordForm from "@/components/EditPasswordForm";
 import { UserContext } from "@/UserContext";
-import { MapPin, Home, Ticket, UserRound, Flag, MicVocal } from "lucide-react";
+import {
+  MapPin,
+  Home,
+  Ticket,
+  UserRound,
+  Flag,
+  MicVocal,
+  BusFront,
+  SquareStack,
+  UserPlus,
+} from "lucide-react";
 import { useContext } from "react";
 
 export const adminItems = [
@@ -36,13 +47,18 @@ export const adminItems = [
   },
   {
     title: "Category",
-    url: "/admin/categories",
-    icon: MicVocal,
+    url: "/admin/category",
+    icon: SquareStack,
+  },
+  {
+    title: "Bus",
+    url: "/admin/bus",
+    icon: BusFront,
   },
   {
     title: "Create",
     url: "/admin/create",
-    icon: MicVocal,
+    icon: UserPlus,
   },
 ];
 
@@ -53,8 +69,9 @@ export function Admin() {
   const { user } = useContext(UserContext);
 
   return (
-    <main className="w-full flex justify-center">
+    <main className="w-full flex flex-col items-center justify-center">
       <EditInfoForm />
+      <EditPasswordForm />
     </main>
   );
 }
