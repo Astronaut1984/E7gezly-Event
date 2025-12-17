@@ -189,7 +189,7 @@ function CategoryCard({
 
   return (
     <>
-      <div className="relative w-128 h-24 p-5 bg-card rounded-xl shadow mx-5 flex flex-col justify-between">
+      <div className="relative w-70 h-24 p-5 bg-card rounded-xl shadow mx-auto flex flex-col justify-center">
         <div className="flex-grow flex flex-col items-center justify-center">
           {" "}
           {/* New wrapper for centering */}

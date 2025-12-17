@@ -398,7 +398,7 @@ function VenueCard({
 
   return (
     <div
-      className={`relative max-w-max px-10 py-5 text-[20px] bg-card rounded-xl shadow mx-5 ${
+      className={`relative w-85 px-10 py-5 text-[20px] bg-card rounded-xl shadow mx-auto ${
         isBeingEditedByParent ? "w-full" : ""
       }`}
     >

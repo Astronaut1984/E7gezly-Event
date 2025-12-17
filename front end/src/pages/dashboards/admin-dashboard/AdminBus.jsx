@@ -105,19 +105,19 @@ export default function AdminBus() {
         <BusFront /> Vehicles
       </h1>
       {/* Add Vehicle Section */}
-      <div className="flex flex-col flex-wrap w-full px-10 shadow-2xl text-[30px] font-bold py-5 rounded-xl bg-card mt-3 mb-5">
+      <div className="flex flex-col flex-wrap w-200 px-10 shadow-2xl text-[30px] font-bold py-5 rounded-xl bg-card mt-3 mb-5">
         <h1 className="text-xl font-bold mb-5 flex items-center gap-2">
           <Plus /> Add Vehicles
         </h1>
         <div>
-          <div className="mb-4 mr-7">
+          <div className="mb-4">
             <Input
               placeholder="New Vehicle Name"
               value={newVehicleName}
               onChange={(e) => setNewVehicleName(e.target.value)}
             />
           </div>
-          <div className="flex w-200 justify-center items-center gap-20">
+          <div className="flex justify-center items-center gap-30">
             <Input
               placeholder="Capacity"
               value={newVehicleCapacity}
@@ -216,7 +216,7 @@ function VehicleCard({
 
   return (
     <>
-      <div className="relative w-90 h-24 p-5 bg-card rounded-xl shadow mx-5 flex flex-col justify-between">
+      <div className="relative w-90 h-24 p-5 bg-card rounded-xl shadow mx-auto flex flex-col justify-center">
         <div className="flex-grow flex flex-col items-center justify-center">
           {editMode ? (
             <div className="flex items-center gap-2">

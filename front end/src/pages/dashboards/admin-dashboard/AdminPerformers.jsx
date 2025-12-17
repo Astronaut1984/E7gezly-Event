@@ -110,7 +110,9 @@ export default function AdminPerformers() {
     : null;
 
   const otherPerformers = editingPerformerId
-    ? filteredPerformers.filter((per) => per.performer_id !== editingPerformerId)
+    ? filteredPerformers.filter(
+        (per) => per.performer_id !== editingPerformerId
+      )
     : filteredPerformers;
 
   return (
@@ -192,7 +194,11 @@ export default function AdminPerformers() {
         )}
 
         {/* Render other performers */}
-        <div className={`w-full flex justify-start flex-wrap gap-5 py-5 ${editingPerformerId ? 'mt-10 border-t-2 border-accent pt-10' : ''}`}>
+        <div
+          className={`w-full flex justify-start flex-wrap gap-5 py-5 ${
+            editingPerformerId ? "mt-10 border-t-2 border-accent pt-10" : ""
+          }`}
+        >
           {!loading &&
             otherPerformers.map((per) => (
               <PerformerCard
@@ -252,7 +258,6 @@ function PerformerCard({
     }
   }, [isBeingEditedByParent, editMode, performerName, performerBio]);
 
-
   const handleUpdate = async () => {
     if (!editedPerformerName) {
       showAlertMessage("Error", "Performer name cannot be empty.");
@@ -296,7 +301,11 @@ function PerformerCard({
   };
 
   return (
-    <div className={`relative max-w-max pl-3 pr-8 py-5 bg-card rounded-xl shadow mx-5 text ${isBeingEditedByParent ? 'w-full' : ''}`}>
+    <div
+      className={`relative w-60 pl-3 pr-8 py-5 bg-card rounded-xl shadow mx-auto text ${
+        isBeingEditedByParent ? "w-full" : ""
+      }`}
+    >
       <div className="flex-grow flex flex-col items-center justify-center">
         {editMode ? (
           <div className="flex flex-col gap-2 w-full">
@@ -315,7 +324,10 @@ function PerformerCard({
               onChange={(e) => setEditedBio(e.target.value)}
             />
             <div className="flex gap-2 justify-end mt-2">
-              <Button onClick={handleUpdate} className="flex items-center gap-2">
+              <Button
+                onClick={handleUpdate}
+                className="flex items-center gap-2"
+              >
                 <Check className="h-4 w-4" /> Save
               </Button>
               <Button variant="outline" onClick={handleCancelEdit}>
@@ -325,7 +337,7 @@ function PerformerCard({
           </div>
         ) : (
           <>
-            <p className="text-lg font-bold">Performer Name: {performerName}</p>
+            <p className="text-lg font-bold">{performerName}</p>
           </>
         )}
       </div>

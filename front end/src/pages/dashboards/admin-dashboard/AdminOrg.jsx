@@ -83,8 +83,8 @@ export default function AdminOrg() {
 function OrgCard({ orgName, reportCount, username, onDelete }) {
   return (
     <>
-      <div className="relative max-w-max pl-3 pr-8 py-5 bg-card rounded-xl shadow mx-5">
-        <p>Organizer Name: {orgName}</p>
+      <div className="relative w-60 pl-3 pr-8 py-5 bg-card rounded-xl shadow mx-auto">
+        <p>Organizer: {orgName}</p>
         <p>Report Cases: {reportCount}</p>
         <Alert orgName={orgName} username={username} onDelete={onDelete}>
           <div

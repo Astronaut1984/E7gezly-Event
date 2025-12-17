@@ -88,8 +88,8 @@ function EventCard({ eventName, ownerName, eventId, onDelete }) {
   // New EventCard component
   return (
     <>
-      <div className="relative max-w-max pl-3 pr-8 py-5 bg-card rounded-xl shadow mx-5">
-        <p className="text-2xl font-bold ml-7 mr-2">{eventName}</p>
+      <div className="relative w-90 pl-3 pr-8 py-5 bg-card rounded-xl shadow mx-auto">
+        <p className="text-2xl font-bold mr-2">{eventName}</p>
         <p>Owned by {ownerName}</p>
         <Alert eventName={eventName} eventId={eventId} onDelete={onDelete}>
           <div
