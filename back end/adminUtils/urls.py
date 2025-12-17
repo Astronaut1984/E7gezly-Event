@@ -24,4 +24,5 @@ urlpatterns = [
     path("createadmin/",views.createAdmin,name="createadmin"),
     path("getevents/",views.getEvents,name="getevents"),
     path("deleteevents/",views.deleteEvents,name="deleteevents")
+
 ]

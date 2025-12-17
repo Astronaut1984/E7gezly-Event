@@ -5,13 +5,16 @@ import NavBar from "../../components/NavBar";
 import Event from "../../components/Event";
 import Category from "../../components/Category";
 import Footer from "../../components/Footer";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { UserContext } from "@/UserContext";
 
 export default function Home() {
   const [events, setEvents] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingCategories, setLoadingCategories] = useState(true);
+
+  const {user} = useContext(UserContext); 
 
   useEffect(() => {
     async function fetchMyEvents() {
@@ -121,6 +124,8 @@ export default function Home() {
                   }}
                   startDate={event.start_date}
                   endDate={event.end_date}
+                  allEventsMode={true}
+                  adminOrOrgMode={user['status'] != 'Attendee'}
                 />
               );
             })}

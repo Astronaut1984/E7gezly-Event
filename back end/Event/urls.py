@@ -3,6 +3,7 @@ from . import views
 urlpatterns = [
     #inputs in request json: name, description, category, status, start_date, end_date, owner, location, banner, performers, busses
     path("addevent/", views.addEvent, name="addevent"),
+    path("editevent/", views.editEvent, name="editevent"),
     path("getvenues/", views.getVenues, name="getvenues"),
     path("getevents/", views.getEvents, name="getevents"),
     path("getcategories/", views.getCategories, name="getcategories"),
@@ -15,4 +16,7 @@ urlpatterns = [
     path("deleteevent/", views.deleteEvent, name="deleteevent"),
     path("getcategorieswithbanners/", views.getCategoriesWithBanners, name="getcategorieswithbanners"),
     path("geteventbyid/<int:event_id>/", views.getEventById, name="geteventbyid"),
+    path("edittickettype/", views.editTicketType, name="edittickettype"),
+    path("deletetickettype/", views.deleteTicketType, name="deletetickettype"),
+    path("buyticket/", views.buyTicket, name="buyticket"),
 ]

@@ -1,5 +1,33 @@
 import { Home, Ticket, UserRoundCheck, MessageCircle } from "lucide-react";
 import EditInfoForm from "@/components/EditInfoForm";
+import { useState, useEffect } from "react";
+
+export function useOrgUnreadCount() {
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    async function fetchUnreadCount() {
+      try {
+        const res = await fetch("http://localhost:8000/messages/getorgmessages", {
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (data.success) {
+          setUnreadCount(data.total_unread || 0);
+        }
+      } catch (error) {
+        console.error("Failed to fetch unread count:", error);
+      }
+    }
+
+    fetchUnreadCount();
+    const intervalId = setInterval(fetchUnreadCount, 30000); // Update every 30s
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  return unreadCount;
+}
 
 export const orgItems = [
   {
@@ -8,7 +36,7 @@ export const orgItems = [
     icon: Home,
   },
   {
-    title: "Add Events",
+    title: "Add Event",
     url: "/org/add-events",
     icon: Ticket,
   },
@@ -26,6 +54,7 @@ export const orgItems = [
     title: "Chat",
     url: "/org/chat",
     icon: MessageCircle,
+    badge: true, // Flag to show this item has a badge
   },
 ];
 

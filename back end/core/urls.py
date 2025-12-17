@@ -10,6 +10,7 @@ urlpatterns = [
     path('adminUtils/', include("adminUtils.urls")),
     path('attendeeUtils/', include("attendeeUtils.urls")),
     path('Record/', include('Record.urls')),
+    path('messages/', include('messages.urls'))
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

@@ -91,7 +91,7 @@ class HasBus(models.Model):
         ]
 
 class HasPerformer(models.Model):
-    performer = models.ForeignKey(Performer, on_delete=models.RESTRICT, db_column='performer_id')
+    performer = models.ForeignKey(Performer, on_delete=models.CASCADE, db_column='performer_id')
     event = models.ForeignKey(Event, on_delete=models.CASCADE, db_column='Event_Id')
 
     class Meta:
@@ -102,11 +102,19 @@ class HasPerformer(models.Model):
 class Discount(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, db_column='Event_Id')
     discount_id = models.CharField(max_length=25)
-
+    percentage = models.IntegerField()  # 0-100
+    max_value = models.IntegerField(null=True, blank=True)  # Maximum discount amount
+    quantity = models.IntegerField()  
+    start_date = models.DateField()
+    end_date = models.DateField(null=True)
+    
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['event', 'discount_id'], name='unique_discount_per_event')
         ]
+    
+    def __str__(self):
+        return f"{self.discount_id} - {self.percentage}% off"
 
 class TicketType(models.Model):
     ticket_type_id = models.AutoField(primary_key=True)
@@ -139,19 +147,19 @@ class LostItem(models.Model):
         constraints = [models.UniqueConstraint(fields=['event', 'lost_id'], name='unique_lost_id_per_event')]
 
 class Message(models.Model):
-    sender_type = models.CharField(max_length=255)
+    SENDER_CHOICES = [
+        ("owner", "Owner"),
+        ("attendee", "Attendee"),
+    ]
+
+    sender_type = models.CharField(max_length=20, choices=SENDER_CHOICES)
     content = models.TextField()
-    message_date = models.DateField(null=True, blank=True)
+    message_date = models.DateTimeField(null=True, blank=True)
+    is_read = models.BooleanField(default=False)  # NEW FIELD
     attendee = models.ForeignKey(User, on_delete=models.RESTRICT, to_field='username', db_column='Attendee_Username', related_name='received_messages', null=True, blank=True)
     owner = models.ForeignKey(User, on_delete=models.RESTRICT, to_field='username', db_column='owner_Username', related_name='sent_messages', null=True, blank=True)
-
+    
 class Follow(models.Model):
-    STATUS_CHOICES = [
-        ('P', 'Pending'),
-        ('A', 'Active'),
-        ('B', 'Blocked'),
-    ]
-    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
     attendee = models.ForeignKey(User, on_delete=models.RESTRICT, related_name='following')
     organizer = models.ForeignKey(User, on_delete=models.RESTRICT, related_name='followers')
     class Meta:

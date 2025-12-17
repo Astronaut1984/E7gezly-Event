@@ -408,7 +408,6 @@ def updateVehicle(request):
     except Vehicle.DoesNotExist:
         return JsonResponse({"error": "Vehicle not found"}, status=404)
     
-
 @csrf_exempt
 def createAdmin(request):
     if request.method == "POST":
@@ -442,3 +441,4 @@ def createAdmin(request):
             return JsonResponse({"error": str(e)}, status=500)
     else:
         return JsonResponse({"error": "Only POST method allowed"}, status=405)
+
