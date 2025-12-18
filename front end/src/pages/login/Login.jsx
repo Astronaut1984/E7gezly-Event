@@ -111,14 +111,6 @@ export default function Login() {
               }
             />
 
-            {/* Forget password */}
-            <div className="text-right">
-              <a href="#" className="text-primary-hover">
-                {" "}
-                Forgot password?{" "}
-              </a>
-            </div>
-
             {/* Login Button */}
             <div className="flex flex-wrap justify-center pt-7.5">
               <div className="w-full block relative z-1 rounded-[25px] overflow-hidden">

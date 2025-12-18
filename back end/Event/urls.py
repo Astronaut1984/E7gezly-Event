@@ -22,4 +22,6 @@ urlpatterns = [
     path("addfeedback/",views.addFeedback, name="addfeedback"),
     path("addlostitem/",views.addLostitem, name="addlostitem"),
     path("updatelostitem/",views.updateLostitem, name="updatelostitem"),
+    path("getavailablelocation/",views.getavailablelocation,name="getavailablelocation"),
+    path("bookbus/",views.bookBus,name="bookbus")
 ]

@@ -5,13 +5,15 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from api.models import Event, User, Venue, TicketType, Category, Performer, Vehicle, HasPerformer, HasBus, Discount, Ticket, Feedback, LostItem
 import json
-from django.db.models import ObjectDoesNotExist
+from django.db.models import ObjectDoesNotExist, Q
 from django.conf import settings
 from django.db.models import Min, Max
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 import os
 from django.core import serializers
+from django.db.models import Sum
+from django.db import transaction
 
 @csrf_exempt
 @require_POST
@@ -50,9 +52,19 @@ def addEvent(request):
                 HasPerformer.objects.create(event=event, performer_id=pk)
             
         if request.POST.get("buses"):
-            bus_pks = json.loads(request.POST["buses"])
-            for pk in bus_pks:
-                HasBus.objects.create(event=event, transportation_id=pk)
+            HasBus.objects.filter(event=event).delete()  # For edit
+            bus_data = json.loads(request.POST["buses"])
+            for bus_info in bus_data:
+                try:
+                    vehicle = Vehicle.objects.get(transportation_id=bus_info['transportation_id'])
+                    HasBus.objects.create(
+                        event=event,
+                        transportation=vehicle,
+                        departure_loc=bus_info['departure_loc']
+                    )
+                except Vehicle.DoesNotExist:
+                    print(f"Vehicle {bus_info['transportation_id']} not found")
+                    continue
 
         if request.POST.get("discounts"):
             discounts_data = json.loads(request.POST["discounts"])
@@ -115,34 +127,45 @@ def getBusesWithCapacity(request):
 @require_POST
 def getAvailableBusCapacities(request):
     try:
-        print("Raw Request Body:", request.body) # <--- ADD THIS LINE
         data = json.loads(request.body)
-        print("Parsed Data:", data) # <--- ADD THIS LINE
         start_date = data.get("start_date")
-        end_date = data.get("end_date") # end_date is optional in Event model, but required for query
+        end_date = data.get("end_date")
+        event_id = data.get("event_id")  # For edit mode, exclude current event
 
         if not start_date:
             return JsonResponse({"error": "Missing start_date in request payload."}, status=400)
 
         actual_end_date = end_date if end_date else start_date
 
-        busy_bus_ids = HasBus.objects.filter(
-            event__start_date__lte=actual_end_date,
-            event__end_date__gte=start_date
-        ).values_list('transportation__transportation_id', flat=True).distinct()
+        # Find buses that are BUSY during the requested date range
+        busy_filter = Q(
+            event__start_date__lte=actual_end_date
+        ) & (
+            Q(event__end_date__gte=start_date) | 
+            Q(event__end_date__isnull=True, event__start_date__gte=start_date)
+        )
+        
+        # Exclude current event if editing
+        if event_id:
+            busy_filter &= ~Q(event_id=event_id)
 
-        available_capacities = Vehicle.objects.exclude(
+        busy_bus_ids = HasBus.objects.filter(busy_filter).values_list(
+            'transportation__transportation_id', flat=True
+        ).distinct()
+
+        # Get available buses (not in busy list)
+        available_buses = Vehicle.objects.exclude(
             transportation_id__in=busy_bus_ids
         ).filter(
             capacity__isnull=False
-        ).values_list('capacity', flat=True).distinct().order_by('capacity')
+        ).values('transportation_id', 'name', 'capacity').order_by('capacity', 'name')
 
-        capacities = [str(c) for c in available_capacities]
+        buses_list = list(available_buses)
 
-        return JsonResponse({"availableCapacities": capacities})
+        return JsonResponse({"availableBuses": buses_list})
 
     except Exception as e:
-        return JsonResponse({"error": f"Failed to retrieve available bus capacities: {e}"}, status=400)
+        return JsonResponse({"error": f"Failed to retrieve available buses: {e}"}, status=400)
 
 @csrf_exempt
 def getEvents(request):
@@ -343,7 +366,8 @@ def getEventById(request, event_id):
             buses_data.append({
                 'capacity': has_bus.transportation.capacity,
                 'departure_loc': has_bus.departure_loc,
-                'transportation_id': has_bus.transportation.transportation_id
+                'transportation_id': has_bus.transportation.transportation_id,
+                'number_assigned': has_bus.number_assigned,
             })
 
         # Get feedbacks with details
@@ -464,16 +488,19 @@ def editEvent(request):
                     print(f"Failed to create discount {discount_data.get('discount_id')}: {e}")
 
         if request.POST.get("buses"):
-            HasBus.objects.filter(event=event).delete()
+            HasBus.objects.filter(event=event).delete()  # For edit
             bus_data = json.loads(request.POST["buses"])
             for bus_info in bus_data:
-                vehicle = Vehicle.objects.filter(capacity=bus_info['capacity']).first()
-                if vehicle:
+                try:
+                    vehicle = Vehicle.objects.get(transportation_id=bus_info['transportation_id'])
                     HasBus.objects.create(
                         event=event,
                         transportation=vehicle,
                         departure_loc=bus_info['departure_loc']
                     )
+                except Vehicle.DoesNotExist:
+                    print(f"Vehicle {bus_info['transportation_id']} not found")
+                    continue
         
         return JsonResponse({"message": "Event updated successfully", "id": event.event_id})
     
@@ -755,3 +782,92 @@ def updateLostitem(request):
         })
     except Exception as e:
         return JsonResponse({"error": f"Failed to update: {str(e)}"}, status=400)
+
+@csrf_exempt
+@require_POST
+def getavailablelocation(request):
+    try:
+        data = json.loads(request.body)
+        departure_location = data.get("departure_location")
+        event_id = data.get("event_id")
+
+        if not departure_location or not event_id:
+            return JsonResponse({"error": "departure_location and event_id are required"}, status=400)
+        bus_assignments = HasBus.objects.filter(
+            event_id=event_id, 
+            departure_loc=departure_location
+        )
+
+        total_capacity = bus_assignments.aggregate(
+            total=Sum('transportation__capacity')
+        )['total'] or 0
+
+        total_tickets_sold = Ticket.objects.filter(
+            ticket_type__event_id=event_id
+        ).aggregate(total_qty=Sum('quantity'))['total_qty'] or 0
+
+        available_seats = total_capacity - total_tickets_sold
+
+        if total_capacity == 0:
+            return JsonResponse({"error": "No buses assigned to this location for this event"}, status=404)
+
+        return JsonResponse({
+            "event_id": event_id,
+            "location": departure_location,
+            "total_bus_capacity": total_capacity,
+            "tickets_sold": total_tickets_sold,
+            "available_seats": max(0, available_seats)
+        })
+
+    except Exception as e:
+        return JsonResponse({"error": f"Failed to retrieve data: {str(e)}"}, status=400)
+    
+@csrf_exempt
+@require_POST
+def bookBus(request):
+    try:
+        data = json.loads(request.body)
+        bus_id = data.get("bus_id")  # This is the transportation_id
+        event_id = data.get("event_id")
+        quantity = data.get("quantity")
+
+        # 1. Validation
+        if not all([bus_id, event_id, quantity]):
+            return JsonResponse({"error": "bus_id, event_id, and quantity are required"}, status=400)
+
+        try:
+            quantity = int(quantity)
+        except ValueError:
+            return JsonResponse({"error": "Quantity must be a number"}, status=400)
+
+        # 2. Use a transaction to ensure data integrity
+        with transaction.atomic():
+            # Select for update locks the row until the transaction is finished
+            assignment = HasBus.objects.select_for_update().get(
+                transportation_id=bus_id, 
+                event_id=event_id
+            )
+
+            # 3. Check Capacity (optional but recommended)
+            total_capacity = assignment.transportation.capacity or 0
+            currently_assigned = assignment.number_assigned or 0
+            
+            if currently_assigned + quantity > total_capacity:
+                return JsonResponse({
+                    "error": "Not enough seats available",
+                    "available": total_capacity - currently_assigned
+                }, status=400)
+
+            # 4. Update the count
+            assignment.number_assigned = currently_assigned + quantity
+            assignment.save()
+
+        return JsonResponse({
+            "message": "Bus booking updated successfully",
+            "total_assigned": assignment.number_assigned
+        })
+
+    except HasBus.DoesNotExist:
+        return JsonResponse({"error": "This bus is not assigned to the specified event"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": f"Failed to update booking: {str(e)}"}, status=500)

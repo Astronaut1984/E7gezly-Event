@@ -23,13 +23,14 @@ import AlertMessage from "./AlertMessage";
 export default function EventPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useContext(UserContext);
+  const { user,setUser } = useContext(UserContext);
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("feedbacks");
 
   const [feedbacks, setFeedbacks] = useState([]);
   const [lostItems, setLostItems] = useState([]);
+  const [Buses, setBuses] = useState([]);
 
   const [myFeedback, setMyFeedback] = useState("");
   const [myRating, setMyRating] = useState(0);
@@ -49,6 +50,7 @@ export default function EventPage() {
         setEvent(data["event"]);
         setFeedbacks(data["event"].feedbacks || []);
         setLostItems(data["event"].lost_items || []);
+        setBuses(data["event"].buses || []);
       } catch (err) {
         console.error("Failed to fetch event", err);
       } finally {
@@ -277,7 +279,7 @@ export default function EventPage() {
 
                         {/* Right section */}
                         <div className="flex w-32 items-center justify-center p-4">
-                          <BuyDialog ticket={ticket}>
+                          <BuyDialog ticket={ticket} onPurchase={setUser}>
                             <div
                               disabled={ticket.quantity <= 0}
                               className="w-full hover:cursor-pointer bg-primary text-primary-foreground rounded-lg py-1 px-2"
@@ -294,14 +296,23 @@ export default function EventPage() {
             </div>
 
             {/* BUSES */}
-            {event.buses?.length > 0 && (
+            {Buses?.length > 0 && (
               <div>
                 <h2 className="text-2xl font-semibold mb-4">Available Buses</h2>
                 <ul className="list-disc ml-6">
-                  {event.buses.map((bus, i) => (
+                  {Buses.map((bus, i) => (
                     <li key={i}>
-                      Departs From: {bus.departure_loc}, Capacity: {bus.capacity}
+                      Departs From: {bus.departure_loc}, Available Seats: {bus.capacity - bus.number_assigned}
+                      <BookBusDialog bus={bus} event_id={event.event_id} event_loc={event.location_name} onUpdate={setBuses}>
+                        <button
+                          disabled={bus.capacity === bus.number_assigned}
+                          className="ml-5 px-3 py-1 rounded-2xl bg-primary"
+                        >
+                          Book Now
+                        </button>
+                      </BookBusDialog>
                     </li>
+                    
                   ))}
                 </ul>
               </div>
@@ -495,7 +506,7 @@ export default function EventPage() {
   );
 }
 
-function BuyDialog({ children, className, ticket }) {
+function BuyDialog({ children, className, ticket, onPurchase }) {
   const [discountCode, setDiscountCode] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [open, setOpen] = useState(false);
@@ -540,6 +551,10 @@ function BuyDialog({ children, className, ticket }) {
         setAlert(
           `Success! Purchased ${data.purchase_details.quantity} ticket(s) for ${data.purchase_details.final_price} EGP. Remaining balance: ${data.purchase_details.remaining_wallet_balance} EGP`
         );
+        onPurchase((prevUser) => ({
+          ...prevUser,
+          wallet: data.purchase_details.remaining_wallet_balance,
+        }));
       }
     } catch (err) {
       setAlert("An error occurred while purchasing the ticket");
@@ -661,6 +676,117 @@ function ReportDialog({ className, children, owner_username }) {
             </Button>
           </DialogClose>
           <AlertMessage alert={alert} onClose={() => setAlert(null)} />
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function BookBusDialog({ children, bus,event_loc, onUpdate,event_id }) {
+  const [quantity, setQuantity] = useState(1);
+  const [open, setOpen] = useState(false);
+  const [alert, setAlert] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  async function bookBus() {
+    setLoading(true);
+    setAlert(null);
+
+    console.log("Booking bus:", bus.transportation_id, "for event:", event_id);
+    if (quantity < 1) {
+      setAlert("Please enter a valid number of seats.");
+      setLoading(false);
+      return;
+    }
+    if( quantity > (bus.capacity - bus.number_assigned)) {
+      setAlert("Requested number of seats exceeds available seats.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:8000/event/bookbus/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          bus_id: bus.transportation_id,
+          quantity: quantity,
+          event_id: event_id,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.error) {
+        setAlert(data.error);
+        if (data.error === "Not authenticated") {
+          navigate("/login");
+        }
+        return;
+      }
+
+      if (data.message) {
+        setAlert(
+          `Success! Booked ${quantity} seat(s).`
+        );
+        onUpdate((prevBuses) =>
+          prevBuses.map((b) =>
+            b.bus_id === bus.bus_id
+              ? { ...b, number_assigned: b.number_assigned + quantity }
+              : b
+          )
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      setAlert("An error occurred while booking the bus.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger>{children}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="caret-transparent">
+            Book Bus
+          </DialogTitle>
+        </DialogHeader>
+
+        <p className="caret-transparent">
+          From: {bus.departure_loc} → To: {event_loc}
+        </p>
+
+        <div className="flex flex-col gap-4 mt-2">
+          <Label htmlFor="busQuantity">Number of seats</Label>
+          <Input
+            id="busQuantity"
+            type="number"
+            min={1}
+            max={bus.capacity - bus.number_assigned}
+            value={quantity}
+            onChange={(e) => {
+              const val = parseInt(e.target.value);
+              setQuantity(isNaN(val) ? 1 : val); // fallback to 1
+            }}
+            className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            placeholder="Enter quantity"
+          />
+        </div>
+
+        {alert && <AlertMessage alert={alert} onClose={() => setAlert(null)} />}
+
+        <DialogFooter>
+          <Button onClick={bookBus} disabled={loading}>
+            {loading ? "Booking..." : "Book"}
+          </Button>
+          <DialogClose asChild>
+            <Button variant="outline">Close</Button>
+          </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>

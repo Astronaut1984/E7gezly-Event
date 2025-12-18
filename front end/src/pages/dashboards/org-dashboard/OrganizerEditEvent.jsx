@@ -21,12 +21,11 @@ const initialTicket = {
 };
 
 const initialPerformer = { performerId: null, performerName: "" };
-const initialBus = { busCapacity: "", busDepartureLocation: "" };
 
 export default function OrganizerEditEvent() {
   const { eventId } = useParams();
   const navigate = useNavigate();
-  
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -45,7 +44,7 @@ export default function OrganizerEditEvent() {
   const [categories, setCategories] = useState([]);
   const [venues, setVenues] = useState([]);
   const [performersList, setPerformersList] = useState([]);
-  const [availableCapacities, setAvailableCapacities] = useState([]);
+  const [availableBuses, setAvailableBuses] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [loadingVenues, setLoadingVenues] = useState(true);
   const [loadingPerformers, setLoadingPerformers] = useState(true);
@@ -88,14 +87,14 @@ export default function OrganizerEditEvent() {
     if (start_date) {
       fetchData(
         "http://localhost:8000/event/getavailablebuscapacities/",
-        setAvailableCapacities,
+        setAvailableBuses,
         setLoadingCapacities,
-        "availableCapacities",
+        "availableBuses",
         "POST",
-        { start_date, end_date }
+        { start_date, end_date, event_id: eventId } // ← Add event_id
       );
     } else {
-      setAvailableCapacities([]);
+      setAvailableBuses([]);
       setLoadingCapacities(false);
     }
   }, [formData.start_date, formData.end_date]);
@@ -114,7 +113,7 @@ export default function OrganizerEditEvent() {
       const event = data.event;
 
       // Map tickets with their IDs for editing
-      const ticketsData = event.tickets.map(ticket => ({
+      const ticketsData = event.tickets.map((ticket) => ({
         ticket_type_id: ticket.ticket_type_id,
         TicketTypeName: ticket.name,
         TicketDescription: ticket.description || "",
@@ -123,14 +122,16 @@ export default function OrganizerEditEvent() {
       }));
 
       // Map performers with their IDs
-      const performersData = event.performers.map(performer => ({
+      const performersData = event.performers.map((performer) => ({
         performerId: performer.performer_id,
         performerName: performer.name,
       }));
 
       // Map buses with their data
-      const busesData = event.buses.map(bus => ({
-        busCapacity: bus.capacity?.toString() || "",
+      const busesData = event.buses.map((bus) => ({
+        busTransportationId: bus.transportation_id,
+        busName: bus.name || `Bus ${bus.transportation_id}`,
+        busCapacity: bus.capacity,
         busDepartureLocation: bus.departure_loc || "",
       }));
 
@@ -212,10 +213,7 @@ export default function OrganizerEditEvent() {
     const { name, value } = e.target;
     let newValue = value;
 
-    if (
-      name === "TicketPrice" ||
-      name === "TicketQuantity"
-    ) {
+    if (name === "TicketPrice" || name === "TicketQuantity") {
       newValue = value.replace(/[^0-9]/g, "");
     }
     if (name === "TicketTypeName") {
@@ -329,7 +327,7 @@ export default function OrganizerEditEvent() {
         "buses",
         JSON.stringify(
           formData.buses.map((b) => ({
-            capacity: parseInt(b.busCapacity),
+            transportation_id: parseInt(b.busTransportationId),
             departure_loc: b.busDepartureLocation,
           }))
         )
@@ -468,7 +466,8 @@ export default function OrganizerEditEvent() {
             options={!loadingVenues && venues.map((v) => v["name"])}
             placeholder="Select location"
             value={
-              venues.find((v) => v.location_id === formData.location)?.name || ""
+              venues.find((v) => v.location_id === formData.location)?.name ||
+              ""
             }
             onSelect={(selectedName) => {
               const selectedVenue = venues.find((v) => v.name === selectedName);
@@ -573,7 +572,9 @@ export default function OrganizerEditEvent() {
               <h2 className="text-[20px] font-semibold">
                 Discount #{index + 1}
                 {discount.discount_id && (
-                  <span className="text-sm text-gray-500 ml-2">(Code: {discount.discount_id})</span>
+                  <span className="text-sm text-gray-500 ml-2">
+                    (Code: {discount.discount_id})
+                  </span>
                 )}
               </h2>
 
@@ -654,7 +655,6 @@ export default function OrganizerEditEvent() {
             </div>
           ))}
 
-
           {/* ---------------------------------------------------- */}
           {/* --- Performers Section --- */}
           {/* ---------------------------------------------------- */}
@@ -722,56 +722,92 @@ export default function OrganizerEditEvent() {
           {/* ---------------------------------------------------- */}
           {/* --- Buses Section --- */}
           {/* ---------------------------------------------------- */}
-          <h1 className="mt-5 w-full">Buses (Count: {formData.buses.length})</h1>
-          {formData.buses.map((bus, index) => (
-            <div
-              key={index}
-              className="flex flex-col w-full border-2 border-dashed border-gray-300 p-4 mb-4 rounded-lg"
-            >
-              <h2 className="text-[20px] font-semibold">Bus #{index + 1}</h2>
-              <div className="flex justify-between w-full gap-30">
-                <SelectOnly
-                  title="Bus Capacity (Available)"
-                  options={
-                    formData.start_date && loadingCapacities
-                      ? ["Loading..."]
-                      : availableCapacities
-                  }
-                  placeholder={
-                    !formData.start_date
-                      ? "Set event date first"
-                      : availableCapacities.length === 0
-                      ? "No capacities available"
-                      : "Select Capacity"
-                  }
-                  value={bus.busCapacity}
-                  onSelect={(option) =>
-                    handleArraySelect("buses", index, "busCapacity", option)
-                  }
-                  disabled={
-                    !formData.start_date ||
-                    loadingCapacities ||
-                    availableCapacities.length === 0
-                  }
-                />
-                <Input
-                  title="Departure Location"
-                  type="text"
-                  name="busDepartureLocation"
-                  placeholder="Cairo Stadium, Gate 3"
-                  value={bus.busDepartureLocation}
-                  onChange={(e) => handleArrayChange("buses", index, e)}
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => handleRemove("buses", index)}
-                className="bg-red-500 hover:bg-red-600 text-[16px] text-white flex justify-center items-center w-40 h-10 border-0 cursor-pointer font-semibold rounded-lg self-end mt-2"
+          <h1 className="mt-5 w-full">
+            Buses (Count: {formData.buses.length})
+          </h1>
+          {formData.buses.map((bus, index) => {
+            // Filter out already selected buses
+            const selectedBusIds = formData.buses
+              .filter((b, i) => i !== index && b.busTransportationId)
+              .map((b) => b.busTransportationId);
+
+            const availableForThisSlot = availableBuses.filter(
+              (b) => !selectedBusIds.includes(b.transportation_id)
+            );
+
+            return (
+              <div
+                key={index}
+                className="flex flex-col w-full border-2 border-dashed border-gray-300 p-4 mb-4 rounded-lg"
               >
-                Remove Bus
-              </button>
-            </div>
-          ))}
+                <h2 className="text-[20px] font-semibold">Bus #{index + 1}</h2>
+                <div className="flex justify-between w-full gap-30">
+                  <SelectOnly
+                    title="Select Bus"
+                    options={
+                      formData.start_date && loadingCapacities
+                        ? ["Loading..."]
+                        : availableForThisSlot.map(
+                            (b) => `${b.name} (Capacity: ${b.capacity})`
+                          )
+                    }
+                    placeholder={
+                      !formData.start_date
+                        ? "Set event date first"
+                        : availableForThisSlot.length === 0
+                        ? "No buses available"
+                        : "Select Bus"
+                    }
+                    value={
+                      bus.busTransportationId
+                        ? `${bus.busName} (Capacity: ${bus.busCapacity})`
+                        : ""
+                    }
+                    onSelect={(selectedDisplay) => {
+                      const selectedBus = availableForThisSlot.find(
+                        (b) =>
+                          `${b.name} (Capacity: ${b.capacity})` ===
+                          selectedDisplay
+                      );
+                      if (selectedBus) {
+                        setFormData((prevData) => {
+                          const newBuses = [...prevData.buses];
+                          newBuses[index] = {
+                            ...newBuses[index],
+                            busTransportationId: selectedBus.transportation_id,
+                            busName: selectedBus.name,
+                            busCapacity: selectedBus.capacity,
+                          };
+                          return { ...prevData, buses: newBuses };
+                        });
+                      }
+                    }}
+                    disabled={
+                      !formData.start_date ||
+                      loadingCapacities ||
+                      availableForThisSlot.length === 0
+                    }
+                  />
+                  <Input
+                    title="Departure Location"
+                    type="text"
+                    name="busDepartureLocation"
+                    placeholder="Cairo Stadium, Gate 3"
+                    value={bus.busDepartureLocation}
+                    onChange={(e) => handleArrayChange("buses", index, e)}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRemove("buses", index)}
+                  className="bg-red-500 hover:bg-red-600 text-[16px] text-white flex justify-center items-center w-40 h-10 border-0 cursor-pointer font-semibold rounded-lg self-end mt-2"
+                >
+                  Remove Bus
+                </button>
+              </div>
+            );
+          })}
+
           <button
             type="button"
             onClick={() => handleAdd("buses", initialBus)}
@@ -796,10 +832,7 @@ export default function OrganizerEditEvent() {
           >
             {submitting ? (
               <div className="flex items-center">
-                <svg
-                  className="animate-spin h-5 w-5 mr-2"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
                   <circle
                     className="opacity-25"
                     cx="12"

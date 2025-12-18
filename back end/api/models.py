@@ -28,7 +28,6 @@ class Venue(models.Model):
     city = models.CharField(max_length=255, null=True, blank=True)
     details = models.TextField(null=True, blank=True)
     type = models.CharField(max_length=255, null=True, blank=True)
-    available = models.BooleanField(default=True)
     capacity = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
@@ -75,7 +74,7 @@ class Event(models.Model):
         super().delete(*args, **kwargs)
 
 class HasBus(models.Model):
-    number_assigned = models.IntegerField(null=True, blank=True)
+    number_assigned = models.IntegerField(null=True, blank=True, default=0)
     transportation = models.ForeignKey(Vehicle, on_delete=models.RESTRICT, db_column='Transportation_Id')
     departure_loc = models.TextField()
     event = models.ForeignKey(Event, on_delete=models.CASCADE, db_column='Event_Id')

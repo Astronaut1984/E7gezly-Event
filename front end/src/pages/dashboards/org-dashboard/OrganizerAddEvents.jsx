@@ -27,7 +27,12 @@ const initialDiscount = {
   DiscountMaximumValue: "",
 };
 const initialPerformer = { performerId: null, performerName: "" };
-const initialBus = { busCapacity: "", busDepartureLocation: "" };
+const initialBus = {
+  busTransportationId: null,
+  busName: "",
+  busCapacity: "",
+  busDepartureLocation: "",
+};
 
 export default function OrganizerAddEvents() {
   const [formData, setFormData] = useState({
@@ -46,7 +51,7 @@ export default function OrganizerAddEvents() {
   const [categories, setCategories] = useState([]);
   const [venues, setVenues] = useState([]);
   const [performersList, setPerformersList] = useState([]);
-  const [availableCapacities, setAvailableCapacities] = useState([]);
+  const [availableBuses, setAvailableBuses] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [loadingVenues, setLoadingVenues] = useState(true);
   const [loadingPerformers, setLoadingPerformers] = useState(true);
@@ -84,6 +89,7 @@ export default function OrganizerAddEvents() {
       }
 
       const data = await res.json();
+      console.log(data);
       setter(data[dataKey] || []);
     } catch (err) {
       console.error(`Error fetching ${dataKey}:`, err);
@@ -123,17 +129,17 @@ export default function OrganizerAddEvents() {
       end_date,
     });
 
-    if (start_date && end_date) {
+    if (start_date) {
       fetchData(
         "http://localhost:8000/event/getavailablebuscapacities/",
-        setAvailableCapacities,
+        setAvailableBuses,
         setLoadingCapacities,
-        "availableCapacities", // The key in the JSON response
+        "availableBuses",
         "POST",
         { start_date, end_date }
       );
     } else {
-      setAvailableCapacities([]);
+      setAvailableBuses([]);
       setLoadingCapacities(false);
     }
   }, [formData.start_date, formData.end_date]);
@@ -314,7 +320,7 @@ export default function OrganizerAddEvents() {
       "buses",
       JSON.stringify(
         formData.buses.map((b) => ({
-          capacity: parseInt(b.busCapacity),
+          transportation_id: parseInt(b.busTransportationId),
           departure_loc: b.busDepartureLocation,
         }))
       )
@@ -701,11 +707,16 @@ export default function OrganizerAddEvents() {
           {/* ---------------------------------------------------- */}
           <h1 className="mt-5 w-full">
             Buses (Count: {formData.buses.length})
-          </h1>{" "}
+          </h1>
           {formData.buses.map((bus, index) => {
-            const selectedCapacity = bus.busCapacity
-              ? parseInt(bus.busCapacity)
-              : null;
+            // Filter out already selected buses
+            const selectedBusIds = formData.buses
+              .filter((b, i) => i !== index && b.busTransportationId)
+              .map((b) => b.busTransportationId);
+
+            const availableForThisSlot = availableBuses.filter(
+              (b) => !selectedBusIds.includes(b.transportation_id)
+            );
 
             return (
               <div
@@ -715,28 +726,49 @@ export default function OrganizerAddEvents() {
                 <h2 className="text-[20px] font-semibold">Bus #{index + 1}</h2>
                 <div className="flex justify-between w-full gap-30">
                   <SelectOnly
-                    title="Bus Capacity (Available)"
-                    // Options are dynamically loaded based on event dates
+                    title="Select Bus"
                     options={
                       formData.start_date && loadingCapacities
                         ? ["Loading..."]
-                        : availableCapacities
+                        : availableForThisSlot.map(
+                            (b) => `${b.name} (Capacity: ${b.capacity})`
+                          )
                     }
                     placeholder={
                       !formData.start_date
                         ? "Set event date first"
-                        : availableCapacities.length === 0
-                        ? "No capacities available"
-                        : "Select Capacity"
+                        : availableForThisSlot.length === 0
+                        ? "No buses available"
+                        : "Select Bus"
                     }
-                    value={bus.busCapacity}
-                    onSelect={(option) =>
-                      handleArraySelect("buses", index, "busCapacity", option)
+                    value={
+                      bus.busTransportationId
+                        ? `${bus.busName} (Capacity: ${bus.busCapacity})`
+                        : ""
                     }
+                    onSelect={(selectedDisplay) => {
+                      const selectedBus = availableForThisSlot.find(
+                        (b) =>
+                          `${b.name} (Capacity: ${b.capacity})` ===
+                          selectedDisplay
+                      );
+                      if (selectedBus) {
+                        setFormData((prevData) => {
+                          const newBuses = [...prevData.buses];
+                          newBuses[index] = {
+                            ...newBuses[index],
+                            busTransportationId: selectedBus.transportation_id,
+                            busName: selectedBus.name,
+                            busCapacity: selectedBus.capacity,
+                          };
+                          return { ...prevData, buses: newBuses };
+                        });
+                      }
+                    }}
                     disabled={
                       !formData.start_date ||
                       loadingCapacities ||
-                      availableCapacities.length === 0
+                      availableForThisSlot.length === 0
                     }
                   />
                   <Input
@@ -761,10 +793,12 @@ export default function OrganizerAddEvents() {
           <button
             type="button"
             onClick={() => handleAdd("buses", initialBus)}
-            className={
-              "bg-primary-hover text-[16px] text-white flex justify-center items-center w-full h-[50px] border-0 cursor-pointer font-semibold ml-120 rounded-lg"
-            }
-            disabled={!formData.start_date} // Only allow adding bus if date is set
+            disabled={!formData.start_date}
+            className={`${
+              !formData.start_date
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-primary-hover cursor-pointer"
+            } text-[16px] text-white flex justify-center items-center w-full h-[50px] border-0 font-semibold rounded-lg`}
           >
             Add Bus (Requires Event Dates)
           </button>
