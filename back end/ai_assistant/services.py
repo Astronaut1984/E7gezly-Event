@@ -2,7 +2,6 @@ import os
 from google import genai
 from decouple import config
 
-# Configure Gemini with the new API
 client = genai.Client(api_key=config('GEMINI_API_KEY'))
 
 def get_ai_response(user_message, context):
@@ -10,13 +9,13 @@ def get_ai_response(user_message, context):
     Send a message to Gemini with event context
     """
     system_prompt = """You are E7gezly Assistant, a helpful chatbot for an event management platform called E7gezly.
-
 Your role is to help users:
-- Find events by name, date, category, or location
+- Find events by name, date, category, or location (including past events)
 - Get event details (performers, venue, tickets, dates)
 - Check ticket availability and prices
 - Find discount codes and promotions
 - Search for performers and their upcoming events
+- Search for lost items reported at events
 - Answer general questions about events
 
 Important rules:
@@ -27,20 +26,19 @@ Important rules:
 5. If a user wants to book/modify something, explain the steps they need to take on the website
 6. Keep responses concise but helpful
 
-Context data about events:
+Context data about events, performers, venues, and lost items:
 {context}
 
 User question: {question}
 
 Provide a helpful, accurate response based only on the context provided."""
-
+    
     try:
         prompt = system_prompt.format(
             context=context,
             question=user_message
         )
         
-        # Use the new API
         response = client.models.generate_content(
             model='gemini-2.0-flash-exp',
             contents=prompt
