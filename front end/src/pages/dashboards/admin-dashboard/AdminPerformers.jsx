@@ -202,7 +202,7 @@ export default function AdminPerformers() {
 
         {/* Render other performers */}
         <div
-          className={`w-full flex justify-start flex-wrap gap-5 py-5 ${
+          className={`w-full flex justify-center flex-wrap gap-10 py-5 ${
             editingPerformerId ? "mt-10 border-t-2 border-accent pt-10" : ""
           }`}
         >
@@ -361,7 +361,7 @@ function PerformerCard({
               setEditedPerformerName(performerName);
               setEditedBio(performerBio);
             }}
-            className="w-12 h-12 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex justify-center items-center hover:cursor-pointer"
+            className="w-12 h-12 rounded-full bg-primary-hover text-white flex justify-center items-center hover:cursor-pointer"
           >
             <Pencil />
           </Button>
@@ -374,7 +374,7 @@ function PerformerCard({
         >
           <Button
             title="delete from database"
-            className="w-12 h-12 rounded-full bg-red-500 hover:bg-red-600 text-white flex justify-center items-center hover:cursor-pointer"
+            className="w-12 h-12 rounded-full bg-destructive hover:bg-destructive-hover text-white flex justify-center items-center hover:cursor-pointer"
           >
             <Trash />
           </Button>

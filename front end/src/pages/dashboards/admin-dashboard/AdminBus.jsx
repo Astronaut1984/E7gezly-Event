@@ -224,7 +224,7 @@ function VehicleCard({
   return (
     <>
       <div className="relative w-90 h-24 p-5 bg-card rounded-xl shadow mx-auto flex flex-col justify-center">
-        <div className="flex-grow flex flex-col items-center justify-center">
+        <div className="flex flex-col items-start justify-start">
           {editMode ? (
             <div className="flex items-center gap-2">
               <Input
