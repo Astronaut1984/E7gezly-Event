@@ -1,5 +1,14 @@
 import EditInfoForm from "@/components/EditInfoForm";
-import { Home, Ticket, UsersRound, UserRound, Star, MessageCircle, Bot } from "lucide-react";
+import EditPasswordForm from "@/components/EditPasswordForm";
+import {
+  Home,
+  Ticket,
+  UsersRound,
+  UserRound,
+  Star,
+  MessageCircle,
+  Bot,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 
 export function useAttUnreadCount() {
@@ -8,9 +17,12 @@ export function useAttUnreadCount() {
   useEffect(() => {
     async function fetchUnreadCount() {
       try {
-        const res = await fetch("http://localhost:8000/messages/getattendeemessages", {
-          credentials: "include",
-        });
+        const res = await fetch(
+          "http://localhost:8000/messages/getattendeemessages",
+          {
+            credentials: "include",
+          }
+        );
         const data = await res.json();
         if (data.success) {
           setUnreadCount(data.total_unread || 0);
@@ -33,6 +45,7 @@ export default function Attendee() {
   return (
     <main className="w-full flex flex-col items-center justify-center">
       <EditInfoForm />
+      <EditPasswordForm />
     </main>
   );
 }
@@ -73,5 +86,5 @@ export const attItems = [
     title: "AI Assistant",
     url: "/att/ai-chat",
     icon: Bot,
-  }
+  },
 ];

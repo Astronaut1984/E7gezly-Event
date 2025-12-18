@@ -123,11 +123,32 @@ export default function AdminBus() {
       <h1 className="text-3xl font-bold mt-10 flex items-center gap-2">
         <BusFront /> Vehicles
       </h1>
-      <div className="text-center mb-4 text-primary">
-        <i> Number of Buses: {busCount}</i>
-        <i> Max Capacity: {maxBusCap}</i>
-        <i> Min Capacity: {minBusCap}</i>
-        <i> Average Capacity: {avgBusCap}</i>
+      <div className="flex flex-wrap justify-center gap-4 w-full max-w-4xl mb-8">
+        <div className="flex-1 min-w-[200px] bg-card rounded-lg p-6 border border-border shadow-sm">
+          <div className="text-sm text-muted-foreground mb-1">
+            Number of Buses
+          </div>
+          <div className="text-3xl font-bold text-primary">{busCount}</div>
+        </div>
+
+        <div className="flex-1 min-w-[200px] bg-card rounded-lg p-6 border border-border shadow-sm">
+          <div className="text-sm text-muted-foreground mb-1">Max Capacity</div>
+          <div className="text-3xl font-bold text-foreground">{maxBusCap}</div>
+        </div>
+
+        <div className="flex-1 min-w-[200px] bg-card rounded-lg p-6 border border-border shadow-sm">
+          <div className="text-sm text-muted-foreground mb-1">Min Capacity</div>
+          <div className="text-3xl font-bold text-foreground">{minBusCap}</div>
+        </div>
+
+        <div className="flex-1 min-w-[200px] bg-card rounded-lg p-6 border border-border shadow-sm">
+          <div className="text-sm text-muted-foreground mb-1">
+            Average Capacity
+          </div>
+          <div className="text-3xl font-bold text-foreground">
+            {Number(avgBusCap).toFixed(2)}
+          </div>
+        </div>
       </div>
       {/* Add Vehicle Section */}
       <div className="flex flex-col flex-wrap w-200 px-10 shadow-2xl text-[30px] font-bold py-5 rounded-xl bg-card mt-3 mb-5">

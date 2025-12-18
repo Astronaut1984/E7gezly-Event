@@ -101,8 +101,13 @@ export default function AdminCategory() {
       <h1 className="text-3xl font-bold mt-10 flex items-center gap-2">
         <SquareStack /> Categories
       </h1>
-      <div className="text-center mb-4 text-primary">
-        <i> Number of Categories: {categoryCount}</i>
+      <div className="flex flex-wrap justify-center gap-4 max-w-4xl mb-8">
+        <div className="flex-1 min-w-[200px] bg-card rounded-lg p-6 border border-border shadow-sm">
+          <div className="text-sm text-muted-foreground mb-1">
+            Number of Categories
+          </div>
+          <div className="text-3xl font-bold text-primary">{categoryCount}</div>
+        </div>
       </div>
       {/* Add Category Section */}
       <div className="flex w-100 justify-center items-center gap-2">

@@ -36,15 +36,13 @@ export default function EditPasswordForm() {
   const validateForm = () => {
     const newErrors = {};
     if (!formData.oldPassword) {
-      newErrors.oldPassword = { isError: true, message: "Old password is required" };
+      newErrors.oldPassword = {
+        isError: true,
+        message: "Old password is required",
+      };
     }
     if (!formData.password) {
       newErrors.password = { isError: true, message: "Password is required" };
-    } else if (formData.password.length < 8) {
-      newErrors.password = {
-        isError: true,
-        message: "Password must be at least 8 characters long",
-      };
     }
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = {
@@ -78,7 +76,10 @@ export default function EditPasswordForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ old_password: formData.oldPassword, new_password: formData.password }),
+        body: JSON.stringify({
+          old_password: formData.oldPassword,
+          new_password: formData.password,
+        }),
         credentials: "include",
       });
       if (!res.ok) {
@@ -88,7 +89,8 @@ export default function EditPasswordForm() {
         setErrors({
           submit: {
             isError: true,
-            message: errorData.error || "Failed to update password. Please try again.",
+            message:
+              errorData.error || "Failed to update password. Please try again.",
           },
         });
         setIsSubmitting(false);

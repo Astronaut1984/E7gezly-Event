@@ -1,5 +1,6 @@
 import { Home, Ticket, UserRoundCheck, MessageCircle, Bot } from "lucide-react";
 import EditInfoForm from "@/components/EditInfoForm";
+import EditPasswordForm from "@/components/EditPasswordForm";
 import { useState, useEffect } from "react";
 
 export function useOrgUnreadCount() {
@@ -8,9 +9,12 @@ export function useOrgUnreadCount() {
   useEffect(() => {
     async function fetchUnreadCount() {
       try {
-        const res = await fetch("http://localhost:8000/messages/getorgmessages", {
-          credentials: "include",
-        });
+        const res = await fetch(
+          "http://localhost:8000/messages/getorgmessages",
+          {
+            credentials: "include",
+          }
+        );
         const data = await res.json();
         if (data.success) {
           setUnreadCount(data.total_unread || 0);
@@ -67,6 +71,7 @@ export function Organizer() {
   return (
     <main className="w-full flex justify-center">
       <EditInfoForm />
+      <EditPasswordForm />
     </main>
   );
 }
