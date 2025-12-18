@@ -39,6 +39,7 @@ export default function OrganizerEditEvent() {
     tickets: [{ ...initialTicket }],
     performers: [],
     buses: [],
+    discounts: [],
   });
 
   const [categories, setCategories] = useState([]);
@@ -84,7 +85,7 @@ export default function OrganizerEditEvent() {
   // Fetch available bus capacities when dates change
   useEffect(() => {
     const { start_date, end_date } = formData;
-    if (start_date && end_date) {
+    if (start_date) {
       fetchData(
         "http://localhost:8000/event/getavailablebuscapacities/",
         setAvailableCapacities,
@@ -183,6 +184,7 @@ export default function OrganizerEditEvent() {
       }
 
       const data = await res.json();
+      console.log(data);
       setter(data[dataKey] || []);
     } catch (err) {
       console.error(`Error fetching ${dataKey}:`, err);
@@ -560,6 +562,98 @@ export default function OrganizerEditEvent() {
           >
             Add Ticket Type
           </button>
+
+          {/* Discounts section */}
+
+          {formData.discounts?.map((discount, index) => (
+            <div
+              key={index}
+              className="flex flex-col w-full border-2 border-dashed border-gray-300 p-4 mb-4 rounded-lg"
+            >
+              <h2 className="text-[20px] font-semibold">
+                Discount #{index + 1}
+                {discount.discount_id && (
+                  <span className="text-sm text-gray-500 ml-2">(Code: {discount.discount_id})</span>
+                )}
+              </h2>
+
+              {/* Discount Code */}
+              <div className="flex justify-between w-full gap-6">
+                <Input
+                  title="Discount Code"
+                  type="text"
+                  name="discount_id"
+                  placeholder="e.g. Summer25"
+                  value={discount.discount_id}
+                  onChange={(e) => handleArrayChange("discounts", index, e)}
+                />
+              </div>
+
+              {/* Percentage + Quantity */}
+              <div className="flex justify-between w-full gap-6">
+                <Input
+                  title="Discount Percentage (%)"
+                  type="number"
+                  name="percentage"
+                  placeholder="e.g. 20"
+                  value={discount.percentage}
+                  onChange={(e) => handleArrayChange("discounts", index, e)}
+                />
+
+                <Input
+                  title="Quantity"
+                  type="number"
+                  name="quantity"
+                  placeholder="e.g. 100"
+                  value={discount.quantity}
+                  onChange={(e) => handleArrayChange("discounts", index, e)}
+                />
+              </div>
+
+              {/* Max Value */}
+              <div className="flex justify-between w-full gap-6">
+                <Input
+                  title="Max Discount Value (Optional)"
+                  type="number"
+                  name="max_value"
+                  placeholder="Leave empty for no limit"
+                  value={discount.max_value || ""}
+                  onChange={(e) => handleArrayChange("discounts", index, e)}
+                />
+              </div>
+
+              {/* Start Date + End Date */}
+              <div className="flex justify-between w-full gap-6">
+                <Input
+                  title="Start Date"
+                  type="date"
+                  name="start_date"
+                  value={discount.start_date}
+                  onChange={(e) => handleArrayChange("discounts", index, e)}
+                />
+
+                <Input
+                  title="End Date"
+                  type="date"
+                  name="end_date"
+                  value={discount.end_date}
+                  onChange={(e) => handleArrayChange("discounts", index, e)}
+                />
+              </div>
+
+              {/* Remove Discount */}
+              {formData.discounts.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => handleRemove("discounts", index)}
+                  className="bg-red-500 hover:bg-red-600 text-[16px] text-white flex justify-center items-center w-44 h-10 border-0 cursor-pointer font-semibold rounded-lg self-end mt-3"
+                >
+                  Remove Discount
+                </button>
+              )}
+            </div>
+          ))}
+
 
           {/* ---------------------------------------------------- */}
           {/* --- Performers Section --- */}

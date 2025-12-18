@@ -19,4 +19,7 @@ urlpatterns = [
     path("edittickettype/", views.editTicketType, name="edittickettype"),
     path("deletetickettype/", views.deleteTicketType, name="deletetickettype"),
     path("buyticket/", views.buyTicket, name="buyticket"),
+    path("addfeedback/",views.addFeedback, name="addfeedback"),
+    path("addlostitem/",views.addLostitem, name="addlostitem"),
+    path("updatelostitem/",views.updateLostitem, name="updatelostitem"),
 ]

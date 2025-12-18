@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.db import connection
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from api.models import Event, User, Venue, TicketType, Category, Performer, Vehicle, HasPerformer, HasBus, Discount, Ticket
+from api.models import Event, User, Venue, TicketType, Category, Performer, Vehicle, HasPerformer, HasBus, Discount, Ticket, Feedback, LostItem
 import json
 from django.db.models import ObjectDoesNotExist
 from django.conf import settings
@@ -11,6 +11,7 @@ from django.db.models import Min, Max
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 import os
+from django.core import serializers
 
 @csrf_exempt
 @require_POST
@@ -36,7 +37,6 @@ def addEvent(request):
             name=request.POST["eventName"],
             description=request.POST["description"],
             category=category_obj,
-            status='U',
             start_date=request.POST["start_date"],
             end_date=end_date,
             owner=owner_obj,
@@ -54,7 +54,6 @@ def addEvent(request):
             for pk in bus_pks:
                 HasBus.objects.create(event=event, transportation_id=pk)
 
-        # Handle discounts
         if request.POST.get("discounts"):
             discounts_data = json.loads(request.POST["discounts"])
             for discount_data in discounts_data:
@@ -69,7 +68,6 @@ def addEvent(request):
                         end_date=discount_data['end_date']
                     )
                 except Exception as e:
-                    # Log but don't fail the entire event creation
                     print(f"Failed to create discount {discount_data.get('discount_id')}: {e}")
 
         return JsonResponse({"message": "Event created", "id": event.event_id})
@@ -274,54 +272,54 @@ def deleteEvent(request):
 @csrf_exempt
 def getCategoriesWithBanners(request):
     """
-    Get all categories that have at least one event, 
-    along with the banner URLs of all events in each category.
-    
-    Returns:
-    {
-        "categories": [
-            {
-                "category_id": 1,
-                "category_name": "Concerts",
-                "event_count": 5,
-                "event_banners": ["url1", "url2", "url3", ...]
-            },
-            ...
-        ]
-    }
+    Get categories with banners of UPCOMING events only
     """
     try:
+        today = timezone.now().date()
+
         with connection.cursor() as cursor:
             cursor.execute("""
                 SELECT 
                     c.category_id,
                     c.category_name,
                     COUNT(e.event_id) AS event_count,
-                    STRING_AGG(e.banner, ',') AS banners
+                    STRING_AGG(e.banner, ',' ORDER BY e.start_date ASC) AS banners
                 FROM api_category c
-                INNER JOIN api_event e ON c.category_id = e.category_id
+                INNER JOIN api_event e 
+                    ON c.category_id = e.category_id
+                WHERE e.start_date >= %s
                 GROUP BY c.category_id, c.category_name
                 HAVING COUNT(e.event_id) > 0;
-            """)
-            
+            """, [today])
+
             columns = [col[0] for col in cursor.description]
             results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
         categories = []
         for row in results:
-            banner_paths = row['banners'].split(',') if row['banners'] else []
+            banner_paths = row["banners"].split(",") if row["banners"] else []
+
             banner_urls = [
                 request.build_absolute_uri(settings.MEDIA_URL + path.strip())
-                for path in banner_paths if path and path.strip()
+                for path in banner_paths
+                if path and path.strip()
             ]
-            
+
             categories.append({
-                "category_id": row['category_id'],
-                "category_name": row['category_name'],
-                "event_count": row['event_count'],
-                "event_banners": banner_urls
+                "category_id": row["category_id"],
+                "category_name": row["category_name"],
+                "event_count": row["event_count"],   # upcoming events count
+                "event_banners": banner_urls        # upcoming banners only
             })
-        
+
         return JsonResponse({"categories": categories})
+
+    except Exception as e:
+        return JsonResponse(
+            {"error": f"Failed to fetch categories: {str(e)}"},
+            status=500
+        )
+
     
     except Exception as e:
         return JsonResponse({"error": f"Failed to fetch categories: {str(e)}"}, status=500)
@@ -329,7 +327,7 @@ def getCategoriesWithBanners(request):
 def getEventById(request, event_id):
     try:
         event = Event.objects.get(event_id=event_id)
-        tickets = list(TicketType.objects.filter(event_id=event_id).values())
+        tickets = list(TicketType.objects.filter(event_id=event_id).values().order_by('price'))
         
         # Get performers with IDs
         performers_data = []
@@ -346,6 +344,25 @@ def getEventById(request, event_id):
                 'capacity': has_bus.transportation.capacity,
                 'departure_loc': has_bus.departure_loc,
                 'transportation_id': has_bus.transportation.transportation_id
+            })
+
+        # Get feedbacks with details
+        feedbacks_data = []
+        for fb in Feedback.objects.filter(event=event):
+            feedbacks_data.append({
+                'feedback_id': fb.feedback_id,
+                'content': fb.feedback_content,
+                'rating': fb.feedback_rating,
+                'attendee': fb.attendee.username if fb.attendee else "Anonymous"
+            })
+
+        # Get lost items with details
+        lost_items_data = []
+        for item in LostItem.objects.filter(event=event):
+            lost_items_data.append({
+                'lost_id': item.lost_id,
+                'description': item.description,
+                'status': item.get_status_display()  # Returns 'Still lost' or 'Found'
             })
 
         # Serialize the event data inline
@@ -366,6 +383,8 @@ def getEventById(request, event_id):
             'performers': performers_data,  # Now includes IDs
             'buses': buses_data,  # Now includes full data
             'tickets': tickets,
+            'feedbacks': feedbacks_data,
+            'lost_items': lost_items_data,
         }
         
         return JsonResponse({"event": event_data})
@@ -384,34 +403,28 @@ def editEvent(request):
         if not event_id:
             return JsonResponse({"error": "Event ID is required"}, status=400)
         
-        # Get the event
         event = Event.objects.get(pk=event_id)
         
-        # Check if current user is the owner
         current_user = request.session.get("username")
         if event.owner.username != current_user:
             return JsonResponse({"error": "Unauthorized"}, status=403)
         
-        # Update basic event fields
         if request.POST.get("eventName"):
             event.name = request.POST["eventName"]
         
         if request.POST.get("description"):
             event.description = request.POST["description"]
         
-        # Update category
         category_id = request.POST.get("category")
         if category_id:
             category_obj = Category.objects.get(pk=category_id)
             event.category = category_obj
         
-        # Update location
         location_id = request.POST.get("location")
         if location_id:
             location_obj = Venue.objects.get(pk=location_id)
             event.location = location_obj
         
-        # Update dates
         if request.POST.get("start_date"):
             event.start_date = request.POST["start_date"]
         
@@ -419,9 +432,7 @@ def editEvent(request):
         if end_date:
             event.end_date = end_date if end_date else None
         
-        # Update banner if new one is provided
         if request.FILES.get("banner"):
-            # Delete old banner if it's not the fallback
             if event.banner and event.banner.name != "fallback.png":
                 if os.path.isfile(event.banner.path):
                     os.remove(event.banner.path)
@@ -429,19 +440,33 @@ def editEvent(request):
         
         event.save()
         
-        # Update performers (remove old, add new)
         if request.POST.get("performers"):
             HasPerformer.objects.filter(event=event).delete()
             performer_pks = json.loads(request.POST["performers"])
             for pk in performer_pks:
                 HasPerformer.objects.create(event=event, performer_id=pk)
         
-        # Update buses (remove old, add new)
+        if request.POST.get("discounts"):
+            Discount.objects.filter(event=event).delete()
+            discounts_data = json.loads(request.POST["discounts"])
+            for discount_data in discounts_data:
+                try:
+                    Discount.objects.create(
+                        event=event,
+                        discount_id=discount_data['discount_id'],
+                        percentage=int(discount_data['percentage']),
+                        max_value=int(discount_data['max_value']) if discount_data.get('max_value') else None,
+                        quantity=int(discount_data['quantity']),
+                        start_date=discount_data['start_date'],
+                        end_date=discount_data['end_date']
+                    )
+                except Exception as e:
+                    print(f"Failed to create discount {discount_data.get('discount_id')}: {e}")
+
         if request.POST.get("buses"):
             HasBus.objects.filter(event=event).delete()
             bus_data = json.loads(request.POST["buses"])
             for bus_info in bus_data:
-                # Find vehicle with matching capacity
                 vehicle = Vehicle.objects.filter(capacity=bus_info['capacity']).first()
                 if vehicle:
                     HasBus.objects.create(
@@ -647,3 +672,86 @@ def buyTicket(request):
         return JsonResponse({
             'error': f'An unexpected error occurred: {str(e)}'
         }, status=500)
+
+@csrf_exempt
+@require_POST
+def addFeedback(request):
+    try:
+        data = json.loads(request.body)
+        content = data.get("feedback") 
+        rating = data.get("rating")
+        attendee_username = request.session.get('username')
+        event_id = data.get("event_id")
+
+        if not all([content, rating, attendee_username, event_id]):
+            return JsonResponse({"error": "All fields are required."}, status=400)      
+        
+        user_obj = User.objects.get(username=attendee_username)
+        event_obj = Event.objects.get(event_id=event_id)
+        
+        feedback = Feedback.objects.create(
+            feedback_content=content,
+            feedback_rating=rating,
+            attendee=user_obj,
+            event=event_obj  
+        )
+        
+        return JsonResponse({"message": "Feedback created", "id": feedback.feedback_id})
+
+    except User.DoesNotExist:
+        return JsonResponse({"error": "User does not exist."}, status=404)
+    except Event.DoesNotExist:
+        return JsonResponse({"error": "Event does not exist."}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": f"Failed to create Feedback: {e}"}, status=400)
+    
+
+@csrf_exempt
+@require_POST
+def addLostitem(request):
+    try:
+        data = json.loads(request.body)
+        description = data.get("description") 
+        event_id = data.get("event_id")
+
+        if not all([description, event_id]):
+            return JsonResponse({"error": "All fields are required."}, status=400)      
+        event_obj = Event.objects.get(event_id=event_id)
+        
+        lostitem = LostItem.objects.create(
+            description=description,
+            status='L',
+            event=event_obj  
+        )
+        item_data = {
+            "lost_id": lostitem.lost_id,
+            "description": lostitem.description,
+            "status": lostitem.get_status_display()
+        }
+        
+        return JsonResponse({"message": "Lost Item created", "lostitem": item_data})
+
+    except User.DoesNotExist:
+        return JsonResponse({"error": "User does not exist."}, status=404)
+    except Event.DoesNotExist:
+        return JsonResponse({"error": "Event does not exist."}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": f"Failed to create Lost Item: {e}"}, status=400)
+    
+@csrf_exempt
+@require_POST
+def updateLostitem(request):
+    try:
+        data = json.loads(request.body)
+        lost_id =data.get("lost_id")
+        if not lost_id:
+            return JsonResponse({"error": "lost_item ID is required"}, status=400)
+        updated_count = LostItem.objects.filter(lost_id=lost_id).update(status='F') 
+        if updated_count == 0:
+            return JsonResponse({"error": "Item not found"}, status=404)
+        return JsonResponse({
+            "message": "Lost item status updated to Found", 
+            "id": lost_id
+        })
+    except Exception as e:
+        return JsonResponse({"error": f"Failed to update: {str(e)}"}, status=400)

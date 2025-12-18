@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect } from "react";
 import { Spinner } from "./ui/spinner";
 
 export default function Event({
@@ -13,13 +13,13 @@ export default function Event({
   eventId,
   onDelete,
   onWishlistRemove,
+  ended
 }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
 
   useEffect(() => {
-    // Only fetch wishlist status for non-admin/org users
     if (!adminOrOrgMode) {
       checkWishlistStatus();
     }
@@ -46,7 +46,6 @@ export default function Event({
       const data = await res.json();
 
       if (data.success) {
-        // Check if this event is in the wishlisted events
         const isInWishlist = data.wishlisted_events.some(
           (event) => event.event_id === eventId
         );
@@ -58,9 +57,8 @@ export default function Event({
   };
 
   const toggleWishlist = async (e) => {
-    e.preventDefault(); // Prevent navigation if clicked inside NavLink
+    e.preventDefault();
     e.stopPropagation();
-
     setIsTogglingWishlist(true);
 
     try {
@@ -68,20 +66,15 @@ export default function Event({
         "http://localhost:8000/attendeeUtils/togglewishlist",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           credentials: "include",
           body: JSON.stringify({ event_id: eventId }),
         }
       );
 
       const data = await res.json();
-
       if (res.ok && data.success) {
         setIsWishlisted(data.in_wishlist);
-
-        // If removed and we have the callback, notify parent
         if (!data.in_wishlist && onWishlistRemove) {
           onWishlistRemove(eventId);
         }
@@ -97,9 +90,7 @@ export default function Event({
   };
 
   const handleDelete = async () => {
-    if (!confirm(`Are you sure you want to delete "${title}"?`)) {
-      return;
-    }
+    if (!confirm(`Are you sure you want to delete "${title}"?`)) return;
 
     setIsDeleting(true);
 
@@ -116,18 +107,13 @@ export default function Event({
           "Content-Type": "application/json",
           "X-CSRFToken": csrftoken,
         },
-        body: JSON.stringify({
-          event_id: eventId,
-        }),
+        body: JSON.stringify({ event_id: eventId }),
       });
 
       const data = await res.json();
-
       if (res.ok && data.success) {
         alert("Event deleted successfully!");
-        if (onDelete) {
-          onDelete(eventId);
-        }
+        if (onDelete) onDelete(eventId);
       } else {
         alert(data.error || "Failed to delete event");
       }
@@ -143,16 +129,14 @@ export default function Event({
     <div className="flex flex-col items-center h-max text-card-foreground bg-card w-100 shadow-2xl rounded-3xl pb-2">
       <div
         className="w-90 h-50 bg-secondary mt-5 rounded-3xl bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url(${img})`,
-        }}
+        style={{ backgroundImage: `url(${img})` }}
       ></div>
+
       <div className="flex justify-between items-center w-full px-5 pt-2">
         <h1 className="text-2xl" title={title}>
           {title.length > 25 ? title.substring(0, 25) + "..." : title}
         </h1>
 
-        {/* Wishlist icon - only show for attendees */}
         {!adminOrOrgMode && (
           <button
             onClick={toggleWishlist}
@@ -164,29 +148,27 @@ export default function Event({
               <Spinner />
             ) : (
               <i
-                className={`fa-${
-                  isWishlisted ? "solid" : "regular"
-                } fa-star text-xl`}
+                className={`fa-${isWishlisted ? "solid" : "regular"} fa-star text-xl`}
               ></i>
             )}
           </button>
         )}
       </div>
+
       <div className="w-full flex justify-start px-5 pt-2">
         <h1 className="text-l">{`${formatDate(startDate)} ${
           endDate ? `/ ${formatDate(endDate)}` : ""
         }`}</h1>
       </div>
-      <div className="w-full flex justify-start px-5 pt-2"></div>
+
       <div className="w-full flex justify-start px-5 pt-2">
         <i className="mt-[7px] fa-solid fa-money-bill pt-px mr-2 text-primary"></i>
-        {priceRange.minPrice != priceRange.maxPrice && (
+        {priceRange.minPrice != priceRange.maxPrice ? (
           <h1 className="text-xl">
             Price range: {priceRange.currency} {priceRange.minPrice} -{" "}
             {priceRange.maxPrice}
           </h1>
-        )}
-        {priceRange.minPrice == priceRange.maxPrice && (
+        ) : (
           <h1 className="text-xl">
             Price: {priceRange.currency} {priceRange.maxPrice}
           </h1>
@@ -202,7 +184,8 @@ export default function Event({
         </NavLink>
       )}
 
-      {adminOrOrgMode && (
+      {/* Admin / Organizer buttons */}
+      {!ended && adminOrOrgMode && (
         <div className="flex gap-3 my-4">
           <NavLink
             to={`/Events/${eventId}`}
@@ -210,6 +193,7 @@ export default function Event({
           >
             Go to
           </NavLink>
+
           {!allEventsMode && (
             <>
               <NavLink
@@ -234,6 +218,27 @@ export default function Event({
               </button>
             </>
           )}
+        </div>
+      )}
+
+      {/* Ended events admin buttons */}
+      {ended && adminOrOrgMode && (
+        <div className="flex gap-3 my-4">
+          <NavLink
+            to={`/Events/${eventId}`}
+            className="text-primary-foreground bg-green-600 hover:bg-green-700 rounded-lg px-4 py-3 font-semibold transition-colors"
+            title="View Feedbacks"
+          >
+            Feedbacks
+          </NavLink>
+
+          <NavLink
+            to={`/Events/${eventId}`}
+            className="text-primary-foreground bg-yellow-600 hover:bg-yellow-700 rounded-lg px-4 py-3 font-semibold transition-colors"
+            title="View Lost Items"
+          >
+            Lost Items
+          </NavLink>
         </div>
       )}
     </div>

@@ -11,5 +11,9 @@ urlpatterns = [
     path("performersindb/",views.countPerformers,name="performersindb"),
     path("venuesindb/", views.countVenues, name="venuesindb"),
     path("eventsindb/", views.countEvents, name="eventsindb"),
-    path("busesindb/", views.countBuses, name="busesindb")
+    path("busesindb/", views.countBuses, name="busesindb"),
+    path('venueusagereport/', views.venueUsageReport, name='venueusagereport'),
+    path('orgleaderboard/', views.organizerLeaderboard, name='venueusagereport'),
+    path('categorydata/', views.getCategoryData, name='categorydata'),
+
 ]

@@ -311,7 +311,7 @@ export default function EditInfoForm() {
 
   return (
     <div className="flex flex-col w-250 flex-wrap px-32 shadow-2xl py-5 rounded-xl bg-card mt-3 justify-center justifiy-between">
-      <h1 className="text-xl mb-4">Change Account Info</h1>
+      <h1 className="text-xl mb-4 caret-transparent">Change Account Info</h1>
 
       {/* Success Message */}
       {successMessage && (

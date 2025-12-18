@@ -39,6 +39,7 @@ import AttendeeChat from "./pages/dashboards/att-dashboard/AttendeeChat";
 import OrganizerEditEvent from "./pages/dashboards/org-dashboard/OrganizerEditEvent";
 import AttendeeTickets from "./pages/dashboards/att-dashboard/AttendeeTickets";
 import AIChat from './pages/AIChat';
+import AdminHome from "./pages/dashboards/admin-dashboard/AdminHome";
 
 function App() {
   return (
@@ -58,7 +59,8 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/admin" index element={<Admin />} />
+        <Route path="/admin" index element={<AdminHome />} />
+        <Route path="/admin/profile" index element={<Admin />} />
         <Route path="/admin/venues" element={<AdminVenues />} />
         <Route path="/admin/events" element={<AdminEvents />} />
         <Route path="/admin/org" element={<AdminOrg />} />

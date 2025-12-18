@@ -123,6 +123,44 @@ class Migration(migrations.Migration):
                 SELECT AVG(capacity) INTO avg_cap FROM api_venue;
             END;
             $$;
+
+            CREATE OR REPLACE PROCEDURE get_venue_usage_report(result_cursor REFCURSOR)
+            LANGUAGE plpgsql AS $$
+            BEGIN
+                OPEN result_cursor FOR
+                SELECT 
+                    v.name AS venue_name,
+                    v.city,
+                    COUNT(DISTINCT e.event_id) AS events_hosted,
+                    SUM(t.quantity) AS tickets_sold,
+                    COALESCE(SUM(t.quantity * tt.price), 0)::DOUBLE PRECISION AS revenue
+                FROM api_venue v
+                LEFT JOIN api_event e ON v.location_id = e."Location_Id"
+                LEFT JOIN api_tickettype tt ON e.event_id = tt."Event_Id"
+                LEFT JOIN api_ticket t ON tt.ticket_type_id = t.ticket_type_id
+                GROUP BY v.location_id, v.name, v.city
+                ORDER BY revenue DESC LIMIT 5;
+            END;
+            $$;
+            CREATE OR REPLACE PROCEDURE get_organizer_leaderboard(result_cursor REFCURSOR)
+            LANGUAGE plpgsql AS $$
+            BEGIN
+                OPEN result_cursor FOR
+                SELECT 
+                    u.username AS organizer,
+                    COUNT(DISTINCT f.id) AS followers,
+                    COUNT(DISTINCT e.event_id) AS events,
+                    COALESCE(SUM(t.quantity * tt.price), 0)::DOUBLE PRECISION AS total_revenue
+                FROM api_user u
+                LEFT JOIN api_event e ON u.username = e."owner_Username"
+                LEFT JOIN api_follow f ON u.username = f.organizer_id
+                LEFT JOIN api_tickettype tt ON e.event_id = tt."Event_Id"
+                LEFT JOIN api_ticket t ON tt.ticket_type_id = t.ticket_type_id
+                GROUP BY u.username
+                ORDER BY total_revenue DESC
+                LIMIT 5;
+            END;
+            $$;
             """,
             reverse_sql="""
             DROP PROCEDURE IF EXISTS count_user;
@@ -137,6 +175,8 @@ class Migration(migrations.Migration):
             DROP PROCEDURE IF EXISTS max_venue_cap;
             DROP PROCEDURE IF EXISTS min_venue_cap;
             DROP PROCEDURE IF EXISTS avg_venue_cap;
+            DROP PROCEDURE IF EXISTS get_organizer_leaderboard;
+            DROP PROCEDURE IF EXISTS get_venue_usage_report;
             """
         )
     ]

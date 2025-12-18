@@ -34,7 +34,6 @@ export default function AdminVenues() {
     details: "",
     capacity: "",
   });
-
   const {
     items: venues,
     loading,
@@ -264,7 +263,7 @@ export default function AdminVenues() {
         )}
 
         <div
-          className={`w-full flex justify-start flex-wrap gap-5 py-5 ${
+          className={`w-full flex justify-center flex-wrap gap-10 py-5 ${
             editingVenueId ? "mt-10 border-t-2 border-accent pt-10" : ""
           }`}
         >
@@ -292,6 +291,7 @@ export default function AdminVenues() {
         open={showAlert}
         onClose={() => setShowAlert(false)}
       />
+      <div className="w-full border-b-2 border-accent mt-6"></div>
     </div>
   );
 }
@@ -393,11 +393,11 @@ function VenueCard({
 
   return (
     <div
-      className={`relative w-85 px-10 py-5 text-[20px] bg-card rounded-xl shadow mx-auto ${
+      className={`relative w-85 px-10 py-5 text-[20px] bg-card rounded-xl flex flex-wrap shadow ${
         isBeingEditedByParent ? "w-full" : ""
       }`}
     >
-      <div className="flex-grow flex flex-col items-center justify-center">
+      <div className="grow flex items-start justify-start">
         {editMode ? (
           <div className="flex flex-col gap-2 w-full">
             <div className="flex flex-1 gap-3">

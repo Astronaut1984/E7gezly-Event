@@ -52,15 +52,10 @@ class Category(models.Model):
     category_name = models.CharField(max_length=63)
 
 class Event(models.Model):
-    STATUS_CHOICES = [
-        ('U', 'Under Review'),
-        ('A', 'Accepted')
-    ]
     event_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
     description = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=False)
-    status = models.CharField(max_length=255, null=True, blank=True)
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, db_column='owner_Username', related_name='events')

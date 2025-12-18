@@ -22,6 +22,11 @@ export const adminItems = [
     icon: Home,
   },
   {
+    title: "Profile",
+    url: "/admin/profile",
+    icon: UserRound,
+  },
+  {
     title: "Events",
     url: "/admin/events",
     icon: Ticket,

@@ -48,12 +48,12 @@ export function DashboardSideBar({ items }) {
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <div
-          className={`flex justify-${
+          className={`caret-transparent flex justify-${
             isCollapsed ? "center" : "between"
           } items-center`}
         >
           {!isCollapsed && (
-            <h1 className="truncate flex items-center">{welcomeMessage}</h1>
+            <h1 className="truncate caret-transparent flex items-center">{welcomeMessage}</h1>
           )}
           <SidebarTrigger className="size-10 hover:text-primary cursor-pointer" />
         </div>

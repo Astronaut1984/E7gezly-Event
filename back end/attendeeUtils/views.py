@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.db import connection
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from api.models import User, Friend, Follow, Wishlist, Event, TicketType, Ticket
+from api.models import User, Friend, Follow, Wishlist, Event, TicketType, Ticket, Report, Feedback
 from django.db.models import Q, Min, Max
 from django.conf import settings
 import json
@@ -705,12 +705,43 @@ def getTickets(request):
         event = ticket_type.event
         event_name = event.name
         event_id = event.event_id
+        start_date = event.start_date
+        end_date = event.end_date
         tickets.append({
             'ticket_name': ticket_name,
             'ticket_desc': ticket_desc,
             'ticket_quantity': ticket_quantity,
             'event_name': event_name,
             'event_id': event_id,
+            'start_date' : start_date,
+            'end_date' : end_date
         })
     
     return JsonResponse({'tickets': tickets})
+
+@csrf_exempt
+def reportOrg(request):
+    try:
+        attendee_username = request.session.get('username')
+
+        attendee = User.objects.get(username = attendee_username)
+
+        if not attendee or not attendee.status == 'Attendee':
+            return JsonResponse({'error':'Not Authenticated'})
+        
+        data = json.loads(request.body)
+
+        organizer_username = data.get('organizer')
+        if not organizer_username:
+            return JsonResponse({'error':'Couldn\'t find organizer'})
+        
+        organizer = User.objects.get(username = organizer_username)
+
+        report = Report(owner = organizer, attendee = attendee,status='P', report_content=data.get('report_content') )
+
+        report.save()
+        return JsonResponse({'success' : 'Organizer Reported Successfully'})
+    except Exception as e:
+        return JsonResponse({'error' : f'Unexpected Error: {e}'})
+    
+

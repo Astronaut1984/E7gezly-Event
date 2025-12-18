@@ -259,7 +259,7 @@ function VehicleCard({
               setEditedVehicleName(vehicleName);
               setEditedVehicleCapacity(vehicleCapacity);
             }}
-            className="w-12 h-12 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex justify-center items-center hover:cursor-pointer"
+            className="w-12 h-12 rounded-full bg-primary-hover text-white flex justify-center items-center hover:cursor-pointer"
           >
             <Pencil />
           </Button>
@@ -270,7 +270,7 @@ function VehicleCard({
           >
             <Button
               title="Delete from database"
-              className="w-12 h-12 rounded-full bg-red-500 hover:bg-red-600 text-white flex justify-center items-center hover:cursor-pointer"
+              className="w-12 h-12 rounded-full bg-destructive hover:bg-destructive-hover text-white flex justify-center items-center hover:cursor-pointer"
             >
               <Trash />
             </Button>
@@ -284,7 +284,7 @@ function VehicleCard({
 function Alert({ children, vehicleName, transportationId, onDelete }) {
   async function handleDelete() {
     try {
-      if (onDelete) await onDelete();
+      if (onDelete) await onDelete(transportationId);
     } catch (err) {
       console.error(err);
     }

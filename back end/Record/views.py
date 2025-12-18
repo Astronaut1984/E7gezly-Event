@@ -3,6 +3,7 @@ from django.db import connection, transaction
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from api.models import User
+from decimal import Decimal
 import json
 
 @csrf_exempt
@@ -132,3 +133,105 @@ def mostFollowedOrganizers(request):
             "follower_count": count
         })
     return JsonResponse({"top_10_organizers": top_organizers})
+
+@csrf_exempt
+def venueUsageReport(request):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("BEGIN")
+            cursor.execute("CALL get_venue_usage_report('result_cursor')")
+            cursor.execute("FETCH ALL FROM result_cursor")
+            
+            columns = [col[0] for col in cursor.description]
+            results = []
+            
+            for row in cursor.fetchall():
+                result_dict = {}
+                for i, col in enumerate(columns):
+                    value = row[i]
+                    # Convert Decimal to float for JSON
+                    if isinstance(value, Decimal):
+                        value = float(value)
+                    result_dict[col] = value
+                results.append(result_dict)
+            
+            cursor.execute("COMMIT")
+        
+        return JsonResponse({
+            'status': 'success',
+            'data': results,
+            'count': len(results)
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
+
+
+@csrf_exempt
+def organizerLeaderboard(request):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("BEGIN")
+            cursor.execute("CALL get_organizer_leaderboard('result_cursor')")
+            cursor.execute("FETCH ALL FROM result_cursor")
+            
+            columns = [col[0] for col in cursor.description]
+            results = []
+            
+            for row in cursor.fetchall():
+                result_dict = {}
+                for i, col in enumerate(columns):
+                    value = row[i]
+                    # Convert Decimal to float for JSON serialization
+                    if isinstance(value, Decimal):
+                        value = float(value)
+                    result_dict[col] = value
+                results.append(result_dict)
+            
+            cursor.execute("COMMIT")
+        
+        return JsonResponse({
+            'status': 'success',
+            'data': results,
+            'count': len(results)
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
+    
+@csrf_exempt
+def getCategoryData(request):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("BEGIN")
+            cursor.execute("CALL get_category_performance_report('result_cursor')")
+            cursor.execute("FETCH ALL FROM result_cursor")
+
+            columns = [col[0] for col in cursor.description]
+            results = []
+            
+            for row in cursor.fetchall():
+                result_dict = {}
+                for i, col in enumerate(columns):
+                    value = row[i]
+                    # Convert Decimal to float for JSON serialization
+                    if isinstance(value, Decimal):
+                        value = float(value)
+                    result_dict[col] = value
+                results.append(result_dict)
+            
+            cursor.execute("COMMIT")
+
+        return JsonResponse({
+        'status': 'success',
+        'data': results,
+        'count': len(results)
+        })
+    except Exception as e:
+        return JsonResponse({'error': f'unexpected error: {e}'})
