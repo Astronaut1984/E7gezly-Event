@@ -122,7 +122,7 @@ export default function AdminCategory() {
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
-      <div className="w-full flex justify-start flex-wrap gap-5 py-5">
+      <div className="w-full flex justify-center flex-wrap gap-10 py-5 px-10">
         {filteredCategories.length === 0 ? (
           <p className="text-center w-full">No categories found</p>
         ) : (
@@ -197,7 +197,7 @@ function CategoryCard({
   return (
     <>
       <div className="relative w-70 h-24 p-5 bg-card rounded-xl shadow mx-auto flex flex-col justify-center">
-        <div className="flex-grow flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center justify-center">
           {" "}
           {/* New wrapper for centering */}
           {editMode ? (
@@ -225,7 +225,7 @@ function CategoryCard({
               setEditMode(true);
               setEditedCategoryName(categoryName); // Initialize with current category name
             }}
-            className="w-12 h-12 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex justify-center items-center hover:cursor-pointer"
+            className="w-12 h-12 rounded-full bg-primary-hover text-white flex justify-center items-center hover:cursor-pointer"
           >
             <Pencil />
           </Button>
@@ -236,7 +236,7 @@ function CategoryCard({
           >
             <Button
               title="Delete from database"
-              className="w-12 h-12 rounded-full bg-red-500 hover:bg-red-600 text-white flex justify-center items-center hover:cursor-pointer"
+              className="w-12 h-12 rounded-full bg-destructive hover:bg-destructive-hover text-white flex justify-center items-center hover:cursor-pointer"
             >
               <Trash />
             </Button>
