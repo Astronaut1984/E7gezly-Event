@@ -435,7 +435,10 @@ export default function EditInfoForm() {
           name="city"
           placeholder=""
           value={formData.city}
-          onChange={handleChange}
+          onChange={(e) => {
+            const newValue = e.target.value.replace(/[a-zA-Z\s'-]/g, "");
+            setFormData({ ...formData, city: newValue });
+          }}
           error={errors.city}
         />
       </div>

@@ -120,11 +120,6 @@ export default function AdminCreate() {
         isError: true,
         message: "Password is required",
       };
-    } else if (formData.password.length < 8) {
-      newErrors.password = {
-        isError: true,
-        message: "Password must be at least 8 characters",
-      };
     }
 
     if (!formData.phoneNumber.trim()) {

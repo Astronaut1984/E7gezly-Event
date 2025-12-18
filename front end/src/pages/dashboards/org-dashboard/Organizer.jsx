@@ -69,7 +69,7 @@ export const orgItems = [
 
 export function Organizer() {
   return (
-    <main className="w-full flex justify-center">
+    <main className="w-full flex flex-col items-center justify-center">
       <EditInfoForm />
       <EditPasswordForm />
     </main>
