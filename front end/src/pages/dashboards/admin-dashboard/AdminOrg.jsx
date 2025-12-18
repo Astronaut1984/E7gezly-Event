@@ -64,8 +64,13 @@ export default function AdminOrg() {
     <main className="flex justify-center items-center flex-col gap-5 w-full">
       <h1 className="text-3xl font-bold">Organizers</h1>
       {/* Display backend data */}
-      <div className="text-center mb-4 text-primary">
-        <i> Number of Organizers: {userCount}</i>
+      <div className="flex flex-wrap justify-center gap-4 w-full max-w-4xl mb-8">
+        <div className="flex-1 min-w-[200px] bg-card rounded-lg p-6 border border-border shadow-sm">
+          <div className="text-sm text-muted-foreground mb-1">
+            Number of Organizers
+          </div>
+          <div className="text-3xl font-bold text-primary">{userCount}</div>
+        </div>
       </div>
       <div className="flex w-100 justify-center items-center">
         <Input

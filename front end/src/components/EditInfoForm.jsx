@@ -216,11 +216,13 @@ export default function EditInfoForm() {
         };
       }
     }
+
     if (Object.keys(backendErrors).length > 0) {
       setErrors(backendErrors);
       setIsSubmitting(false);
       return;
     }
+
     // Check email availability if changed
     if (emailChanged) {
       try {
@@ -269,32 +271,40 @@ export default function EditInfoForm() {
           credentials: "include",
         }
       );
-      
+
       if (!res.ok) {
         const errorData = await res.json();
         console.error("Error updating information:", errorData);
         setErrors({
           submit: {
             isError: true,
-            message: errorData.error || "Failed to update profile. Please try again.",
+            message:
+              errorData.error || "Failed to update profile. Please try again.",
           },
         });
         setIsSubmitting(false);
         return;
       }
-      
+
       // Update was successful
       const data = await res.json();
       console.log("Profile updated successfully!", data);
       setSuccessMessage("Profile updated successfully!");
-      
-      // FIXED: Use useEffect to update context after render completes
-      // Update user context with the new data
+
+      // Update user context with the new data from backend
       if (data.user) {
-        // Use setTimeout to ensure state update happens after render
-        setTimeout(() => {
-          setUser(data.user);
-        }, 0);
+        setUser(data.user);
+        // Also update the form data to reflect the new values
+        setFormData({
+          username: data.user.username,
+          email: data.user.email,
+          phone: data.user.phone,
+          firstName: data.user.first_name,
+          lastName: data.user.last_name,
+          country: data.user.country,
+          city: data.user.city,
+          privacyChoice: data.user.privacy_choice,
+        });
       }
     } catch (err) {
       console.error(err);

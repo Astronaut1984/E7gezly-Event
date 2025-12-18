@@ -23,7 +23,7 @@ import AlertMessage from "./AlertMessage";
 export default function EventPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user,setUser } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("feedbacks");
@@ -46,7 +46,7 @@ export default function EventPage() {
           `http://localhost:8000/event/geteventbyid/${parseInt(id)}/`
         );
         const data = await res.json();
-        console.log(data['event']);
+        console.log(data["event"]);
         setEvent(data["event"]);
         setFeedbacks(data["event"].feedbacks || []);
         setLostItems(data["event"].lost_items || []);
@@ -243,7 +243,7 @@ export default function EventPage() {
         </div>
 
         {/* Conditional Booking Sections */}
-        {!isEventEnded() && (
+        {!isEventEnded() && user && user.status == "Attendee" && (
           <>
             {/* TICKETS */}
             <div>
@@ -302,8 +302,14 @@ export default function EventPage() {
                 <ul className="list-disc ml-6">
                   {Buses.map((bus, i) => (
                     <li key={i}>
-                      Departs From: {bus.departure_loc}, Available Seats: {bus.capacity - bus.number_assigned}
-                      <BookBusDialog bus={bus} event_id={event.event_id} event_loc={event.location_name} onUpdate={setBuses}>
+                      Departs From: {bus.departure_loc}, Available Seats:{" "}
+                      {bus.capacity - bus.number_assigned}
+                      <BookBusDialog
+                        bus={bus}
+                        event_id={event.event_id}
+                        event_loc={event.location_name}
+                        onUpdate={setBuses}
+                      >
                         <button
                           disabled={bus.capacity === bus.number_assigned}
                           className="ml-5 px-3 py-1 rounded-2xl bg-primary"
@@ -312,7 +318,6 @@ export default function EventPage() {
                         </button>
                       </BookBusDialog>
                     </li>
-                    
                   ))}
                 </ul>
               </div>
@@ -682,7 +687,7 @@ function ReportDialog({ className, children, owner_username }) {
   );
 }
 
-function BookBusDialog({ children, bus,event_loc, onUpdate,event_id }) {
+function BookBusDialog({ children, bus, event_loc, onUpdate, event_id }) {
   const [quantity, setQuantity] = useState(1);
   const [open, setOpen] = useState(false);
   const [alert, setAlert] = useState(null);
@@ -699,7 +704,7 @@ function BookBusDialog({ children, bus,event_loc, onUpdate,event_id }) {
       setLoading(false);
       return;
     }
-    if( quantity > (bus.capacity - bus.number_assigned)) {
+    if (quantity > bus.capacity - bus.number_assigned) {
       setAlert("Requested number of seats exceeds available seats.");
       setLoading(false);
       return;
@@ -728,9 +733,7 @@ function BookBusDialog({ children, bus,event_loc, onUpdate,event_id }) {
       }
 
       if (data.message) {
-        setAlert(
-          `Success! Booked ${quantity} seat(s).`
-        );
+        setAlert(`Success! Booked ${quantity} seat(s).`);
         onUpdate((prevBuses) =>
           prevBuses.map((b) =>
             b.bus_id === bus.bus_id
@@ -752,9 +755,7 @@ function BookBusDialog({ children, bus,event_loc, onUpdate,event_id }) {
       <DialogTrigger>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="caret-transparent">
-            Book Bus
-          </DialogTitle>
+          <DialogTitle className="caret-transparent">Book Bus</DialogTitle>
         </DialogHeader>
 
         <p className="caret-transparent">

@@ -122,8 +122,15 @@ export default function AdminPerformers() {
   return (
     <div className="flex flex-col justify-center items-center text-[30px] font-bold w-full px-32">
       <h1>Performers</h1>
-      <div className="text-center mb-4 text-primary">
-        <i> Number of Performers: {performerCount}</i>
+      <div className="flex flex-wrap justify-center gap-4 max-w-4xl mb-8">
+        <div className="flex-1 min-w-[200px] bg-card rounded-lg p-6 border border-border shadow-sm">
+          <div className="text-sm text-muted-foreground mb-1">
+            Number of Performers
+          </div>
+          <div className="text-3xl font-bold text-primary">
+            {performerCount}
+          </div>
+        </div>
       </div>
       <div className="flex flex-col flex-wrap w-full px-10 shadow-2xl text-[30px] font-bold py-5 rounded-xl bg-card mt-3 mb-5">
         <h1 className="text-xl mb-3">Add a Performer</h1>

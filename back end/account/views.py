@@ -24,10 +24,22 @@ def signup(request):
                 cursor.execute(
                     """
                     INSERT INTO api_user 
-                    (username, password, first_name, last_name, email, status, country, city, phone, wallet)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    (username, password, first_name, last_name, email, status, country, city, phone, wallet, privacy_choice)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """,
-                    [data.get("username"), hashed, data.get("firstName"), data.get("lastName"), data.get("email"), data.get("accountType"), data.get("country"), data.get("city"), data.get("phoneNumber"), 0],
+                    [
+                        data.get("username"), 
+                        hashed, 
+                        data.get("firstName"), 
+                        data.get("lastName"), 
+                        data.get("email"), 
+                        data.get("accountType"), 
+                        data.get("country"), 
+                        data.get("city"), 
+                        data.get("phoneNumber"), 
+                        0.0,
+                        "F"  # default privacy choice
+                    ],
                 )
             return JsonResponse({"message": "User created successfully"})
         except Exception as e:
@@ -95,6 +107,7 @@ def me(request):
                     "wallet": user.wallet,
                     "phone": user.phone,
                     "email": user.email,
+                    "privacy_choice": user.privacy_choice,
                 }
             }
         )
@@ -132,6 +145,7 @@ def login_view(request):
                     "wallet": user.wallet,
                     "phone": user.phone,
                     "email": user.email,
+                    "privacy_choice": user.privacy_choice,
                     }
                 })
             else:
@@ -158,17 +172,46 @@ def editAccountInfo(request):
                 cursor.execute(
                     """
                     UPDATE api_user SET
-                    username = %s, first_name = %s, last_name = %s, email = %s, status = %s, country = %s, city = %s, phone = %s
-                    where username = %s
+                    username = %s, first_name = %s, last_name = %s, email = %s, status = %s, country = %s, city = %s, phone = %s, privacy_choice = %s
+                    WHERE username = %s
                     """,
-                    [new_username, data.get("firstName") or user.first_name, data.get("lastName") or user.last_name, data.get("email") or user.email, data.get("accountType") or user.status, data.get("country") or user.country, data.get("city") or user.city, data.get("phone") or user.phone, user.username]
+                    [
+                        new_username, 
+                        data.get("firstName") or user.first_name, 
+                        data.get("lastName") or user.last_name, 
+                        data.get("email") or user.email, 
+                        data.get("accountType") or user.status, 
+                        data.get("country") or user.country, 
+                        data.get("city") or user.city, 
+                        data.get("phone") or user.phone,
+                        data.get("privacyChoice") or user.privacy_choice,
+                        user.username
+                    ]
                 )
             request.session['username'] = new_username
-            return JsonResponse({"message": "User updated successfully"})
+            
+            # Fetch the updated user to return fresh data
+            updated_user = User.objects.get(username=new_username)
+            
+            return JsonResponse({
+                "message": "User updated successfully",
+                "user": {
+                    "username": updated_user.username,
+                    "first_name": updated_user.first_name,
+                    "last_name": updated_user.last_name,
+                    "city": updated_user.city,
+                    "country": updated_user.country,
+                    "status": updated_user.status,
+                    "wallet": updated_user.wallet,
+                    "phone": updated_user.phone,
+                    "email": updated_user.email,
+                    "privacy_choice": updated_user.privacy_choice,
+                }
+            })
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
     else:
-        return JsonResponse({"error": "Only POST method allowed"}, status=405)
+        return JsonResponse({"error": "Only PUT method allowed"}, status=405)
 
 @csrf_exempt
 def editWallet(request):

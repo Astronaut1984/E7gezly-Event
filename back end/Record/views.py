@@ -65,6 +65,66 @@ def countBuses(request):
         'count': result[0] if result else 0
     })
 
+@csrf_exempt
+def maxCapBuses(request):
+    with connection.cursor() as cursor:
+        cursor.execute("CALL max_capacity_bus(NULL)")
+        result = cursor.fetchone()  
+    return JsonResponse({
+        'success': True,
+        'count': result[0] if result else 0
+    })
+
+@csrf_exempt
+def minCapBuses(request):
+    with connection.cursor() as cursor:
+        cursor.execute("CALL min_capacity_bus(NULL)")
+        result = cursor.fetchone()  
+    return JsonResponse({
+        'success': True,
+        'count': result[0] if result else 0
+    })
+
+@csrf_exempt
+def avgCapBuses(request):
+    with connection.cursor() as cursor:
+        cursor.execute("CALL avg_capacity_bus(NULL)")
+        result = cursor.fetchone()  
+    return JsonResponse({
+        'success': True,
+        'count': result[0] if result else 0
+    })
+
+@csrf_exempt
+def maxCapVenues(request):
+    with connection.cursor() as cursor:
+        cursor.execute("CALL max_venue_cap(NULL)")
+        result = cursor.fetchone()  
+    return JsonResponse({
+        'success': True,
+        'count': result[0] if result else 0
+    })
+
+@csrf_exempt
+def minCapVenues(request):
+    with connection.cursor() as cursor:
+        cursor.execute("CALL min_venue_cap(NULL)")
+        result = cursor.fetchone()  
+    return JsonResponse({
+        'success': True,
+        'count': result[0] if result else 0
+    })
+
+@csrf_exempt
+def avgCapVenues(request):
+    with connection.cursor() as cursor:
+        cursor.execute("CALL avg_venue_cap(NULL)")
+        result = cursor.fetchone()  
+    return JsonResponse({
+        'success': True,
+        'count': result[0] if result else 0
+    })
+
 
 @csrf_exempt
 def countVenues(request):

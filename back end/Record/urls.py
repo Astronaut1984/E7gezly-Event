@@ -15,5 +15,10 @@ urlpatterns = [
     path('venueusagereport/', views.venueUsageReport, name='venueusagereport'),
     path('orgleaderboard/', views.organizerLeaderboard, name='venueusagereport'),
     path('categorydata/', views.getCategoryData, name='categorydata'),
-
+    path("maxcapbuses/",views.maxCapBuses,name="maxcapbuses"),
+    path("mincapbuses/",views.minCapBuses,name="mincapbuses"),
+    path("avgcapbuses/",views.avgCapBuses,name="avgcapbuses"),
+    path("maxcapvenues/",views.maxCapVenues,name="maxcapvenues"),
+    path("mincapvenues/",views.minCapVenues,name="mincapvenues"),
+    path("avgcapvenues/",views.avgCapVenues,name="avgcapvenues")
 ]

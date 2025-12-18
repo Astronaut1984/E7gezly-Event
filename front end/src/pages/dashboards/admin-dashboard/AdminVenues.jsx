@@ -22,6 +22,9 @@ import MessageAlertDialog from "@/components/MessageAlertDialog";
 
 export default function AdminVenues() {
   const [venueCount, setVenueCount] = useState(0);
+  const [maxVenueCap, setMaxVenueCap] = useState(0);
+  const [minVenueCap, setMinVenueCap] = useState(0);
+  const [avgVenueCap, setAvgVenueCap] = useState(0);
   const FIELD_CONTAINER_CLASSNAME =
     "text-[20px] flex justify-between gap-20 items-center";
   let [errors, setErrors] = useState({});
@@ -120,6 +123,18 @@ export default function AdminVenues() {
       .then((res) => res.json())
       .then((data) => setVenueCount(data.count))
       .catch((err) => console.error(err));
+    fetch("http://localhost:8000/Record/maxcapvenues/")
+      .then((res) => res.json())
+      .then((data) => setMaxVenueCap(data.count))
+      .catch((err) => console.error(err));
+    fetch("http://localhost:8000/Record/mincapvenues/")
+      .then((res) => res.json())
+      .then((data) => setMinVenueCap(data.count))
+      .catch((err) => console.error(err));
+    fetch("http://localhost:8000/Record/avgcapvenues/")
+      .then((res) => res.json())
+      .then((data) => setAvgVenueCap(data.count))
+      .catch((err) => console.error(err));
   }, [reloadVenues]);
 
   const handleEditToggle = useCallback((id) => {
@@ -144,9 +159,36 @@ export default function AdminVenues() {
 
   return (
     <div className="flex flex-col justify-center items-center w-full px-32 text-[30px] font-bold">
-      <h1>Venues</h1>
-      <div className="text-center mb-4 text-primary">
-        <i> Number of Venues: {venueCount}</i>
+      <h1 className="text-4xl font-bold text-foreground mb-8">Venues</h1>
+
+      <div className="flex flex-wrap justify-center gap-4 w-full max-w-4xl mb-8">
+        <div className="flex-1 min-w-[200px] bg-card rounded-lg p-6 border border-border shadow-sm">
+          <div className="text-sm text-muted-foreground mb-1">Total Venues</div>
+          <div className="text-3xl font-bold text-primary">{venueCount}</div>
+        </div>
+
+        <div className="flex-1 min-w-[200px] bg-card rounded-lg p-6 border border-border shadow-sm">
+          <div className="text-sm text-muted-foreground mb-1">Max Capacity</div>
+          <div className="text-3xl font-bold text-foreground">
+            {maxVenueCap}
+          </div>
+        </div>
+
+        <div className="flex-1 min-w-[200px] bg-card rounded-lg p-6 border border-border shadow-sm">
+          <div className="text-sm text-muted-foreground mb-1">Min Capacity</div>
+          <div className="text-3xl font-bold text-foreground">
+            {minVenueCap}
+          </div>
+        </div>
+
+        <div className="flex-1 min-w-[200px] bg-card rounded-lg p-6 border border-border shadow-sm">
+          <div className="text-sm text-muted-foreground mb-1">
+            Average Capacity
+          </div>
+          <div className="text-3xl font-bold text-foreground">
+            {Number(avgVenueCap).toFixed(2)}
+          </div>
+        </div>
       </div>
       <div className="flex flex-col flex-wrap w-full px-10 shadow-2xl py-5 rounded-xl bg-card mt-3">
         <h1 className="text-xl">Add a Venue</h1>

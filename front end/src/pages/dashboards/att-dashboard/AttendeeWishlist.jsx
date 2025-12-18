@@ -13,9 +13,12 @@ export default function AttendeeWishlist() {
   const fetchWishlistedEvents = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/attendeeUtils/getwishlistedevents", {
-        credentials: "include",
-      });
+      const res = await fetch(
+        "http://localhost:8000/attendeeUtils/getwishlistedevents",
+        {
+          credentials: "include",
+        }
+      );
       const data = await res.json();
       console.log(data);
       if (data.success) {
@@ -63,7 +66,7 @@ export default function AttendeeWishlist() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="flex gap-5 flex-wrap">
             {wishlistedEvents.map((event) => (
               <Event
                 key={event.event_id}
@@ -71,10 +74,10 @@ export default function AttendeeWishlist() {
                 title={event.name}
                 img={event.banner || "/fallback.png"}
                 priceRange={{
-                    minPrice: event.min_price,
-                    maxPrice: event.max_price,
-                    currency: "EGP",
-                  }}
+                  minPrice: event.min_price,
+                  maxPrice: event.max_price,
+                  currency: "EGP",
+                }}
                 startDate={event.start_date}
                 endDate={event.end_date}
                 adminOrOrgMode={false}

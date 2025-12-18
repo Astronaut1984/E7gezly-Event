@@ -19,6 +19,9 @@ import {
 // import { Organizer } from "../org-dashboard/Organizer"; // Removed unused import
 export default function AdminBus() {
   const [busCount, setBusCount] = useState(0);
+  const [maxBusCap, setMaxBusCap] = useState(0);
+  const [minBusCap, setMinBusCap] = useState(0);
+  const [avgBusCap, setAvgBusCap] = useState(0);
   const {
     items: vehicles,
     loading,
@@ -49,6 +52,18 @@ export default function AdminBus() {
     fetch("http://localhost:8000/Record/busesindb/")
       .then((res) => res.json())
       .then((data) => setBusCount(data.count))
+      .catch((err) => console.error(err));
+    fetch("http://localhost:8000/Record/maxcapbuses/")
+      .then((res) => res.json())
+      .then((data) => setMaxBusCap(data.count))
+      .catch((err) => console.error(err));
+    fetch("http://localhost:8000/Record/mincapbuses/")
+      .then((res) => res.json())
+      .then((data) => setMinBusCap(data.count))
+      .catch((err) => console.error(err));
+    fetch("http://localhost:8000/Record/avgcapbuses/")
+      .then((res) => res.json())
+      .then((data) => setAvgBusCap(data.count))
       .catch((err) => console.error(err));
   }, [reloadVehicles]);
 
@@ -110,6 +125,9 @@ export default function AdminBus() {
       </h1>
       <div className="text-center mb-4 text-primary">
         <i> Number of Buses: {busCount}</i>
+        <i> Max Capacity: {maxBusCap}</i>
+        <i> Min Capacity: {minBusCap}</i>
+        <i> Average Capacity: {avgBusCap}</i>
       </div>
       {/* Add Vehicle Section */}
       <div className="flex flex-col flex-wrap w-200 px-10 shadow-2xl text-[30px] font-bold py-5 rounded-xl bg-card mt-3 mb-5">
