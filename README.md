@@ -6,13 +6,13 @@ E7gezly-Event is a full-stack web application designed to manage events efficien
 ## Front-end Documentation
 ### Technologies Used:
 - **React**: A JavaScript library for building user interfaces.
-- **CSS**: For styling components and layout.
-
+- **tailwind**: For styling components and layout.
+- **Shadcn-ui**: For sleek and reusable components.
 ### Installation:
 1. Clone the repository: `git clone <repository-url>`
 2. Navigate to the front-end directory: `cd frontend`
-3. Install dependencies: `npm install`
-4. Start the application: `npm start`
+4. Install dependencies: `npm install`
+5. Start the application: `npm run dev`
 
 ### Features:
 - User Authentication
