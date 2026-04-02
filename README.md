@@ -1,49 +1,44 @@
-# E7gezly Event Login Page
+# E7gezly-Event
 
-## Description
-The E7gezly Event login page project provides a seamless and user-friendly interface for event participants to log in and access event functionalities. It aims to enhance user experience and streamline the login process for various events.
+## Project Overview
+E7gezly-Event is a full-stack web application designed to manage events efficiently. This project includes both front-end and back-end components to provide a seamless user experience.
 
-## Features
-- User authentication
-- Responsive design
-- Social media login options
-- Password recovery
-- User dashboard after login
+## Front-end Documentation
+### Technologies Used:
+- **React**: A JavaScript library for building user interfaces.
+- **CSS**: For styling components and layout.
 
-## Project Structure
-```
-E7gezly-Event/
-├── index.html        # Main login page
-├── css/             # Stylesheets
-│   └── style.css    # Main styles
-├── js/              # JavaScript files
-│   └── script.js    # Main script
-├── images/          # Asset images
-└── README.md        # Project documentation
-```
+### Installation:
+1. Clone the repository: `git clone <repository-url>`
+2. Navigate to the front-end directory: `cd frontend`
+3. Install dependencies: `npm install`
+4. Start the application: `npm start`
 
-## Technologies
-- HTML
-- CSS
-- JavaScript
-- Node.js (Backend)
-- MongoDB (Database)
+### Features:
+- User Authentication
+- Event Creation and Management
+- RSVP functionality
 
-## Getting Started
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Astronaut1984/E7gezly-Event.git
-   ```
-2. Navigate to the project directory:
-   ```bash
-   cd E7gezly-Event
-   ```
-3. Install the necessary dependencies:
-   ```bash
-   npm install
-   ```
-4. Start the server:
-   ```bash
-   npm start
-   ```
-5. Visit `http://localhost:3000` in your browser to view the login page.
+## Back-end Documentation
+### Technologies Used:
+- **Node.js**: JavaScript runtime for building server-side applications.
+- **Express**: Web framework for Node.js.
+- **MongoDB**: NoSQL database for storing data.
+
+### Installation:
+1. Navigate to the back-end directory: `cd backend`
+2. Install dependencies: `npm install`
+3. Start the server: `npm run start`
+
+### API Endpoints:
+- `POST /api/events`: Create a new event.
+- `GET /api/events`: Retrieve a list of events.
+- `GET /api/events/:id`: Get details of a specific event.
+- `PUT /api/events/:id`: Update an event.
+- `DELETE /api/events/:id`: Delete an event.
+
+## Contributing
+Contributions are welcome! Please submit a pull request or open an issue for any proposed changes.
+
+## License
+This project is licensed under the MIT License.
