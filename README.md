@@ -22,23 +22,20 @@ E7gezly-Event is a full-stack web application designed to manage events efficien
 ## Back-end Documentation
 ### Technologies Used:
 - **Node.js**: JavaScript runtime for building server-side applications.
-- **Express**: Web framework for Node.js.
-- **MongoDB**: NoSQL database for storing data.
+- **Django**: Web framework for Node.js.
+- **PostgreSql**: For storing data.
 
 ### Installation:
 1. Navigate to the back-end directory: `cd backend`
 2. Install dependencies: `npm install`
 3. Start the server: `npm run start`
 
-### API Endpoints:
+### Some API Endpoints:
 - `POST /api/events`: Create a new event.
 - `GET /api/events`: Retrieve a list of events.
 - `GET /api/events/:id`: Get details of a specific event.
 - `PUT /api/events/:id`: Update an event.
 - `DELETE /api/events/:id`: Delete an event.
-
-## Contributing
-Contributions are welcome! Please submit a pull request or open an issue for any proposed changes.
 
 ## License
 This project is licensed under the MIT License.
